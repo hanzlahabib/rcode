@@ -51,11 +51,11 @@
 | DSH-3 | 34 | Pending |
 | DSH-4 | 36 | complete|
 | DSH-5 | 36 | complete|
-| DSH-6 | 37 | Pending |
+| DSH-6 | 37 | complete|
 | HIST-1 | 35 | Pending |
 | HIST-2 | 35 | Pending |
 | HIST-3 | 35 | Pending |
-| GATE-1 | 37 | Pending |
-| GATE-2 | 37 | Pending |
+| GATE-1 | 37 | complete|
+| GATE-2 | 37 | complete|
 
 **Total:** 11 requirements across 3 categories — 11/11 mapped ✓

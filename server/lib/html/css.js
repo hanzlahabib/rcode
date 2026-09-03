@@ -5151,12 +5151,13 @@ summary:focus-visible,
 }
 .reject-submit:hover:not(:disabled) { background: rgba(255,107,107,0.12); }
 .reject-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-.orch-card-rejection {
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
+.orch-pipeline-rejection {
+  margin: 0 0 4px 30px;
+  font-size: var(--text-2xs);
   color: var(--accent-red);
-  border-left: 2px solid var(--accent-red);
-  padding-left: var(--space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* ── Reject dialog (END) ── */
 
