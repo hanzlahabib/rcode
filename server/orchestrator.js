@@ -258,7 +258,12 @@ function persistRun(storyId, s, status) {
   const endTime    = new Date().toISOString();
   const durationMs = Date.parse(endTime) - (Date.parse(s.startTime) || Date.parse(endTime));
   const entry = { storyId, cmd: s.cmd, status, startTime: s.startTime, endTime, durationMs };
-  history.push(entry);
+  // Replace any existing entry for this storyId rather than appending a
+  // duplicate — the client's mergeSessionsAndHistory keys on storyId and
+  // only ever shows the newest entry, so appending would silently bloat
+  // orch-history.json with rows the UI never surfaces (review finding H2).
+  const idx = history.findIndex(h => h.storyId === storyId);
+  if (idx !== -1) history[idx] = entry; else history.push(entry);
   if (history.length > HISTORY_MAX) history = history.slice(-HISTORY_MAX);
   try {
     fs.mkdirSync(path.dirname(HISTORY_FILE), { recursive: true });
@@ -675,7 +680,10 @@ async function handleRun(req, res) {
   proc.onExit(({ exitCode, signal }) => {
     const status = signal ? 'stopped' : (exitCode === 0 ? 'done' : 'exited');
     setStatus(s, status);
-    persistRun(storyId, s, status);
+    // handleStop() may already have persisted this run (it can't rely on
+    // onExit firing — proc.kill() can throw or the PTY can already be
+    // dead). Guard so a run is persisted exactly once (review finding H1).
+    if (!s.historyPersisted) { s.historyPersisted = true; persistRun(storyId, s, status); }
     if (status === 'done'
         && !storyId.startsWith('cmd-')
         && !storyId.startsWith('sprint-')
@@ -708,6 +716,11 @@ async function handleStop(req, res) {
   if (!s) { json(res, 404, { error: 'no session' }); return; }
   try { s.proc.kill(); } catch {}
   setStatus(s, 'stopped');
+  // Persist immediately: proc.kill() can throw, or the PTY can already be
+  // dead, in which case onExit never fires and the run would otherwise be
+  // silently lost from history (review finding H1). onExit's own persistRun
+  // call is guarded by s.historyPersisted so this never double-writes.
+  if (!s.historyPersisted) { s.historyPersisted = true; persistRun(storyId, s, 'stopped'); }
   json(res, 200, { storyId, status: 'stopped' });
 }
 

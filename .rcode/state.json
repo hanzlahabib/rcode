@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-09-02T23:55:08.245Z",
+  "updated": "2026-09-03T00:01:56.349Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -869,7 +869,7 @@
       "id": "35",
       "number": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
-      "status": "in_progress",
+      "status": "complete",
       "started": null,
       "completed": null,
       "sprints": [
@@ -877,7 +877,7 @@
           "id": "35.1",
           "number": 1,
           "goal": "Persist every orchestration run that ends (done/exited/stopped/error) to a JSON file",
-          "status": "planned",
+          "status": "completed",
           "stories": [
             {
               "id": "35.1.1",
@@ -890,13 +890,15 @@
               "status": "planned"
             }
           ],
-          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-1-SPRINT.md"
+          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-1-SPRINT.md",
+          "completed_at": "2026-09-03T00:01:25.556Z",
+          "velocity_actual": 0
         },
         {
           "id": "35.2",
           "number": 2,
           "goal": "Surface the persisted run history (from Sprint 35.1's `GET /api/history`) in the",
-          "status": "planned",
+          "status": "completed",
           "stories": [
             {
               "id": "35.2.1",
@@ -919,13 +921,16 @@
               "status": "planned"
             }
           ],
-          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-2-SPRINT.md"
+          "file": ".planning/phases/35-session-history-panel-with-live-persisted-dedup-merge/35-2-SPRINT.md",
+          "completed_at": "2026-09-03T00:01:29.905Z",
+          "velocity_actual": 0
         }
       ],
       "goal": "Persist past orchestration runs on the orchestrator service and surface them",
       "plan_count": 2,
-      "status_updated": "2026-05-16T12:26:35.176Z",
-      "plans": 2
+      "status_updated": "2026-09-03T00:01:09.384Z",
+      "plans": 2,
+      "completed_at": "2026-09-03"
     },
     {
       "id": "36",
@@ -1456,6 +1461,16 @@
       "sprint": "34.2",
       "points": 0,
       "completed_at": "2026-09-02T23:53:30.533Z"
+    },
+    {
+      "sprint": "35.1",
+      "points": 0,
+      "completed_at": "2026-09-03T00:01:25.556Z"
+    },
+    {
+      "sprint": "35.2",
+      "points": 0,
+      "completed_at": "2026-09-03T00:01:29.905Z"
     }
   ],
   "sprints": [
