@@ -4,7 +4,7 @@ Sub-steps of plan.md — Steps 5 through 5.7. Handles research, validation archi
 
 ## 5. Handle Research
 
-**Skip if:** `--gaps` flag or `--skip-research` flag or `--reviews` flag.
+**Skip if:** `--gaps` flag or `--skip-research` flag or `--reviews` flag or `EFFORT_TIER_SKIP_RESEARCH` is `true` (#950 — set by the Effort-Tier Pre-Plan Gate at step 4.5 when no risk keywords were found; treated identically to `--skip-research`, not a separate path).
 
 **If `has_research` is true (from init) AND no `--research` flag:** Use existing, skip to step 6.
 
