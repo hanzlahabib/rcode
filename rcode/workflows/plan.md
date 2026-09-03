@@ -196,7 +196,14 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 ## 2. Parse and Normalize Arguments
 
-Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--from-stub`, `--prd <filepath>`, `--reviews`, `--text`, `--no-panel`).
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--from-stub`, `--prd <filepath>`, `--reviews`, `--text`, `--no-panel`, `--tier <trivial|small|normal|complex>`).
+
+**Detect effort-tier override (#950):**
+```bash
+EFFORT_TIER_OVERRIDE=$(echo "$ARGUMENTS" | grep -oE -- '--tier[[:space:]]+[a-z]+' | awk '{print $2}')
+EFFORT_TIER_OVERRIDE=${EFFORT_TIER_OVERRIDE:-}
+```
+Valid values: `trivial`, `small`, `normal`, `complex`. An unrecognized value is ignored (treated as unset) — do not error, this is a low-stakes UX flag. `--tier` sets the SAME flags the workflow already reads (`--skip-research`, `--skip-verify`) — see `plan-effort-tier.md` § Tier Override for the exact mapping. It is not a second code path.
 
 Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from init JSON is `true`. When `TEXT_MODE` is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for Claude Code remote sessions (`/rc` mode) where TUI menus don't work through the Claude App.
 
@@ -357,6 +364,13 @@ If "Run discuss-phase first":
   ```
   **Exit the sprint-plan workflow. Do not continue.**
 
+## 4.5. Effort-Tier Pre-Plan Gate (#950)
+
+**Skip entirely if:** `GAPS_MODE=true` or `FROM_STUB_MODE=true` (gap-closure and stub-expansion are already narrow-scoped; the tier gate exists to catch over-processing on ordinary phases, not to add friction to modes that are already lean).
+
+@.rcode/workflows/plan-effort-tier.md
+
+This sets `RISK_KEYWORDS_FOUND` and (unless `--tier` overrides it) may set `EFFORT_TIER_SKIP_RESEARCH=true`, which step 5 below reads as equivalent to `--skip-research` having been passed. It may also end the run early via the Trivial-Tier Pre-Flight Redirect (user chose `/rcode-quick` instead). The Post-Plan Gate section of the same file is NOT applied here — it's read now, applied later at step 9, once `SPRINT_COUNT` is known.
 
 @.rcode/workflows/plan-research-validation.md
 
@@ -548,9 +562,15 @@ If no issues: `File-Ownership Check: ✓ no collisions.`
 **This check is informational for warnings and blocking for creation collisions.**
 It never silently passes a plan where two sprints create the same file.
 
+Track `FILE_OWNERSHIP_COLLISIONS` = the sum of creation collisions (K) and
+modify-collisions requiring a sequential flag (J) found above (0 if the check
+reported "✓ no collisions"). Step 9's Post-Plan Effort-Tier Gate (#950) reads
+this to decide whether a single-sprint phase is clean enough to auto-skip
+verification.
+
 ## 9. Handle Planner Return
 
-- **`## PLANNING COMPLETE`:** Display plan count. If `--skip-verify` or `plan_checker_enabled` is false (from init): skip to step 13. Otherwise: step 10.
+- **`## PLANNING COMPLETE`:** Display plan count. Compute `SPRINT_COUNT` and `EFFORT_TIER_SKIP_VERIFY` below (Sprint count guard + Post-Plan Effort-Tier Gate) BEFORE evaluating this line. If `--skip-verify` or `plan_checker_enabled` is false (from init) or `EFFORT_TIER_SKIP_VERIFY` is `true`: skip to step 13. Otherwise: step 10.
 - **`## PHASE SPLIT RECOMMENDED`:** The planner determined the phase is too complex to implement all user decisions without simplifying them. Handle in step 9b.
 - **`## CHECKPOINT REACHED`:** Present to user, get response, spawn continuation (step 12)
 - **`## PLANNING INCONCLUSIVE`:** Show attempts, offer: Add context / Retry / Manual
@@ -564,6 +584,13 @@ MAX_SPRINTS=$($TOOL config-get workflow.max_sprints_per_phase 2>/dev/null)
 MAX_SPRINTS=${MAX_SPRINTS:-4}  # config-get exits 0 with empty output when key absent
 SPRINT_COUNT=$(find "${PHASE_DIR}" -maxdepth 1 -name "*-SPRINT.md" | wc -l | tr -d ' ')
 ```
+
+**Post-Plan Effort-Tier Gate (#950):** Apply `plan-effort-tier.md` § Post-Plan
+Gate now (already loaded into context at step 4.5) to compute
+`EFFORT_TIER_SKIP_VERIFY` from `SPRINT_COUNT`, `RISK_KEYWORDS_FOUND`, and
+`FILE_OWNERSHIP_COLLISIONS` (from step 8.5). This only ever fires when
+`SPRINT_COUNT == 1` — it cannot change behavior for the 2-3 sprint case,
+which is today's unmodified default pipeline.
 
 If `SPRINT_COUNT > MAX_SPRINTS`:
 
