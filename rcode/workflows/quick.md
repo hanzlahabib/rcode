@@ -176,6 +176,24 @@ elif ! grep -q "Quick Tasks Completed" .planning/STATE.md 2>/dev/null; then
 fi
 echo "| $(date +%Y-%m-%d) | quick | $TASK | ✓ |" >> .planning/STATE.md
 ```
+
+**Also record the intent in `.rcode/state.json` (#950).** `/rcode-quick` is the
+real "trivial tier" — no SPRINT.md, no subagents — but until now it only
+touched the markdown STATE.md table, never the real state CLI the way
+`plan.md` step 0.4 does (`state set-intent plan --source plan.md`). That left
+`.rcode/state.json`'s `last_intent` stale after every quick task, which
+`resume-work` reads to restore session scope. A trivial 1-file change doesn't
+warrant a full phase/sprint record (`state planned-phase`) — `set-intent` is
+the same lightweight call plan.md already uses, just with `build` instead of
+`plan`:
+
+```bash
+node ".rcode/bin/rcode-tools.cjs" state set-intent build --source quick.md 2>/dev/null || true
+```
+
+Guarded with `|| true` — `/rcode-quick` must still complete and report success
+even in a project where `.rcode/` isn't installed; this call is additive
+bookkeeping, not a precondition for the task itself.
 </step>
 
 <step name="done">
@@ -204,6 +222,7 @@ No next-step suggestions. No workflow routing. Just done.
 - [ ] Bulk inputs are auto-routed to /rcode-add-phase without forcing the user to re-paste
 - [ ] Trivial inputs are completed inline (single context, ≤3 files, conventional commit)
 - [ ] STATE.md updated if it exists
+- [ ] `.rcode/state.json` `last_intent` recorded via `state set-intent build` (#950 — trivial tier does not bypass state.json)
 - [ ] No self-referential redirects (the old quick.md redirected to /rcode-quick — that infinite loop is closed)
 </success_criteria>
 
