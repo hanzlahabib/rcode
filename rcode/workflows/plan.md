@@ -562,9 +562,15 @@ If no issues: `File-Ownership Check: ✓ no collisions.`
 **This check is informational for warnings and blocking for creation collisions.**
 It never silently passes a plan where two sprints create the same file.
 
+Track `FILE_OWNERSHIP_COLLISIONS` = the sum of creation collisions (K) and
+modify-collisions requiring a sequential flag (J) found above (0 if the check
+reported "✓ no collisions"). Step 9's Post-Plan Effort-Tier Gate (#950) reads
+this to decide whether a single-sprint phase is clean enough to auto-skip
+verification.
+
 ## 9. Handle Planner Return
 
-- **`## PLANNING COMPLETE`:** Display plan count. If `--skip-verify` or `plan_checker_enabled` is false (from init): skip to step 13. Otherwise: step 10.
+- **`## PLANNING COMPLETE`:** Display plan count. Compute `SPRINT_COUNT` and `EFFORT_TIER_SKIP_VERIFY` below (Sprint count guard + Post-Plan Effort-Tier Gate) BEFORE evaluating this line. If `--skip-verify` or `plan_checker_enabled` is false (from init) or `EFFORT_TIER_SKIP_VERIFY` is `true`: skip to step 13. Otherwise: step 10.
 - **`## PHASE SPLIT RECOMMENDED`:** The planner determined the phase is too complex to implement all user decisions without simplifying them. Handle in step 9b.
 - **`## CHECKPOINT REACHED`:** Present to user, get response, spawn continuation (step 12)
 - **`## PLANNING INCONCLUSIVE`:** Show attempts, offer: Add context / Retry / Manual
@@ -578,6 +584,13 @@ MAX_SPRINTS=$($TOOL config-get workflow.max_sprints_per_phase 2>/dev/null)
 MAX_SPRINTS=${MAX_SPRINTS:-4}  # config-get exits 0 with empty output when key absent
 SPRINT_COUNT=$(find "${PHASE_DIR}" -maxdepth 1 -name "*-SPRINT.md" | wc -l | tr -d ' ')
 ```
+
+**Post-Plan Effort-Tier Gate (#950):** Apply `plan-effort-tier.md` § Post-Plan
+Gate now (already loaded into context at step 4.5) to compute
+`EFFORT_TIER_SKIP_VERIFY` from `SPRINT_COUNT`, `RISK_KEYWORDS_FOUND`, and
+`FILE_OWNERSHIP_COLLISIONS` (from step 8.5). This only ever fires when
+`SPRINT_COUNT == 1` — it cannot change behavior for the 2-3 sprint case,
+which is today's unmodified default pipeline.
 
 If `SPRINT_COUNT > MAX_SPRINTS`:
 
