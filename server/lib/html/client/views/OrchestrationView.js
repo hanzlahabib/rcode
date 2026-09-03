@@ -171,13 +171,16 @@ const PIPELINE_GLYPH = {
   done: '✓', exited: '✕', stopped: '■', error: '✕',
 };
 
-function PipelineRow({ glyphCls, glyph, label, count, onClick, actions, active }) {
+function PipelineRow({ glyphCls, glyph, label, count, onClick, actions, active, subtitle }) {
   return html`
-    <div class=${'orch-pipeline-row' + (active ? ' active' : '')} onClick=${onClick}>
-      <span class=${'orch-pipeline-glyph ' + glyphCls}>${glyph}</span>
-      <span class="orch-pipeline-label-text">${label}</span>
-      <span class="orch-pipeline-count">${count}</span>
-      ${actions ? html`<span class="orch-pipeline-actions">${actions}</span>` : null}
+    <div>
+      <div class=${'orch-pipeline-row' + (active ? ' active' : '')} onClick=${onClick}>
+        <span class=${'orch-pipeline-glyph ' + glyphCls}>${glyph}</span>
+        <span class="orch-pipeline-label-text">${label}</span>
+        <span class="orch-pipeline-count">${count}</span>
+        ${actions ? html`<span class="orch-pipeline-actions">${actions}</span>` : null}
+      </div>
+      ${subtitle ? html`<div class="orch-pipeline-rejection" title=${subtitle}>${subtitle}</div>` : null}
     </div>
   `;
 }
@@ -222,6 +225,7 @@ function PipelineCard() {
           active=${s.storyId === attachedStoryId}
           onClick=${() => openTermPanel(s.storyId, s.storyId)}
           actions=${actions}
+          subtitle=${s.rejection ? 'Rejected: ' + s.rejection.reason : null}
         />
       `;
     });
