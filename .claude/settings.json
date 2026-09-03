@@ -1,5 +1,11 @@
 {
-  "$comment": "Project-level Claude Code settings. Checked in. Hooks: (1) PostToolUse auto-syncs rcode/bin → .rcode/bin (#470), (2) PreToolUse blocks unregistered phase writes (#475), (3) UserPromptSubmit prompt-router nudge (#892), (4) SessionStart greeter (#947).",
+  "$comment": "Project-level Claude Code settings. Checked in. Hooks: (1) PostToolUse auto-syncs rcode/bin → .rcode/bin (#470), (2) PreToolUse blocks unregistered phase writes (#475), (3) UserPromptSubmit prompt-router nudge (#892), (4) SessionStart greeter (#947). attribution: enforces this repo's CLAUDE.md/AGENTS.md 'no AI attribution in commits or PRs' rule at the settings level, not just as text instructions a session can be told to override.",
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "includeCoAuthoredBy": false,
   "hooks": {
     "PreToolUse": [
       {
