@@ -49,7 +49,7 @@
 | DSH-1 | 34 | Pending |
 | DSH-2 | 34 | Pending |
 | DSH-3 | 34 | Pending |
-| DSH-4 | 36 | Pending |
+| DSH-4 | 36 | complete|
 | DSH-5 | 36 | complete|
 | DSH-6 | 37 | Pending |
 | HIST-1 | 35 | Pending |

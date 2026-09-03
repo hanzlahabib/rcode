@@ -2,7 +2,7 @@
   "version": "1",
   "project": "rcode",
   "created": "2026-04-15T13:11:19.259Z",
-  "updated": "2026-09-02T09:17:02.275Z",
+  "updated": "2026-09-03T00:07:47.507Z",
   "current_phase": "Fix execute.md core bugs: branch-protection preflight, worktree fallback, init-JSON parsing, acceptance_criteria cleanup",
   "current_plan": 6,
   "model_profile": "balanced",
@@ -38,7 +38,7 @@
       "id": "21",
       "number": "21",
       "name": "Dashboard Data Pipeline",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -803,7 +803,7 @@
       "id": "34",
       "number": "34",
       "name": "Status Summary Bar with Multi-Attribute Filtering",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -864,7 +864,7 @@
       "id": "35",
       "number": "35",
       "name": "Session History Panel with Live/Persisted Dedup-Merge",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -926,7 +926,7 @@
       "id": "36",
       "number": "36",
       "name": "Command Palette and Sidebar Health Badges",
-      "status": "planned",
+      "status": "complete",
       "started": null,
       "completed": null,
       "sprints": [
@@ -934,7 +934,7 @@
           "id": "36.1",
           "number": 1,
           "goal": "Add an Archon-style Cmd+K command palette to the Majlis dashboard: a keyboard-triggered",
-          "status": "planned",
+          "status": "completed",
           "stories": [
             {
               "id": "36-1.1",
@@ -957,13 +957,15 @@
               "status": "planned"
             }
           ],
-          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-1-SPRINT.md"
+          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-1-SPRINT.md",
+          "completed_at": "2026-09-03T00:07:12.842Z",
+          "velocity_actual": 0
         },
         {
           "id": "36.2",
           "number": 2,
           "goal": "Add live health badges to the dashboard sidebar: one showing the count of running",
-          "status": "planned",
+          "status": "completed",
           "stories": [
             {
               "id": "36-2.1",
@@ -976,19 +978,22 @@
               "status": "planned"
             }
           ],
-          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-2-SPRINT.md"
+          "file": ".planning/phases/36-command-palette-and-sidebar-health-badges/36-2-SPRINT.md",
+          "completed_at": "2026-09-03T00:07:14.671Z",
+          "velocity_actual": 0
         }
       ],
       "goal": "Add a searchable, categorized Cmd+K-style command palette that can find and",
       "plan_count": 2,
-      "status_updated": "2026-05-16T12:26:35.211Z",
-      "plans": 2
+      "status_updated": "2026-09-03T00:07:02.865Z",
+      "plans": 2,
+      "completed_at": "2026-09-03"
     },
     {
       "id": "37",
       "number": "37",
       "name": "Phase Dependency Graph and Structured Rejection Dialogs",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -1114,7 +1119,7 @@
       "id": "39",
       "number": "39",
       "name": "SEO Module: bundle top-notch SEO skills as a native rcode module",
-      "status": "planned",
+      "status": "in_progress",
       "started": null,
       "completed": null,
       "sprints": [
@@ -1435,12 +1440,22 @@
   "workstreams": [],
   "active_workstream": null,
   "last_session": "2026-05-16T06:27:35.015Z",
-  "current_sprint": "47.1",
+  "current_sprint": null,
   "velocity_history": [
     {
       "sprint": "04.1",
       "points": 15,
       "completed_at": "2026-04-17T05:35:16.056Z"
+    },
+    {
+      "sprint": "36.1",
+      "points": 0,
+      "completed_at": "2026-09-03T00:07:12.842Z"
+    },
+    {
+      "sprint": "36.2",
+      "points": 0,
+      "completed_at": "2026-09-03T00:07:14.671Z"
     }
   ],
   "sprints": [
