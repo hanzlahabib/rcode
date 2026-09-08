@@ -4,6 +4,16 @@ Referenced from [SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills
 
 ---
 
+## Contents
+- Why this matters
+- Known crawler inventory (2026) (OpenAI, Anthropic, Google, Perplexity, Common Crawl (downstream training data for many LLMs), Other 2026 notable)
+- Recommended robots.txt patterns (Pattern 1 — Default-open (maximize GEO visibility, accept training), Pattern 2 — Default-closed (training opt-out, retrieval in), Pattern 3 — Section-specific (e.g., allow blog, block pricing))
+- Legal layer beyond robots.txt (EU DSM Directive Art 4(3) — TDM reservation, EU AI Act Art 53(1)(c) — GPAI provider obligations, CCPA — 2026 California extension, Post-training content removal, Enforcement timeline summary)
+- Diagnostic signals during a technical audit
+- Cloudflare-specific (2026)
+- Handoff addition
+- See also
+
 ## Why this matters
 
 AI engines (ChatGPT Search, Claude Search, Perplexity, Google AI Overview, Gemini) crawl the web to populate training data AND real-time answer retrieval. Blocking them can:

@@ -4,6 +4,17 @@ Detailed output templates for technical-seo-checker steps 1-9. Referenced from [
 
 ---
 
+## Contents
+- Step 1: Audit Crawlability
+- Step 2: Audit Indexability
+- Step 3: Audit Site Speed & Core Web Vitals
+- Step 4: Audit Mobile-Friendliness
+- Step 5: Audit Security & HTTPS
+- Step 6: Audit URL Structure
+- Step 7: Audit Structured Data
+- Step 8: Audit International SEO (if applicable)
+- Step 9: Generate Technical Audit Summary
+
 ## Step 1: Audit Crawlability
 
 ```markdown

@@ -4,6 +4,15 @@ Referenced from [SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills
 
 ---
 
+## Contents
+- How to use this reference
+- Shopify (Diagnostic signals, Fix locations, Red-flag Shopify defaults)
+- WooCommerce (WordPress) (Diagnostic signals, Fix locations, Red-flag WooCommerce defaults)
+- Headless (Next.js / Remix / Astro / Gatsby) backed by CMS (Diagnostic signals, Fix locations, Red-flag Headless defaults)
+- BigCommerce (Diagnostic signals, Fix locations)
+- Magento 2 (Adobe Commerce) (Diagnostic signals, Fix locations)
+- Universal e-commerce checklist
+
 ## How to use this reference
 
 1. Identify the platform from signals: HTML comments, JS bundles, cookies, URL patterns, or asking the user.

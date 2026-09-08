@@ -2,6 +2,20 @@
 
 Complete reference for creating, testing, and troubleshooting robots.txt files.
 
+## Contents
+- Syntax Guide (Basic Structure)
+- Core Directives (User-agent, Disallow, Allow, Sitemap, Crawl-delay)
+- Common Configurations (1. Allow All Bots (Default), 2. Block All Bots, 3. Block Specific Directories, 4. Block All AI Crawlers, 5. Allow Search Engines, Block Everything Else, 6. Block URL Parameters, 7. Block File Types, 8. E-commerce Configuration, 9. WordPress Configuration, 10. Shopify Configuration)
+- Platform-Specific Templates (Wix, Squarespace, Webflow, Drupal)
+- Testing and Validation (Google Search Console Robots.txt Tester, Manual Testing, Common Testing Scenarios)
+- Common Mistakes and Fixes (Mistake 1: Blocking CSS/JS Files, Mistake 2: Using Relative URLs for Sitemap, Mistake 3: Spaces in Directives, Mistake 4: Forgetting Trailing Slash, Mistake 5: Blocking Entire Site Accidentally, Mistake 6: Not Blocking Development Environments, Mistake 7: Case Sensitivity Errors)
+- Advanced Patterns (Wildcard Examples, Multiple Sitemaps, Bot-Specific Rules)
+- Robots.txt vs Meta Robots vs X-Robots-Tag (When to use each:)
+- Monitoring and Maintenance (Regular Checks, Search Console Monitoring)
+- Robots.txt Checklist
+- Emergency Fixes (Accidentally Blocked Entire Site, Blocked CSS/JS Files, Staging Site Indexed)
+- Resources and Tools
+
 ## Syntax Guide
 
 ### Basic Structure

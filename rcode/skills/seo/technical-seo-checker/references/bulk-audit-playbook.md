@@ -4,6 +4,13 @@ Referenced from [SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills
 
 ---
 
+## Contents
+- When to use bulk mode
+- Inputs accepted
+- Workflow (Step 1 — Inventory + group, Step 2 — Sample deep, summarize shallow, Step 3 — Portfolio-level prioritization, Step 4 — Deliver)
+- Minimum viable bulk input
+- E-commerce pattern reference
+
 ## When to use bulk mode
 
 - User reports "X of Y pages are not indexed" (ratio problem)

@@ -4,6 +4,10 @@ Referenced from [SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills
 
 ---
 
+## Contents
+- Worked Example
+- Technical SEO Checklist
+
 ## Worked Example
 
 **User**: "Check the technical SEO of cloudhosting.com"

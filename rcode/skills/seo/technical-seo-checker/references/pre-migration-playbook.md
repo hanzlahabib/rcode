@@ -4,6 +4,12 @@ Referenced from [SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills
 
 ---
 
+## Contents
+- When to use
+- The 6 pre-migration stages (Stage 1 — Freeze current state (baseline snapshot), Stage 2 — Risk map, Stage 3 — Redirect map, Stage 4 — Staging QA, Stage 5 — Cutover day checklist, Stage 6 — Post-migration diff (T+1, T+7, T+30))
+- Handoff
+- Red-flag patterns (STOP — do not ship until fixed)
+
 ## When to use
 
 - WordPress → Headless (Next.js, Astro, Remix, Gatsby, etc.)

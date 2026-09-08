@@ -2,6 +2,22 @@
 
 SEO-relevant HTTP status codes, their implications, and how to diagnose and fix issues.
 
+## Contents
+- Status Code Categories
+- 2xx Success Codes (200 OK, 204 No Content)
+- 3xx Redirection Codes (301 Moved Permanently, 302 Found (Temporary Redirect), 303 See Other, 307 Temporary Redirect, 308 Permanent Redirect, Redirect Chain Issues, Redirect Loops)
+- 4xx Client Error Codes (404 Not Found, 410 Gone, 403 Forbidden, 401 Unauthorized, 429 Too Many Requests)
+- 5xx Server Error Codes (500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout)
+- Status Code Decision Flowchart (Content Moved Permanently?, Content Moved Temporarily?, Content Deleted with No Replacement?, Content Exists at This URL?, Need Authentication?, Access Forbidden?, Server Error?)
+- Diagnosing Status Code Issues (Tools, Common Diagnostic Scenarios, "Page Won't Index", "Page Disappeared from Results", "Traffic Dropped After Migration")
+- Status Codes and Crawl Budget (Impact on Crawl Budget)
+- SEO Status Code Best Practices (For Migrations, For Deleted Content, For Maintenance, For Performance)
+- Status Code Monitoring (Key Metrics to Track, Setting Up Alerts)
+- Quick Reference Table
+- Status Code Testing Checklist
+- Technical SEO Severity Framework (Issue Classification, Technical Debt Prioritization Matrix)
+- Core Web Vitals Optimization Quick Reference (LCP (Largest Contentful Paint) Optimization, CLS (Cumulative Layout Shift) Optimization, INP (Interaction to Next Paint) Optimization)
+
 ## Status Code Categories
 
 - **2xx**: Success - Request succeeded
