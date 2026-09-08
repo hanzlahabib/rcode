@@ -14,6 +14,7 @@ commands:
   - seo-content-writer
   - seo-site-builder
   - rank-and-rent-local-seo
+  - seo-aeo-geo
 references:
   # claude-seo plugin agents — NOT bundled. Install separately: npx @hanzlaa/claude-seo install
   # Routing rules in do.md reference: seo-cluster, seo-programmatic, seo-schema, seo-geo,

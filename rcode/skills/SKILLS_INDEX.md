@@ -1,6 +1,6 @@
 # rcode — Skills Index
 
-All 87 skills in rcode, organized by category: 23 agent skills, 38 action skills, 26 core skills, plus 2 shared modules.
+All 91 skills in rcode, organized by category: 23 agent skills, 38 action skills, 26 core skills, plus 3 shared modules (SEO, plus the new dev-practices module).
 
 ## Agent Skills (23)
 
@@ -140,7 +140,7 @@ When a user picks capability `DS`, Claude invokes the `rcode-dev-story` skill.
 
 ---
 
-## SEO Module (8)
+## SEO Module (9)
 
 Full-spectrum SEO skills — content factory, growth orchestrator, audits, writer, site builder, local SEO, on-page and technical auditors.
 
@@ -154,6 +154,19 @@ Full-spectrum SEO skills — content factory, growth orchestrator, audits, write
 | **seo-content-writer** | `rcode/skills/seo/seo-content-writer/` | SEO-optimized content writing with natural keyword integration and E-E-A-T quality signals |
 | **seo-site-builder** | `rcode/skills/seo/seo-site-builder/` | End-to-end affiliate content site builder: niche discovery, keyword analysis, competitor intel, and site build |
 | **rank-and-rent-local-seo** | `rcode/skills/seo/rank-and-rent-local-seo/` | Rank-and-rent local SEO business playbook: niche selection, long-tail targeting, multi-city expansion |
+| **seo-aeo-geo** | `rcode/skills/seo/seo-aeo-geo/` | Answer-engine and generative-engine optimization: structuring content for citation in AI Overviews, ChatGPT, and Perplexity answers |
+
+---
+
+## Dev Practices Module (3)
+
+Framework and engineering best-practices skills — Next.js, React, and LLM/agent engineering.
+
+| Skill | Path | Description |
+|---|---|---|
+| **nextjs-best-practices** | `rcode/skills/dev-practices/nextjs-best-practices/` | Next.js App Router patterns: Server/Client Components, data-fetching and caching, middleware, performance pitfalls |
+| **react-best-practices** | `rcode/skills/dev-practices/react-best-practices/` | React component architecture, hooks discipline, state boundaries, and common anti-patterns |
+| **llm-engineering-best-practices** | `rcode/skills/dev-practices/llm-engineering-best-practices/` | Prompt design, evals, RAG/context design, and tool-calling patterns for building with LLMs |
 
 ---
 

@@ -1,0 +1,12 @@
+name: dev-practices
+version: "1.0"
+description: "Framework and engineering best-practices skills — Next.js, React, and LLM/agent engineering"
+requires:
+  - core
+agents: []
+workflows: []
+commands:
+  - nextjs-best-practices
+  - react-best-practices
+  - llm-engineering-best-practices
+references: []
