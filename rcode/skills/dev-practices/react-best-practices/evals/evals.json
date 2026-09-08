@@ -1,0 +1,71 @@
+{
+  "skill_name": "react-best-practices",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you review this component? It fetches a list of orders from an API, lets the user filter them by status, and shows a modal with order details when a row is clicked. It's about 250 lines.",
+      "expected_output": "Should identify that fetch, filter, and modal are three separate responsibilities and recommend splitting them rather than judging the component solely by its line count. Should check whether the filtered list is produced via a useEffect+setState pair and flag it, recommending the filter be computed during render (or memoized) instead of synced through an effect. Should check the list's key prop for stability given the list can be filtered. Should check accessibility of the modal (focus management, Escape to close) and of the clickable rows (semantic button/link vs. div onClick). Output should follow the Findings/Priority format with each finding categorized (Architecture, Hooks, State, Accessibility, etc.).",
+      "assertions": [
+        "Identifies fetch/filter/modal as three responsibilities, not one",
+        "Does not fixate on line count as the primary problem",
+        "Flags useEffect+setState used to derive filtered data instead of computing during render",
+        "Checks list key stability under filtering",
+        "Checks modal accessibility (focus management, Escape)",
+        "Checks clickable rows use semantic elements, not div onClick",
+        "Output uses Findings/Priority format with categorized issues"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Should this dropdown's open/closed boolean live in our Redux store or just be local useState? We already use Redux elsewhere in the app.",
+      "expected_output": "Should apply the 'place state at the lowest level that satisfies every consumer' criterion rather than defaulting to Redux because it's already present in the codebase. Should ask or reason about whether any component outside the dropdown and its children needs to read or control that same value. Should recommend local useState unless a concrete cross-component need is identified (e.g., a 'close all dropdowns' action elsewhere). Should state the reasoning explicitly rather than giving a noncommittal 'it depends' answer with no recommendation.",
+      "assertions": [
+        "Does not default to Redux just because it exists elsewhere in the app",
+        "Applies lowest-level-that-satisfies-every-consumer reasoning",
+        "Recommends local useState absent a demonstrated cross-component need",
+        "Gives a direct recommendation, not just a list of pros/cons",
+        "States the specific criterion used, not a generic 'it depends'"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "This component fetches data with useEffect on mount and it's causing a request waterfall with its parent. Should I switch to getServerSideProps or make it a Server Component instead?",
+      "expected_output": "Should recognize that the core question (getServerSideProps vs. Server Component vs. App Router data-fetching strategy) is a Next.js-specific rendering-strategy decision and defer that part to nextjs-best-practices rather than answering it. May still note, as a framework-agnostic observation, that effect-based fetch-on-mount is a common cause of request waterfalls and duplicated loading/error state. Should NOT attempt to give a full recommendation on getServerSideProps vs. Server Components from this skill alone.",
+      "assertions": [
+        "Recognizes the getServerSideProps/Server Component question as Next.js-specific",
+        "Defers the rendering-strategy recommendation to nextjs-best-practices",
+        "Does not attempt to fully resolve the Next.js data-fetching decision itself",
+        "May note the general React observation about effect-based fetch causing waterfalls",
+        "Does not conflate framework-agnostic React guidance with Next.js-specific guidance"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "My setItems(prev => { deleteFromServer(prev[0].id); return prev.slice(1); }) call seems to delete two items from the server sometimes instead of one. Any idea why?",
+      "expected_output": "Should recognize this as Hazard 2 (side effect inside a state updater) from correctness-hazard-scan.md rather than re-deriving the mechanism from scratch. Should give a concise diagnosis (React can invoke the updater function more than once for a single state change under Strict Mode/concurrent rendering, so deleteFromServer runs more than once) and a concise fix (move deleteFromServer out of the updater into the event handler; the updater should only return the next array). Should point to rcode/agents/rules/executor/correctness-hazard-scan.md for the authoritative deep explanation rather than reproducing a long explanation of Strict Mode/concurrent rendering internals inline.",
+      "assertions": [
+        "Identifies this as the state-updater-purity bug class (Hazard 2)",
+        "Diagnoses that the updater can run more than once, causing the double delete",
+        "Recommends moving the side effect out of the updater into the event handler",
+        "References correctness-hazard-scan.md as the authoritative source",
+        "Does not reproduce a lengthy from-scratch explanation of Strict Mode internals"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "We have a 4-component app: a header, a search box, a results list, and a footer. Someone on the team wants to restructure everything into a features/ folder with api/, components/, hooks/, stores/ subfolders per feature before we add anything else. Good idea?",
+      "expected_output": "Should recognize that feature-folder restructuring is scaling advice for growing codebases, not a default recommendation for a 4-component app, and should advise against the premature reorganization. Should explain that the overhead of the unidirectional feature-folder structure isn't earned yet at this size, and that simple type-based grouping (components/, hooks/, utils/) is adequate until the app grows enough that cross-cutting changes start being hard to trace.",
+      "assertions": [
+        "Advises against premature feature-folder reorganization at this small scale",
+        "Explains that feature folders are for growing codebases, not a default from day one",
+        "Recommends simple type-based grouping remains adequate at this size",
+        "Does not recommend the reorganization just because it's a 'best practice' in the abstract"
+      ],
+      "files": []
+    }
+  ]
+}
