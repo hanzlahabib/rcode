@@ -77,6 +77,36 @@ the docs for exactly how "concurrent calls to the same mutation" are
 handled before relying on per-call callbacks — do not assume the naive
 "each call gets its own independent completion" model.
 
+## Hazard 4 — `useEffect` dependency arrays on TanStack Query data (structural sharing)
+
+**Pattern to grep for:** a `useEffect` (or any reference-equality check) whose
+dependency array includes a field pulled off a TanStack Query `data` object
+(`result.data?.someField`), used to detect "a new response arrived."
+
+**Why it matters:** TanStack Query's default `structuralSharing: true`
+deep-compares old vs. new response data on every refetch and REUSES the old
+object reference for any unchanged sub-tree — even when the refetch is a
+genuinely new, successful network response. Real case from a search-UI
+redesign, surfaced in PR review: a value was captured via
+`useEffect(() => setAiOverview(page1AiOverview), [page1AiOverview])` where
+`page1AiOverview = result.data?.aiOverview`. Clearing a search and
+resubmitting the identical query produced a fresh HTTP response, but since
+the synthesized summary text was unchanged, structural sharing reused the
+OLD `aiOverview` object reference inside the new `data` — the effect's
+dependency never changed by `Object.is`, so it never re-fired, and the UI
+value stayed stuck at whatever a prior reset had set it to.
+
+**Fix pattern:** key the effect on a field that's guaranteed unique per
+request (a request/query id, a timestamp, a monotonic counter from the
+server) — NOT on the value you're actually trying to capture, and NOT on
+the response object as a whole. Do this by WIDENING the existing dependency
+array to include that id, not by adding new `useState`/`useRef` to manually
+track "have I already handled this response" — a dependency array already
+does that comparison for you; re-implementing it in a ref is unnecessary
+complexity that also tends to be wrong in a subtler way (a redundant
+`capturedQueryId` ref was tried and reverted in the same PR once the id was
+folded into the dependency array).
+
 ---
 
 ## What to do if a hazard is found
@@ -90,7 +120,7 @@ that is the exact failure mode this file exists to close.
 Add to the SUMMARY.md Self-Check block:
 
 ```
-- [ ] Correctness hazard scan run (concurrency / state-updater purity / async-library contract) — N/A or PASSED
+- [ ] Correctness hazard scan run (concurrency / state-updater purity / async-library contract / query structural-sharing) — N/A or PASSED
 ```
 
 If a hazard was found and fixed, note it under deviations with the

@@ -40,6 +40,7 @@ Before finalizing SUMMARY.md, verify plan execution was complete and correct.
 - [ ] No read-modify-write against shared state without a transaction/atomic op/lock
 - [ ] No side effects inside React state updater/reducer functions
 - [ ] No reliance on an async library's per-call callback firing without checking its actual concurrent-call contract
+- [ ] No `useEffect`/reference-equality check keyed on a TanStack Query `data` field without accounting for structural sharing
 
 ### Success Criteria
 - [ ] Original plan `<success_criteria>` met
