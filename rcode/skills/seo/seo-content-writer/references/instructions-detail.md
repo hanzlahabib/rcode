@@ -4,6 +4,12 @@ Full step-by-step workflow, templates, and content-type quick starts for the SEO
 
 ---
 
+## Contents
+- Step-by-Step Workflow (1. Gather Requirements, 2. Load CORE-EEAT Quality Constraints, 3. Research and Plan, 4. Create Optimized Title, 5. Write Meta Description, 6. Structure Content and Write, 7. Apply On-Page SEO Best Practices, 8. Add Internal/External Links, 9. Final SEO Review and CORE-EEAT Self-Check)
+- Issue Classification
+- Content Type Templates (How-To Guide, Comparison Article, Listicle, Ultimate Guide)
+- Tips for Success
+
 ## Step-by-Step Workflow
 
 ### 1. Gather Requirements

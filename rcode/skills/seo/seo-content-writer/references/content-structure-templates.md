@@ -2,6 +2,16 @@
 
 Markdown templates for common SEO content types. Customize section headings and content while maintaining the structural framework.
 
+## Contents
+- Blog Post (Informational)
+- Comparison Article ("[A] vs [B]")
+- Listicle ("Top N [Items]")
+- How-To Guide (Step-by-Step)
+- Product Review
+- Pillar Page (Comprehensive Guide)
+- FAQ Page
+- Implementation Checklist
+
 ## Blog Post (Informational)
 
 **Target word count**: 1,200-1,800 words

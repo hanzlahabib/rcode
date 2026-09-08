@@ -2,6 +2,23 @@
 
 Detailed scoring criteria for each of the 8 audit sections. Use this rubric to ensure consistent, objective scoring across audits.
 
+## Contents
+- How to Use This Rubric
+- Section 1: Title Tag (Weight: 15%, Max: 15 points) (Scoring Criteria, Calibration Examples)
+- Section 2: Meta Description (Weight: 5%, Max: 5 points) (Scoring Criteria, Calibration Examples)
+- Section 3: Header Structure (Weight: 10%, Max: 10 points) (Scoring Criteria, Calibration Examples)
+- Section 4: Content Quality (Weight: 25%, Max: 25 points) (Scoring Criteria, Content Length Benchmarks (for "Sufficient length" criterion), Calibration Examples)
+- Section 5: Keyword Optimization (Weight: 15%, Max: 15 points) (Scoring Criteria, Keyword Density Guidelines, Calibration Examples)
+- Section 6: Internal/External Links (Weight: 10%, Max: 10 points) (Scoring Criteria, Internal Link Count Guidelines, Calibration Examples)
+- Section 7: Image Optimization (Weight: 10%, Max: 10 points) (Scoring Criteria, Image Size Guidelines, Calibration Examples)
+- Section 8: Page-Level Technical (Weight: 10%, Max: 10 points) (Scoring Criteria, URL Quality Guidelines, Calibration Examples)
+- Overall Score Calculation (Formula, Example Calculation, Overall Score Interpretation)
+- Calibration Guidance (Avoiding Common Scoring Errors, When to Adjust Weights)
+- Scoring Rubric (Section Weight Distribution, Scoring Scale per Factor, Scoring Conversion Formula)
+- Common Issue Resolution Playbook (Title Tag Issues, Meta Description Issues, Header Issues, Content Issues)
+- Industry Benchmark Data (Content Length Benchmarks by Query Type, Page Speed Benchmarks)
+- Accessibility requirements (WCAG 2.2 AA)
+
 ## How to Use This Rubric
 
 1. Score each section independently using the criteria below

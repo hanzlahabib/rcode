@@ -4,6 +4,13 @@ Referenced from [SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills
 
 ---
 
+## Contents
+- When to use bulk mode
+- Inputs accepted
+- Workflow (Step 1 — Classify URLs into clusters, Step 2 — Sample 2-3 URLs per cluster, Step 3 — Extrapolate + confirm, Step 4 — Portfolio priority, Step 5 — Deliver bulk handoff)
+- Template suggestions (common bulk outputs)
+- Minimum viable bulk input
+
 ## When to use bulk mode
 
 - User wants to audit a content category (all blog posts, all product pages)

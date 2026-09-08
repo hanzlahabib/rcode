@@ -4,6 +4,10 @@ Referenced from [SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills
 
 ---
 
+## Contents
+- Worked Example
+- Audit Checklists by Page Type (Blog Post Checklist, Product Page Checklist, Landing Page Checklist)
+
 ## Worked Example
 
 **User**: "Audit the on-page SEO of https://example.com/best-noise-cancelling-headphones targeting 'best noise cancelling headphones'"

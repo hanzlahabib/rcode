@@ -2,6 +2,25 @@
 
 Proven title structures that drive clicks and rankings. All formulas target 50-60 characters for optimal SERP display.
 
+## Contents
+- Numbered List Formulas (Examples)
+- How-To Formulas
+- Question Formulas
+- Comparison Formulas
+- Ultimate Guide Formulas
+- Power Word Formulas (Power Word Categories)
+- Before/After Formulas
+- Mistake/Problem Formulas
+- Checklist Formulas
+- Curiosity Gap Formulas
+- Benefit-Driven Formulas
+- Authority/Credibility Formulas
+- CTR Optimization Patterns (Elements That Increase CTR, Elements That Decrease CTR)
+- Title Length Guidelines (Google SERP, Social Media, Email Subject Lines)
+- Before/After Title Examples (Generic → Optimized)
+- Title Writing Checklist
+- Testing and Optimization (A/B Test These Variables, Track These Metrics, When to Rewrite Titles)
+
 ## Numbered List Formulas
 
 **Pattern**: [Number] [Adjective] [Topic] [Qualifier/Benefit]

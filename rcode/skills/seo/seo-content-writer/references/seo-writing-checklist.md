@@ -4,6 +4,12 @@ On-page SEO checklist, content writing template, and featured snippet optimizati
 
 ---
 
+## Contents
+- On-Page SEO Checklist
+- Content Writing Template
+- Featured Snippet Optimization
+- Example: Full SEO Article
+
 ## On-Page SEO Checklist
 
 **Keyword Placement**:

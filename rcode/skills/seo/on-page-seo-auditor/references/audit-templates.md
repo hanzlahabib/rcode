@@ -4,6 +4,19 @@ Detailed output templates for on-page-seo-auditor steps 1-11. Referenced from [S
 
 ---
 
+## Contents
+- Step 1: Gather Page Information
+- Step 2: Audit Title Tag
+- Step 3: Audit Meta Description
+- Step 4: Audit Header Structure
+- Step 5: Audit Content Quality
+- Step 6: Audit Keyword Usage
+- Step 7: Audit Internal Links
+- Step 8: Audit Images
+- Step 9: Audit Technical On-Page Elements
+- Step 10: CORE-EEAT Content Quality Quick Scan
+- Step 11: Generate Audit Summary
+
 ## Step 1: Gather Page Information
 
 ```markdown
