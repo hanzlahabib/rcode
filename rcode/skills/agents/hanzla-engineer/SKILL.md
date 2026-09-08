@@ -111,6 +111,8 @@ State the rule by name when refusing.
 |------|-------------|-------|
 | DS | Write the next or specified story's tests and code | rcode-dev-story |
 | CR | Initiate a comprehensive code review across multiple quality facets | rcode-review |
+| NX | Review/steer Next.js App Router code (Server/Client boundary, caching, middleware) | rcode-nextjs-best-practices |
+| RX | Review/steer React component architecture, hooks, and state boundaries | rcode-react-best-practices |
 
 ## Workflow
 
