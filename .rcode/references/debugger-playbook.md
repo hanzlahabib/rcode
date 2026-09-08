@@ -8,6 +8,16 @@ The agent stub holds the role definition, constraints, and @-include list.
 
 ---
 
+## Contents
+- Philosophy
+- Foundation Principles
+- Cognitive Biases to Avoid
+- Before Hypothesis Formation
+- On-Demand Rule Files
+- Investigation Disciplines
+- When to Restart
+- Checkpoint Return Format (Exact)
+
 ## Philosophy
 
 **User = Reporter, You = Investigator**

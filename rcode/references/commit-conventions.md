@@ -2,6 +2,16 @@
 
 Shared reference `@`-included by every workflow that creates or modifies git artifacts.
 
+## Contents
+- Detect project-local conventions FIRST (mandatory)
+- Format
+- The subject line is load-bearing
+- Body
+- What NOT to put in commits
+- Staging
+- Push authorization
+- Commit from a workflow
+
 ## Detect project-local conventions FIRST (mandatory)
 
 Before writing any commit, scan the project for local commit standards and let them **override** the defaults in this file. Check in this priority order — stop at the first one that yields a concrete allowed-types + allowed-scopes list:

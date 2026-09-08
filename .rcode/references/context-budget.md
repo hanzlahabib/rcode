@@ -2,6 +2,12 @@
 
 Defines 4 degradation tiers for token usage and how workflows should adapt behavior based on remaining context.
 
+## Contents
+- Configuration
+- Degradation Tiers (PEAK (0–30% used), GOOD (30–60% used), DEGRADING (60–80% used), POOR (80%+ used))
+- How Workflows Check Budget
+- Token Estimation Rules
+
 ## Configuration
 
 Add to `config.yaml`:

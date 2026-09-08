@@ -4,6 +4,15 @@ Use this checklist when **modifying an existing module, function, or component**
 
 This prevents breaking changes that sneak into production.
 
+## Contents
+- Baseline Understanding
+- Regression Risk Assessment
+- Rollback Planning
+- Testing Strategy
+- Change Scope
+- Template Checklist
+- Red Flags — STOP Before Committing
+
 ## Baseline Understanding
 
 - [ ] **Read existing tests first** — What behavior is being tested?

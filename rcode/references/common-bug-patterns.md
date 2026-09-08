@@ -4,6 +4,16 @@ A reference of 15+ patterns that appear repeatedly across codebases. Each patter
 
 ---
 
+## Contents
+- ASYNC PATTERNS (Pattern 1: Race Condition in Concurrent Operations, Pattern 2: Missing await in Async Chain, Pattern 3: Unhandled Promise Rejection)
+- STATE MUTATION PATTERNS (Pattern 4: Shared Reference Bug, Pattern 5: Closure Over Loop Variable, Pattern 6: Mutating Object Used as Key)
+- IMPORT & DEPENDENCY PATTERNS (Pattern 7: Circular Import, Pattern 8: Dependency Version Mismatch)
+- TYPE COERCION PATTERNS (Pattern 9: JavaScript == vs === Pitfall, Pattern 10: undefined vs null Inconsistency, Pattern 11: Array.includes() on Falsy Values)
+- ENVIRONMENT PATTERNS (Pattern 12: Environment Variable Not Loaded, Pattern 13: Hardcoded Path Assumptions)
+- TIMING & LIFECYCLE PATTERNS (Pattern 14: Resource Leaked in Error Path, Pattern 15: Event Listener Not Removed)
+- PATTERN SUMMARY TABLE
+- How to Use This Catalogue
+
 ## ASYNC PATTERNS
 
 ### Pattern 1: Race Condition in Concurrent Operations

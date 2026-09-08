@@ -6,6 +6,14 @@ This banner format is mandatory for every `Task(subagent_type=...)` invocation i
 
 ---
 
+## Contents
+- Persona registry
+- Banner format — DISPATCH (before spawn)
+- Banner format — RETURNED (after spawn)
+- Follow-up framing
+- Concurrency: parallel dispatches
+- When to skip the banner
+
 ## Persona registry
 
 Each agent has a persona name and a one-line role tag used in the banner. Pull from `rcode/team.yaml` (`name` + `role` fields). For utility agents not in team.yaml, use the fallback table below.

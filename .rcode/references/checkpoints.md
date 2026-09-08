@@ -11,6 +11,17 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 5. **Auto-mode bypasses verification/decision checkpoints** — When `workflow._auto_chain_active` or `workflow.auto_advance` is true in config: human-verify auto-approves, decision auto-selects first option, human-action still stops (auth gates cannot be automated)
 </overview>
 
+## Contents
+- checkpoint:human-verify (Most Common - 90%)
+- checkpoint:decision (9%)
+- checkpoint:human-action (1% - Rare)
+- Service CLI Reference
+- Environment Variable Automation
+- Dev Server Automation
+- CLI Installation Handling
+- Pre-Checkpoint Automation Failures
+- Automatable Quick Reference (Example 1: Database Setup (No Checkpoint Needed), Example 2: Full Auth Flow (Single checkpoint at end), ❌ BAD: Asking user to start dev server, ✅ GOOD: the agent starts server, user visits, ❌ BAD: Asking human to deploy / ✅ GOOD: the agent automates, ❌ BAD: Too many checkpoints / ✅ GOOD: Single checkpoint, ❌ BAD: Vague verification / ✅ GOOD: Specific steps, ❌ BAD: Asking user to run CLI commands, ❌ BAD: Asking user to copy values between services)
+
 <checkpoint_types>
 
 <type name="human-verify">

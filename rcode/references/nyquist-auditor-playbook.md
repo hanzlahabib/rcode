@@ -78,6 +78,11 @@ Return one of three structured formats below.
 
 </execution_flow>
 
+## Contents
+- GAPS FILLED
+- PARTIAL
+- ESCALATE
+
 <structured_returns>
 
 ## GAPS FILLED

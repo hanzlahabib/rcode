@@ -4,6 +4,15 @@ When exploring an unfamiliar domain, ask structured questions to rapidly build a
 
 ---
 
+## Contents
+- Technical Probes (Stack & Constraints, Scale & Performance, Deployment & Operations, Dependencies & Integrations)
+- Product Probes (Users & Jobs to Be Done, Success & Metrics, Constraints & Competition, Business Context, Roles & Permissions (if project/phase has >1 user role))
+- Execution Probes (Timeline & Resources, Knowledge & Unknowns, Handoff & Ownership, Decision Authority)
+- How to Use Domain Probes (In Conversation, In Written Briefs, Red Flags (Answer These First))
+- Examples by Scenario (Scenario: Adding a Search Feature, Scenario: Migrating to a New Framework, Scenario: Performance Crisis)
+- Probe Patterns to Avoid
+- Recovery: User Doesn't Know the Answer
+
 ## Technical Probes
 
 Ask these when exploring a tech stack, architecture, or infrastructure question.

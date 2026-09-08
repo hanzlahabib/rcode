@@ -6,6 +6,14 @@ All gate prompts reference `.rcode/references/no-unauthorized-git-ops.md` — ne
 
 ---
 
+## Contents
+- Template: Safety Gate
+- Template: Decision Gate
+- Template: Irreversible-Action Gate
+- Approval / Revise / Abort Pattern
+- Gate Placement Rules
+- No Unauthorized Git Operations
+
 ## Template: Safety Gate
 
 Use before executing **irreversible or high-impact actions** (deletes, force-pushes, breaking changes).

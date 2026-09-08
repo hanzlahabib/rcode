@@ -9,6 +9,14 @@ Update this file whenever you add a new reference or change which agents load it
 
 ---
 
+## Contents
+- Cluster References (added phases 22-23)
+- Universal References (loaded by most agents)
+- Workflow References
+- Specialist References
+- Persona ↔ SKILL.md Mapping (#714)
+- Size Compliance
+
 ## Cluster References (added phases 22-23)
 
 These files were extracted from heavy agents (>100L) to reduce context budget per spawn.

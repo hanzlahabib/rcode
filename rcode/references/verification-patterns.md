@@ -14,6 +14,19 @@ A file existing does not mean the feature works. Verification must check:
 Levels 1-3 can be checked programmatically. Level 4 often requires human verification.
 </core_principle>
 
+## Contents
+- Universal Stub Patterns
+- React/Next.js Components
+- API Routes (Next.js App Router / Express / etc.)
+- Database Schema (Prisma / Drizzle / SQL)
+- Custom Hooks and Utilities
+- Environment Variables and Configuration
+- Wiring Verification Patterns (Pattern: Component → API, Pattern: API → Database, Pattern: Form → Handler, Pattern: State → Render)
+- Quick Verification Checklist (Component Checklist, API Route Checklist, Schema Checklist, Hook/Utility Checklist, Wiring Checklist)
+- Automated Verification Approach
+- When to Require Human Verification
+- Pre-Checkpoint Automation
+
 <stub_detection>
 
 ## Universal Stub Patterns

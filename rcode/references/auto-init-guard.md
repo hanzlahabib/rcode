@@ -2,6 +2,10 @@
 
 Run this check at the very start of any workflow that needs project state.
 
+## Contents
+- Step: Detect project initialization (Inline init flow (when config.yaml is missing))
+- Notes
+
 ## Step: Detect project initialization
 
 ```bash

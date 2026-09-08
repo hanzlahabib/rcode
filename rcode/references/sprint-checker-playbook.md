@@ -82,6 +82,13 @@ Each dimension has pass/partial/fail criteria, remediation guidance, and output 
 
 </verification_dimensions>
 
+## Contents
+- Execution (Slim)
+- Mandatory output markers (per #440 / #445 fix)
+- On-Demand Rule Files
+- Constraints
+- The judgment pass
+
 ## Execution (Slim)
 
 1. **Load context** — Read phase SCOPE.md, CONTEXT.md (if present), RESEARCH.md, and all SPRINT.md files.

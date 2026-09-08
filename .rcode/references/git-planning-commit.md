@@ -4,6 +4,13 @@ Defines commit prefixes for planning artifacts, separate from code commits.
 
 ---
 
+## Contents
+- Overview
+- Commit Prefixes (1. `plan:` — Planning Artifacts, 2. `wip:` — Work In Progress, 3. `session:` — Session Markers, 4. `roadmap:` — Long-Term Planning)
+- Separation from Code Commits
+- Hook Integration
+- Best Practices
+
 ## Overview
 
 Planning commits are **metadata about work**, not code changes. They use special prefixes to distinguish from feature/fix commits.

@@ -4,6 +4,14 @@ Five systematic debugging models: 5 Whys, differential diagnosis, bisection, hyp
 
 ---
 
+## Contents
+- 1. Five Whys
+- 2. Differential Diagnosis
+- 3. Bisection (Binary Search)
+- 4. Hypothesis-Driven Testing
+- 5. Recent-Changes Priority
+- Integration: Multi-Model Debugging
+
 ## 1. Five Whys
 
 **When to apply:** Symptom unclear, need root cause, not just surface fix

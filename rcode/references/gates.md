@@ -2,6 +2,11 @@
 
 Defines 4 gate types used in rcode workflows to control execution flow, validate decisions, and escalate blockers.
 
+## Contents
+- Gate Types (1. Pre-Flight (Validation Before Action), 2. Revision (Iteration Loop), 3. Escalation (Decision Needed), 4. Abort (Unrecoverable))
+- State Preservation Rules
+- Iteration Cap Rule
+
 ## Gate Types
 
 ### 1. Pre-Flight (Validation Before Action)

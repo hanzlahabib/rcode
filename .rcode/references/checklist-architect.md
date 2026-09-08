@@ -4,6 +4,17 @@ Use this checklist when **making a significant technical decision** — choosing
 
 This prevents "let's just try it and see" decisions that cause rework.
 
+## Contents
+- Current State Documented
+- Real Constraint Identified
+- Options Explored (2-3 Alternatives)
+- Load-Bearing Assumptions Listed
+- Kill-Switch Defined
+- ADR Written
+- Template Checklist
+- When NOT to Use This Checklist
+- When to ALWAYS Use This Checklist
+
 ## Current State Documented
 
 - [ ] **Existing stack listed** — What tech do we currently use?

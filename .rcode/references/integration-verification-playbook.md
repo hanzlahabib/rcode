@@ -6,6 +6,14 @@ and success criteria.
 
 ---
 
+## Contents
+- Step 1: Build Export/Import Map
+- Step 2: Verify Export Usage
+- Step 3: Verify API Coverage
+- Step 4: Verify Auth Protection
+- Step 5: Verify E2E Flows (Flow: User Authentication, Flow: Data Display, Flow: Form Submission)
+- Step 6: Compile Integration Report
+
 ## Step 1: Build Export/Import Map
 
 For each phase, extract what it provides and what it should consume.

@@ -2,6 +2,19 @@
 
 Effective exploration relies on **Socratic questioning** — progressively uncovering assumptions, clarifying intent, and narrowing scope through structured dialog.
 
+## Contents
+- Question Types (Open-Ended (Exploration Phase), Closed / Clarifying (Verification Phase), Follow-Up (Depth Phase))
+- Anti-Patterns to Avoid
+- Freeform Rule
+- Socratic Conversation Structure
+- Working mode — offer it, don't read it from config
+- Stakes calibration — one probe, before anything else
+- Elicitation, not direction — the hand-back rule
+- Mandatory decision set — tone is conversational, coverage is not
+- Context Checklist
+- Recovery Patterns (User Gives Vague Answer, User Contradicts Earlier Statement, User Says "I Don't Know")
+- Tempo Rules
+
 ## Question Types
 
 ### Open-Ended (Exploration Phase)

@@ -13,6 +13,14 @@ and every hedge must name the specific thing you did not check.
 
 ---
 
+## Contents
+- Project Context Loading
+- Core Principle
+- Verification Flow (Slim)
+- Final Status Tables
+- On-Demand Rule Files
+- Success Criteria
+
 ## Project Context Loading
 
 Before verifying, discover project context:

@@ -1,5 +1,26 @@
 <ui_patterns>
 
+## Contents
+- Workflow Step Heading (canonical format)
+- Subagent Output Format Contract
+- Stage Banners
+- Routing Output (for /rcode-do, /rcode-next, /rcode-progress)
+- Checkpoint Boxes
+- Status Symbols
+- Progress Display
+- Spawning Indicators
+- TODO Lists (MANDATORY for multi-step workflows)
+- Insight Block (pre-execution observations)
+- Execution Plan Table (before multi-step work)
+- Three-Options Block (before long-running execution)
+- Next Up Block
+- Error Box
+- Tables
+- rcode-Specific Elements
+- RTL / Arabic Output Safety
+- Anti-Patterns
+
+
 ## Workflow Step Heading (canonical format)
 
 All workflows MUST use `## Step N — {Name}` for top-level steps. No other format.

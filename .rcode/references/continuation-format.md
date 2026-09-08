@@ -2,6 +2,13 @@
 
 Standard format for presenting next steps after completing a command or workflow.
 
+## Contents
+- Core Structure
+- Format Rules
+- Variants (Execute Next Plan, Execute Final Plan in Phase, Plan a Phase, Phase Complete, Ready for Next, Multiple Equal Options, Milestone Complete)
+- Pulling Context (For phases (from ROADMAP.md):, For plans (from ROADMAP.md):)
+- Anti-Patterns (Don't: Command-only (no context), Don't: Missing /clear explanation, Don't: "Other options" language, Don't: Fenced code blocks for commands)
+
 ## Core Structure
 
 ```

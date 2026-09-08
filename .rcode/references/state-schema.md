@@ -4,6 +4,12 @@ Documents every top-level field in `state.json`, used by rcode workflows for ses
 
 ---
 
+## Contents
+- File Structure
+- Field Reference (`version`, `project`, `created`, `updated`, `current_phase`, `current_plan`, `phases`, `velocity_history`, `current_sprint`, `executions`, `decisions`, `blockers`, `council_sessions`, `chains`, `last_session`, `workstreams`, `active_workstream`, `model_profile`)
+- Usage Examples (Reading Phase Progress, Checking for Blockers, Resuming Session, Tracking Decisions)
+- ID Formats Accepted by resolve-id
+
 ## File Structure
 
 ```json

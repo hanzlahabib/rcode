@@ -8,6 +8,12 @@ The agent stub holds the role definition, principles, anti-patterns, and
 
 ---
 
+## Contents
+- Downstream Consumer
+- Philosophy (Solo Developer + Agent Workflow, Anti-Enterprise, UI Projects Need a Shell Phase — Not an Assumption, Enterprise Projects Need Auth Strategy and Role Mapping Decided Up Front, Multi-Role Projects Need Role-Differentiated UI Success Criteria, On-Demand Rule Files)
+- Workflow
+- Examples
+
 ## Downstream Consumer
 
 Your ROADMAP.md is consumed by `/rcode-plan` which uses it to:

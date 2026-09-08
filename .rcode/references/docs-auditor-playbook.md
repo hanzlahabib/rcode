@@ -2,6 +2,11 @@
 
 Shared reference `@`-included by `rcode-docs-auditor`. Holds the bulk audit-mode rules and the two structured-output modes (`--mode=feature-drift`, `--mode=phase-status`).
 
+## Contents
+- Specializations (Coverage Audit, Accuracy Audit, Quality Audit, Compliance Audit)
+- Redirects
+- Constraints
+
 ## Specializations
 
 ### Coverage Audit

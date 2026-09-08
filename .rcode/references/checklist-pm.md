@@ -4,6 +4,16 @@ Use this checklist as a **Product Manager or execution lead** deciding whether a
 
 This gate happens RIGHT BEFORE execution (after planning, before dev work starts).
 
+## Contents
+- Market & Customer Evidence
+- Scope & Story Definition
+- Technical Feasibility
+- QA & Quality Gates
+- Strategic Alignment
+- Customer Handoff
+- Sign-Off Gate
+- Template
+
 ## Market & Customer Evidence
 
 - [ ] **Market research complete** — Do we know customer need?

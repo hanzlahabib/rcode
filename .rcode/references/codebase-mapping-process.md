@@ -158,6 +158,9 @@ Write document(s) to `.rcode/codebase/` using the templates below.
 If the topic-phrase sweep returns matches in a directory you did not analyze in depth, you MUST either (a) extend the analysis to cover it, or (b) explicitly note in the document body which findings might exist there but were not investigated. Never silently exclude a directory that contains topic-phrase hits.
 </step>
 
+## Contents
+- On-Demand Rule Files
+
 <step name="return_confirmation">
 Return a brief confirmation. DO NOT include document contents.
 

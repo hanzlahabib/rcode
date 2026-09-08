@@ -4,6 +4,14 @@ The canonical rule for naming a phase in rcode. Issue #718.
 
 ---
 
+## Contents
+- TL;DR
+- Why these are the only two shapes
+- Leading zeros: never
+- Where the validator fires
+- Milestone health thresholds
+- Related
+
 ## TL;DR
 
 | Shape | Example | Use case |

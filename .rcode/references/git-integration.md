@@ -4,6 +4,13 @@ Defines 3 branching strategies for rcode workflows and when to use each.
 
 ---
 
+## Contents
+- Configuration
+- 3 Branching Strategies (1. None (Commit to Current Branch), 2. Feature-Branch (Auto-Create Per Phase), 3. Worktree-Isolation (Each Phase in Worktree))
+- Strategy Decision Tree
+- Implementation Details (None Strategy, Feature-Branch Strategy, Worktree-Isolation Strategy)
+- Config Example
+
 ## Configuration
 
 Add to `config.yaml`:

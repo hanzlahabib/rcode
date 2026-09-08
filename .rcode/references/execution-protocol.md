@@ -4,6 +4,14 @@ Shared reference `@`-included by `execute.md` workflow and `rcode-executor` suba
 
 **Also see:** @.rcode/references/karpathy-guidelines.md for behavioral principles that apply during execution.
 
+## Contents
+- SPRINT.md schema
+- Deviation rules
+- Analysis paralysis guard
+- Checkpoint return format
+- Commit protocol
+- SUMMARY format (Stub Detection, Self-Check Loop)
+
 ## SPRINT.md schema
 
 Every plan file must have this frontmatter and structure:

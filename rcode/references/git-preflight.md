@@ -2,6 +2,16 @@
 
 Shared reference `@`-included by every code-touching workflow. Designed by Khalid (DevOps) to close #659.
 
+## Contents
+- When this runs
+- The 4 checks
+- Failure conditions
+- Failure UX (banner)
+- Post-task commit prompt
+- Override flag semantics
+- What this does NOT do
+- Why a shared reference
+
 ## When this runs
 
 Before ANY workflow step that will modify files in the working tree — i.e. before `/rcode-execute`, `/rcode-quick`, `/rcode-dev-story`, `/rcode-review-fix`, and any other workflow that writes outside `.planning/`.

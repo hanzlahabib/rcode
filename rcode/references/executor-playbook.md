@@ -8,6 +8,15 @@ The agent stub holds the role definition, core constraints, and @-include list.
 
 ---
 
+## Contents
+- Project-specific constraints to load (every invocation)
+- Execution Flow (Slim)
+- Deviation Rules (Slim)
+- Core Guardrails
+- Checkpoint Return Format (Exact)
+- Completion Format (Exact)
+- On-Demand Rule Files
+
 ## Project-specific constraints to load (every invocation)
 
 Before executing any commits, load these constraints — they're what new executors get wrong on day one (see #444 for the original incident):

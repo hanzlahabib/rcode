@@ -4,6 +4,13 @@ Four mental models for rigorous planning: pre-mortem, MECE decomposition, constr
 
 ---
 
+## Contents
+- 1. Pre-Mortem Analysis
+- 2. MECE Decomposition
+- 3. Constraint Analysis
+- 4. Reversibility Test
+- Integration in SPRINT.md
+
 ## 1. Pre-Mortem Analysis
 
 **What it counters:** Optimism bias, overlooked failure modes

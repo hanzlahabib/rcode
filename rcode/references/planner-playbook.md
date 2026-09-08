@@ -8,6 +8,17 @@ file-existence verification, plan structure template, and constraints.
 The agent stub holds the role definition, scope-driven sizing rules,
 hierarchical ID format, and output routing.
 
+## Contents
+- Quick Reference (Context Fidelity, Discovery Levels, Task Anatomy, Task Types, Task Sizing, TDD vs Standard)
+- On-Demand Rule Files
+- SPRINT.md Frontmatter Template
+- Dependency Graph Rules
+- Codebase Discovery (BLOCKER — added after issue #649)
+- File-existence verification (BLOCKER — added in v3.1.0 after #441)
+- Plan Structure
+- Common Planning Mistakes to Avoid
+- Constraints
+
 ## Quick Reference
 
 ### Context Fidelity

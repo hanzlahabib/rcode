@@ -2,6 +2,16 @@
 
 This reference explains when to use `--workspace` flag vs. sequential phases in `.planning/`.
 
+## Contents
+- Sequential Phases (Default)
+- Workspace Isolation (Parallel)
+- Decision Matrix
+- State Management (Sequential (default), Workspaces (parallel))
+- Switching Context (Sequential phases, Workspaces)
+- Merging Workspaces Back
+- Common Patterns (Pattern: Feature branch + hotfix, Pattern: Research + implementation, Pattern: Experimental feature)
+- Summary
+
 ## Sequential Phases (Default)
 
 Use the standard planning pipeline (`.planning/phases/`) for:

@@ -4,6 +4,20 @@ When exploring the UI design phase (/rcode-ui-phase), ask structured questions a
 
 ---
 
+## Contents
+- 1. Color Palette (Exploration Questions, Decision Questions)
+- 2. Typography (Exploration Questions, Decision Questions)
+- 3. Voice & Tone (Exploration Questions, Decision Questions)
+- 4. Accessibility (Exploration Questions, Decision Questions)
+- 5. Component Inventory (Exploration Questions, Decision Questions)
+- 6. Responsive Behavior (Exploration Questions, Decision Questions)
+- 7. Interaction Patterns (Exploration Questions, Decision Questions)
+- 8. Visual Hierarchy (Exploration Questions, Decision Questions)
+- Workflow: Asking UI/Brand Questions (Step 1: Orient (2-3 min), Step 2: Deep-Dive (5-10 min), Step 3: Document (1-2 min))
+- Example: UI Contract Output
+- Red Flags When Asking
+- Time Box
+
 ## 1. Color Palette
 
 Explore how color communicates brand, function, and hierarchy.

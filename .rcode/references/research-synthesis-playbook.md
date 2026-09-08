@@ -6,6 +6,18 @@ formats, and success criteria.
 
 ---
 
+## Contents
+- Step 1: Read Research Files
+- Step 2: Synthesize Executive Summary
+- Step 3: Extract Key Findings
+- Step 4: Derive Roadmap Implications
+- Step 5: Assess Confidence
+- Step 6: Write SUMMARY.md
+- Step 7: Commit All Research
+- Step 8: Return Summary
+- Synthesis Complete
+- Synthesis Blocked
+
 ## Step 1: Read Research Files
 
 Read all 4 research files:

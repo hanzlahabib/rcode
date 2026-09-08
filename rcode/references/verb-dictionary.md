@@ -8,6 +8,23 @@
 
 ---
 
+## Contents
+- §Create — make / start / new / open
+- §Add — append / include / attach / extend
+- §Plan — design / scope / outline
+- §Execute — run / build / ship / implement / do
+- §Review — audit / check / inspect / verify / validate
+- §Show — list / display / get / fetch / see
+- §Remove — delete / drop / undo / revert / kill
+- §Update — modify / change / edit / refresh / fix
+- §Pause — stop / wait / hold / cancel
+- §Resume — continue / pick up / restart
+- §Find — search / locate / discover / hunt
+- §Quality — bad code / smell / issues / problems
+- Scope nouns (paired with verbs to detect intent)
+- Usage examples
+- Maintenance
+
 ## §Create — make / start / new / open
 
 Match if `$QUESTION` contains any of these (case-insensitive):

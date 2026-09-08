@@ -6,6 +6,16 @@ TDD is about design quality, not coverage metrics. The red-green-refactor cycle 
 **Key insight:** TDD work is fundamentally heavier than standard tasks—it requires 2-3 execution cycles (RED → GREEN → REFACTOR), each with file reads, test runs, and potential debugging. TDD features get dedicated plans to ensure full context is available throughout the cycle.
 </overview>
 
+## Contents
+- When TDD Improves Quality
+- TDD Plan Structure
+- Red-Green-Refactor Cycle
+- Good Tests vs Bad Tests
+- Test Framework Setup (If None Exists)
+- Error Handling
+- Commit Pattern for TDD Plans
+- Context Budget
+
 <when_to_use_tdd>
 ## When TDD Improves Quality
 
