@@ -1,0 +1,74 @@
+{
+  "skill_name": "nextjs-best-practices",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you review this Next.js page? It's in app/dashboard/page.tsx: an async Page component that does `const user = await getUser(id)` then `const widgets = await getWidgets(id)` (getWidgets doesn't use anything from user), then renders a client component <WidgetGrid widgets={widgets} /> which has 'use client' at the top and manages drag-to-reorder state.",
+      "expected_output": "Should identify this as a Server/Client boundary review. Should confirm the page itself correctly stays a Server Component (async function fetching data directly) and that WidgetGrid correctly needs 'use client' for its drag-and-drop state. Should flag the sequential await calls as an unnecessary waterfall since getWidgets does not depend on getUser's result, and recommend starting both calls before awaiting (Promise.all pattern). Should consider recommending a Suspense boundary around WidgetGrid if widget data is the slower fetch, so page shell content isn't blocked on it. Should NOT recommend converting the Page component to a Client Component, and should NOT recommend removing 'use client' from WidgetGrid.",
+      "assertions": [
+        "Confirms page correctly stays a Server Component",
+        "Confirms WidgetGrid correctly needs 'use client' for its state",
+        "Flags the sequential await calls as a request waterfall",
+        "Recommends Promise.all (or equivalent parallel-start pattern) since getWidgets doesn't depend on getUser",
+        "Does not recommend converting Page to a Client Component",
+        "Does not incorrectly flag WidgetGrid's 'use client' as unnecessary",
+        "May recommend a Suspense boundary for the slower fetch"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Our app wraps the entire root layout's <html><body> in a 'use client' ThemeProvider using React context, and now every single page in the app feels slower on first load. What's going on and how do we fix it?",
+      "expected_output": "Should recognize this as an over-clienting / client-boundary-placement issue, not a bug in ThemeProvider itself. Should explain that React context requires 'use client' and that part is correct and unavoidable. The actual fix is about WHERE the provider is mounted: it should wrap only {children} inside <body>, not <html><body> itself, so <html>, <body>, and any static chrome (nav, footer) can remain Server Components rendered around the provider. Should explicitly reject the naive fix of just removing 'use client' from ThemeProvider (it would break since createContext requires the client). Should explain that once a Client Component is rendered, its module graph (everything it imports/renders directly) joins the client bundle, which is why wrapping too high in the tree has a broad blast radius.",
+      "assertions": [
+        "Identifies this as an over-clienting / boundary-placement issue",
+        "Does NOT suggest simply removing 'use client' from ThemeProvider",
+        "Explains context requires a Client Component regardless",
+        "Recommends moving the provider to wrap only {children}, not <html>/<body>",
+        "Explains that static chrome (nav/footer) can stay server-rendered outside the provider",
+        "Explains why wrapping higher in the tree has a larger bundle/blast-radius impact"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "We just added a proxy.ts (formerly middleware.ts) that checks for a session cookie and redirects to /login if missing. We didn't add a matcher config. Users are now reporting that some pages load without their fonts and images, and load times feel worse everywhere. Can you take a look?",
+      "expected_output": "Should identify the missing matcher as the root cause: without a matcher, proxy/middleware runs on every request including _next/static, _next/image, and public/ assets, adding latency to (and potentially incorrectly redirecting) static asset requests. Should recommend adding a matcher, preferably a negative-lookahead pattern excluding _next/static, _next/image, favicon.ico, and other static asset paths, rather than an allowlist that's easy to forget to extend. Should also note that even with a good matcher, _next/data routes cannot be excluded and will still invoke the proxy. Should mention that auth checks should also exist at the Server Action / Route Handler level, not rely on proxy alone, since Server Actions on excluded paths would otherwise be unprotected.",
+      "assertions": [
+        "Identifies missing matcher as the root cause of static asset issues",
+        "Recommends adding a matcher config",
+        "Prefers negative-lookahead matcher over an allowlist",
+        "Mentions _next/static and _next/image should be excluded",
+        "Notes _next/data routes cannot be excluded even with a matcher",
+        "Recommends defense-in-depth: auth checks inside Server Actions/Route Handlers too, not proxy alone"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Can you do a Next.js best-practices review of our codebase? We have a pages/ directory with _app.tsx, _document.tsx, and every route uses getServerSideProps. There's no app/ directory anywhere.",
+      "expected_output": "Should recognize this is a Pages Router codebase with no App Router present at all. Should explicitly state that App Router-specific guidance (Server/Client Component boundaries, 'use client', app/ file conventions like loading.tsx and route groups, Server Actions) does not apply here since none of those constructs exist in the Pages Router model. Should NOT invent App Router findings by treating _app.tsx as if it were app/layout.tsx or treating getServerSideProps as if it needed a 'use client' review. May offer router-agnostic checks that do apply to both routers (next/image usage, next/font usage, bundle splitting with next/dynamic) or note that a Pages-to-App-Router migration is a separate, larger scope than a code review. Should point toward react-best-practices for general React component concerns not specific to either router.",
+      "assertions": [
+        "Recognizes this is a Pages Router codebase with no app/ directory",
+        "Explicitly states App Router-specific rules do not apply",
+        "Does not fabricate 'use client' or Server/Client boundary findings for Pages Router files",
+        "Does not treat _app.tsx or getServerSideProps as App Router constructs",
+        "May offer router-agnostic checks (next/image, next/font, next/dynamic) as still applicable",
+        "Does not attempt a full migration plan as if it were the review being requested"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "We added an onClick handler that calls a Server Action to delete a post, and it deletes fine from the database, but the post still shows up in the list until a full page refresh. Why?",
+      "expected_output": "Should identify the missing cache invalidation as the cause: the Server Action mutates the database but never calls revalidatePath or revalidateTag, so Next.js continues serving the previously cached/rendered list. Should recommend calling revalidatePath (for the specific list route) or revalidateTag (if the list's data fetch was tagged) inside the Server Action after the delete succeeds. Should distinguish this from a client-state problem (e.g. should not primarily suggest useState/optimistic UI as the fix, though optimistic UI could be mentioned as a UX enhancement on top of the real fix).",
+      "assertions": [
+        "Identifies missing revalidatePath/revalidateTag as the root cause",
+        "Recommends calling revalidatePath or revalidateTag inside the Server Action after mutation",
+        "Does not treat this primarily as a client-state/useState bug",
+        "May mention optimistic UI as a UX addition, not as the fix for the stale-data root cause"
+      ],
+      "files": []
+    }
+  ]
+}
