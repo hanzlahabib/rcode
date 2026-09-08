@@ -1,0 +1,50 @@
+{
+  "skill_name": "seo-aeo-geo",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We rank #2 in Google for 'best project management software' but ChatGPT and Perplexity never mention us when people ask for recommendations. How do we get cited by AI?",
+      "expected_output": "Should recognize this as an AEO/GEO request distinct from ranking (the page already ranks well). Should check for product-marketing-context.md first. Should confirm classic SEO fundamentals are already in place before proceeding. Should ask for or help build a list of 10-20 priority queries the brand should be cited for. Should recommend manually testing those queries against ChatGPT, Perplexity, and a Google AI Overview-triggering search, and being explicit that any citation-rate finding is directional, not authoritative, since no cross-platform measurement API exists. Should assess the four layers: extractable content structure (direct-answer paragraphs, atomic claims), citation-worthiness (original data, named authorship, freshness dates), structured data (Organization/Person sameAs, dateModified, genuine FAQPage/HowTo), and AI crawler access in robots.txt. Should produce a remediation plan ordered by effort/impact with a re-test schedule. Should NOT fabricate a citation percentage without the query test having actually been run.",
+      "assertions": [
+        "Checks for product-marketing-context.md",
+        "Distinguishes ranking (#2 in Google) from citation (AI mentions) as separate problems",
+        "Confirms or asks about classic SEO fundamentals before proceeding",
+        "Builds or requests a list of 10-20 priority queries",
+        "Recommends manual testing across ChatGPT, Perplexity, and Google AI Overviews",
+        "States citation findings are directional, not authoritative, and explains why (no cross-platform measurement API, large platform variance)",
+        "Covers extraction structure, citation-worthiness, structured data, and crawler access as distinct layers",
+        "Produces an ordered remediation plan with effort/impact",
+        "Includes a re-test schedule",
+        "Does not fabricate a citation-rate number that wasn't actually measured"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Can you tell me exactly what percentage of AI Overviews will show our brand next month if we implement llms.txt and FAQ schema everywhere?",
+      "expected_output": "Should recognize this as an edge case requiring an explicit honesty boundary: no tool or method can predict a future citation percentage, and AI products change retrieval/citation behavior without notice. Should decline to fabricate or estimate the requested number and instead state the gap plainly (what would be needed to know this — live, repeated query testing after implementation — and that it cannot be predicted in advance). Should flag that adding FAQ schema 'everywhere' is a red flag on its own — FAQPage schema should only go on pages with genuine Q&A content, not be applied blanket, since both search and AI systems penalize manufactured FAQ blocks. Should still offer the constructive path: implement the layer-by-layer plan, then measure with manual query testing and/or a tracker, on a recurring cadence, rather than promising a number up front.",
+      "assertions": [
+        "Declines to fabricate or estimate a future citation percentage",
+        "Explains why this can't be predicted (no predictive tool, platforms change behavior, no cross-platform API)",
+        "States the gap explicitly rather than guessing a plausible-sounding number",
+        "Flags blanket FAQ schema application as a mistake, not a valid tactic",
+        "Clarifies FAQPage schema should only be used on genuine Q&A content",
+        "Offers the correct path forward: implement, then measure via testing, not a promised outcome"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Our blog post ranks page 3 for our target keyword. Can you fix our title tag, H1, and image alt text so it ranks better?",
+      "expected_output": "Should recognize this is classic on-page SEO work, not an AEO/GEO request, despite superficially being about 'optimization.' Should route the user to on-page-seo-auditor for title tag, H1, and alt text scoring, and/or seo-audit for the broader ranking diagnosis, rather than applying the AEO/GEO extraction/citation framework. Should not produce an AEO/GEO layer scorecard or llms.txt/schema recommendations for this request. May briefly note that AEO/GEO work is a later, additive step once classic on-page fundamentals are addressed, but should not attempt to do the on-page fixes itself under this skill.",
+      "assertions": [
+        "Identifies the request as classic on-page SEO, not AEO/GEO",
+        "Routes to on-page-seo-auditor and/or seo-audit instead of doing the work here",
+        "Does not apply the AEO/GEO extraction/citation-worthiness/structured-data framework to this request",
+        "Does not produce llms.txt or AI-crawler robots.txt recommendations for this request",
+        "May note AEO/GEO as a later additive step, but does not substitute for the requested on-page fix"
+      ],
+      "files": []
+    }
+  ]
+}
