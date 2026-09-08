@@ -18,7 +18,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 
 **Usage:**
 ```
-/rcode-audit-fix [--max N] [--severity high|medium|all] [--dry-run] [--source audit]
+/rcode-audit-fix [--max N] [--severity high|medium|all] [--dry-run] [--source audit|<report-file-path>]
 ```
 
 **Examples:**
@@ -26,6 +26,8 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rcode-audit-fix
 /rcode-audit-fix --max 10 --severity high
 /rcode-audit-fix --dry-run
+/rcode-audit-fix --source ./seo-audit-report.md
+/rcode-audit-fix --source ~/Downloads/accessibility-scan.txt --max 15
 ```
 
 <process>
@@ -36,14 +38,14 @@ Extract flags from the user's invocation:
 - `--max N` — maximum findings to fix (default: **5**)
 - `--severity high|medium|all` — minimum severity to process (default: **medium**)
 - `--dry-run` — classify findings without fixing (shows classification table only)
-- `--source <audit>` — which audit to run (default: **audit-uat**)
+- `--source <audit|file-path>` — which audit to run (default: **audit-uat**)
 
-Validate `--source` is a supported audit. Currently supported:
-- `audit-uat`
-
-If `--source` is not supported, stop with an error:
+Resolve `--source`:
+- If it matches a known internal audit keyword (`audit-uat`), use the internal-audit path — proceed to `run-audit` unchanged.
+- Otherwise, treat it as a file path. If the file exists (`test -f "$SOURCE"`), this is an **external audit report** — proceed to `run-audit`'s external-report branch.
+- If it matches no keyword AND the file doesn't exist, stop with an error:
 ```
-Error: Unsupported audit source "{source}". Supported sources: audit-uat
+Error: Unsupported audit source "{source}". Supported keywords: audit-uat. Or pass a path to an existing external audit report file.
 ```
 </step>
 
@@ -65,6 +67,13 @@ Parse each finding into a structured record:
 - **description** — concise summary of the issue
 - **severity** — high, medium, or low
 - **file_refs** — specific file paths referenced in the finding
+
+**For an external report source** (a file path was given instead of a known audit keyword): Read the file directly — it's arbitrary prose from a third-party tool (SEO audit, accessibility scan, security scan, EEAT review, etc.), not rcode's own structured format. Extract findings by reading the report's actual content, not by assuming any particular structure:
+- **ID** — assign sequentially (F-01, F-02, ...) since external reports rarely carry stable IDs
+- **description** — the finding as stated in the report, condensed to one line
+- **severity** — infer from the report's own language (its own "Critical/High/Medium/Low" labels, or wording like "urgent"/"minor") — default to **medium** if the report gives no severity signal at all; never invent a severity the source text doesn't support
+- **file_refs** — any file/page paths the finding names; leave empty for findings about external-facing content with no obvious file target (e.g. "add NAP info to footer", "missing alt text site-wide") — classification in the next step will route empty-file-ref findings toward manual-only unless a specific location can be reasonably inferred from the codebase (e.g. grep for the component that renders the footer)
+- Do not fabricate findings the report doesn't contain, and do not skip findings just because they lack a clean file reference — surface them as manual-only instead of dropping them
 </step>
 
 <step name="classify-findings">

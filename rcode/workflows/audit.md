@@ -24,6 +24,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 /rcode-audit milestone [--strict]      # → /rcode-audit-milestone (with synth fallback)
 /rcode-audit uat                       # → /rcode-audit-uat
 /rcode-audit code [--scope=...]        # → /rcode-review --karpathy
+/rcode-audit external <report-path>    # → /rcode-audit-fix --source <report-path> (apply findings from a third-party report)
 /rcode-audit fix                       # → /rcode-audit-fix
 /rcode-audit work                      # → /rcode-verify-work
 /rcode-audit lens [<1-15> | all]       # → /rcode-lens-audit (15-lens methodology)
@@ -39,6 +40,7 @@ If `$ARGUMENTS` contains `--help` or `-h`:
 /rcode-audit phase 03
 /rcode-audit lens security
 /rcode-audit lens all
+/rcode-audit external ./seo-audit-report.md
 ```
 
 ## Step 1 — Resolve mode + arguments
@@ -52,7 +54,8 @@ DISCUSS=$($TOOL config-get workflow.discuss_mode 2>/dev/null || echo "adaptive")
 Parse `$ARGUMENTS`:
 - If `--auto` flag is present: strip it from args and force `MODE=yolo` for this invocation
   (allows non-interactive runs without permanently changing the project config).
-- First word ∈ {plans, phase, milestone, uat, code, fix, work, lens, worktrees} → set `$TARGET`, drop it from args, jump to Step 4.
+- First word ∈ {plans, phase, milestone, uat, code, external, fix, work, lens, worktrees} → set `$TARGET`, drop it from args, jump to Step 4.
+  - For `external`, the next word is the report file path — capture it as `$REPORT_PATH` and drop it too.
 - Empty or unrecognised → continue to Step 2.
 
 ## Step 2 — Detect project state
@@ -89,11 +92,12 @@ automatically (priority: `worktrees` if ORPHANS>0, else `work` if dirty
 branch, else `plans` if PLANS>0 and SUMMARIES<PLANS, else `milestone` if
 SUMMARIES>0, else `code`).
 
-Otherwise call AskUserQuestion:
+Otherwise call AskUserQuestion. Lead with the scope question explicitly — "the whole project" vs "a specific feature/phase" vs "against an external report" are genuinely different intents that were previously flattened into one undifferentiated list:
 
 ```
 Question:
-What do you want to audit?
+What do you want to audit — the whole project, a specific feature/phase, or against an
+external report (SEO, accessibility, security scan, etc.)?
 
 Options:
   1. plans           — planning integrity: completeness, status, deps ({PLANS} sprints)
@@ -101,12 +105,15 @@ Options:
   3. milestone       — cross-phase milestone goal coverage             ({SUMMARIES} summaries)
   4. uat             — outstanding UAT / verification items            ({UAT_FILES} files)
   5. code-quality    — Karpathy 4-principle code review                (current diff)
-  6. auto-fix        — audit then auto-fix findings                    (uses #1–5 output)
-  7. work            — verify current branch / WIP                     ({ON_BRANCH}, dirty={DIRTY})
-  8. lens            — 15-lens methodology audit                       (security, perf, tests…)
-  9. worktrees       — orphaned executor worktrees/branches            ({ORPHANS} found)
+  6. external        — apply findings from an external audit report    (you provide the file)
+  7. auto-fix        — audit then auto-fix findings                    (uses #1–6 output)
+  8. work            — verify current branch / WIP                     ({ON_BRANCH}, dirty={DIRTY})
+  9. lens            — 15-lens methodology audit                       (security, perf, tests…)
+  10. worktrees      — orphaned executor worktrees/branches            ({ORPHANS} found)
   0. cancel
 ```
+
+If the user picks **external**, ask a follow-up for the report file path before proceeding to Step 4: "Path to the audit report file?" — capture as `$REPORT_PATH`.
 
 Set `$TARGET` from the user's choice.
 
@@ -123,6 +130,7 @@ sub-workflow.
 | milestone | ROADMAP.md exists | `No ROADMAP.md. Run /rcode-new-milestone first.` |
 | uat | at least one UAT*.md exists | `No UAT files yet. Run /rcode-execute on a phase first.` |
 | code | git repo with at least one commit | `Empty repo — nothing to audit yet.` |
+| external | `$REPORT_PATH` set AND file exists | `No report file given/found at "{path}". Provide a path to an existing audit report file.` |
 | fix | a prior audit report exists OR a prior `--report` artefact | `No audit findings yet. Run /rcode-audit first.` |
 | work | inside a git worktree | `Not in a git repo.` |
 | lens | `rcode/` or `.rcode/` directory exists | `No rcode source found. Run: npx @hanzlaa/rcode install .` |
@@ -167,6 +175,7 @@ Run the target's slash command, forwarding remaining args:
 | milestone | `/rcode-audit-milestone $REST_ARGS` |
 | uat | `/rcode-audit-uat $REST_ARGS` |
 | code | `/rcode-review $REST_ARGS --karpathy` |
+| external | `/rcode-audit-fix --source "$REPORT_PATH" $REST_ARGS` |
 | lens | `/rcode-lens-audit $REST_ARGS` |
 | fix | `/rcode-audit-fix $REST_ARGS` |
 | work | `/rcode-verify-work $REST_ARGS` |
@@ -197,6 +206,8 @@ Next:
 - [ ] `/rcode-audit lens security` passes `security` directly to `/rcode-lens-audit`
 - [ ] When SUMMARY.md absent but SPRINT.md present, milestone offers synthesize/verify/skip — does not dead-halt
 - [ ] Sub-workflow's closing report is surfaced unchanged
+- [ ] `/rcode-audit external <path>` short-circuits the menu and forwards to `/rcode-audit-fix --source <path>`
+- [ ] Guided-mode menu explicitly separates "whole project" vs "specific feature/phase" vs "external report" intent, not a flat undifferentiated list
 
 ## On Error
 
