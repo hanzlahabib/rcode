@@ -2,6 +2,11 @@
 
 Examples showing the transformation from human-readable source content to distillate format.
 
+## Contents
+- Frontmatter
+- Before/After Examples (Prose Paragraph to Dense Bullet, Technical Details to Compressed Facts, Deduplication Across Documents, Decision/Rationale Compression)
+- Full Example
+
 ## Frontmatter
 
 Every distillate includes YAML frontmatter. Source paths are relative to the distillate's location so the distillate remains portable:
