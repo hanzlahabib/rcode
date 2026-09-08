@@ -1,5 +1,5 @@
 ---
-name: nextjs-best-practices
+name: rcode-nextjs-best-practices
 description: When the user is writing, reviewing, or debugging Next.js App Router code. Also use when the user mentions "Next.js," "App Router," "server components," "client components," "'use client'," "route handlers," "Next.js middleware," "Next.js caching," "revalidatePath," "revalidateTag," "Suspense boundary," "loading.js," "hydration error," "Next.js is slow," "bundle size Next.js," "waterfall requests," or pastes a `page.tsx` / `layout.tsx` / `route.ts` file and asks for a review or a fix. Use this even if the user just says something vague like "review my Next.js code" or "is this the right way to fetch data in Next.js" — start with the App Router conventions and work outward. For React component patterns that aren't Next.js-specific (hooks discipline, state boundaries, prop drilling), see react-best-practices. For LLM/agent/prompt engineering inside a Next.js API route, see llm-engineering-best-practices. Do NOT use for Pages Router-only codebases with no `app/` directory, or for non-Next.js React work (plain Vite/CRA apps) — those belong to react-best-practices.
 metadata:
   version: 1.0.0
