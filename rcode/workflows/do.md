@@ -387,9 +387,14 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | "build seo site", "build affiliate site", "niche site", "build content site", "seo site scaffold" | `/rcode-do` → `seo-site-builder` | End-to-end site scaffold with SEO architecture baked in |
 | "local seo", "google business profile", "gbp", "citations", "nap audit", "rank-and-rent" | `/rcode-do` → `rank-and-rent-local-seo` (delegates to `claude-seo:seo-local`) | Local niche selection, city×service matrix, GBP signals, NAP, citations |
 | "schema markup", "structured data", "rich results", "json-ld", "faq schema" | `/rcode-do` → `claude-seo:seo-schema` | Schema generation and validation for all supported types |
-| "ai search", "geo seo", "llms.txt", "ai overviews", "perplexity", "chatgpt visibility", "aeo" | `/rcode-do` → `claude-seo:seo-geo` | GEO/AEO optimization: entity disambiguation, AI answer targeting, llms.txt |
+| "ai search", "geo seo", "llms.txt", "ai overviews", "perplexity", "chatgpt visibility", "aeo", "why isn't chatgpt mentioning us", "cited in ai overviews" | `/rcode-do` → `seo-aeo-geo` | Bundled AEO/GEO skill: cite-ability structuring, llms.txt, AI-crawler schema. `claude-seo:seo-geo` remains available as a deeper plugin (entity disambiguation) if separately installed |
 | "backlinks", "link building", "guest posts", "link acquisition", "digital pr" | `/rcode-do` → `seo-growth-orchestrator` | Backlink acquisition play within the 5-play growth strategy |
 | **— end SEO block —** | | |
+| **— Dev Practices intent —** | | |
+| "next.js best practices", "review my next.js code", "app router", "server component vs client component", "next.js caching", "next.js middleware", "is this the right way to fetch data in next.js" | `/rcode-do` → `nextjs-best-practices` | App Router conventions, Server/Client Component boundary, caching/data-fetching review |
+| "react best practices", "component architecture", "where should this state live", "custom hook", "prop drilling", "is this good react code", "review this component" | `/rcode-do` → `react-best-practices` | Component architecture, hooks discipline, state-management boundaries |
+| "llm engineering", "prompt engineering", "prompt design", "rag best practices", "how do i design this prompt", "tool calling schema", "context window" | `/rcode-do` → `llm-engineering-best-practices` | Prompt design, context/RAG design, tool-calling schema, LLM failure modes |
+| **— end Dev Practices block —** | | |
 | A specific, actionable, small task (add feature, fix typo, update config) | `/rcode-quick` | Self-contained, single executor |
 | Market/discovery/greenfield question (from classify) | `/rcode-council` | Needs multi-perspective discovery |
 

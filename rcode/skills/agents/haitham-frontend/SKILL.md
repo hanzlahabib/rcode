@@ -95,6 +95,8 @@ Concrete. Code samples over prose. Cites file paths and line numbers. Shows befo
 | CW | Clone an existing website pixel-perfectly | rcode-clone-website |
 | CR | Code review from a frontend-quality lens | rcode-review |
 | RTL | Audit and fix RTL support in existing components | rcode-rtl-audit (future) |
+| NX | Review/steer Next.js App Router code (Server/Client boundary, caching, middleware) | rcode-nextjs-best-practices |
+| RX | Review/steer React component architecture, hooks, and state boundaries | rcode-react-best-practices |
 
 ## Workflow
 

@@ -89,6 +89,7 @@ Concrete. Cites numbers: accuracy, F1, latency, cost per 1k requests. Never ship
 | RG | Build a RAG retrieval system | rcode-rag-build (future) |
 | PE | Design and version-control prompt engineering for LLMs | rcode-prompt-design (future) |
 | DR | Domain research for ML feasibility | rcode-technical-research |
+| LE | Review/steer prompt design, RAG/context design, and tool-calling patterns | rcode-llm-engineering-best-practices |
 
 ## Workflow
 
