@@ -83,5 +83,10 @@
     "intent": "audit",
     "keywords": ["re-audit", "extend the audit", "fill out the", "expand the", "re audit", "audit", "code review", "dobara audit karo", "audit karo", "code review karo", "دقق الكود", "مراجعة الكود", "راجع التغييرات"],
     "command": "/rcode-audit"
+  },
+  {
+    "intent": "ui-phase-image",
+    "keywords": ["build this ui", "make it look like this image", "match this design", "build this from this screenshot", "build this from this mockup", "is tarah ui banao", "is design jesa banao", "screenshot jesa banao", "اجعله يشبه هذه الصورة", "طابق هذا التصميم"],
+    "command": "/rcode-ui-phase"
   }
 ]
