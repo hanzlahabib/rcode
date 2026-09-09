@@ -1,7 +1,7 @@
 # Workflow: rcode-ui-phase
 
 <purpose>
-Produce two artifacts before any UI code gets written: UI-SPEC.md (formalized design contract — color tokens, typography, component inventory, interaction states, accessibility requirements) and WIREFRAMES.md (per-role screen inventory — what exists, who sees it, loading/empty/error states for each). Grounds design choices in `rcode/references/design-library/` (vendored style/palette/typography/UX-rules data — see that directory's README) instead of an agent inventing tokens from nothing. Detects frontend keywords (React, Next.js, Vue, Tailwind, CSS, UI) and suggests this workflow early if UI-SPEC.md is absent.
+Produce two artifacts before any UI code gets written: UI-SPEC.md (formalized design contract — color tokens, typography, component inventory, corner radius, elevation/depth, spacing/density, interaction states, accessibility requirements) and WIREFRAMES.md (per-role screen inventory — what exists, who sees it, loading/empty/error states for each). Grounds design choices in `rcode/references/design-library/` (vendored style/palette/typography/UX-rules data — see that directory's README) instead of an agent inventing tokens from nothing — or, when the user hands over an image/screenshot/mockup instead of a category to design from scratch, extracts the spec directly from that image (Step 1a) rather than generating alternatives. This is a lighter, spec-first step — not `rcode-clone-website`'s full pixel-perfect live-DOM clone pipeline, which requires an actual URL. Detects frontend keywords (React, Next.js, Vue, Tailwind, CSS, UI) and suggests this workflow early if UI-SPEC.md is absent.
 </purpose>
 
 
@@ -40,10 +40,75 @@ Error: rcode-tools init failed. Verify .rcode/ is installed and state.json is va
 Parse:
 - `flags.existing_ui` — path to existing design system or Figma export
 - `flags.design_system` — path to design tokens file
+- `flags.image` — path to (or pasted/attached) a screenshot, mockup, or design image with no live code/design-system behind it yet — the target look to extract a spec FROM, not an existing implementation to introspect
 - `ui_spec_path` — `.rcode/UI-SPEC.md` (output location)
 - `wireframes_path` — `.rcode/WIREFRAMES.md` (output location)
 
 ## Step 1 — Detect Existing UI Assets
+
+If `flags.image` is set instead of (or in addition to) `flags.existing_ui`/`flags.design_system`,
+skip Step 1, Step 1b, Step 1c, and Step 2 entirely — there is no "which
+direction do you like" ambiguity to resolve or design-system file to parse,
+the image itself is the single locked-in direction. Go straight to **Step
+1a — Image-driven spec extraction** below, then continue at Step 2c
+(Wireframes) as normal. This mirrors the existing-design-system shortcut
+immediately below (Step 1's own "found something usable → skip straight to
+Step 2b" branch) — an image is just another form of "the direction is
+already decided," not a case needing new branching logic elsewhere in this
+file.
+
+## Step 1a — Image-driven spec extraction (image provided, no existing code)
+
+The image is the ground truth — do not generate alternative variants, do
+not consult the reference library or reference sites, do not ask the user
+to pick a direction. Extract what is actually visible.
+
+Spawn `rcode-ux-designer` subagent with the image included directly in the
+prompt (vision-capable — no OCR/color-picker tool needed):
+
+```
+Task tool call:
+  subagent_type: "rcode-ux-designer"
+  description: "Extract UI-SPEC.md from provided image"
+  prompt: |
+    Analyze the attached image pixel-by-pixel and write UI-SPEC.md
+    describing EXACTLY what is shown — this is extraction, not design
+    generation. If a detail isn't visible or is ambiguous in the image, say
+    so explicitly ("not visible in source — recommend X based on the rest
+    of the palette") rather than inventing a confident-sounding value.
+
+    Write UI-SPEC.md with the same 7 sections as the standard path (Design
+    Direction, Color Tokens, Typography, Component Inventory, Interaction
+    States, Accessibility, Responsive Breakpoints) — Design Direction here
+    means "this image's own style," not a category lookup — PLUS these
+    three sections that a static image makes newly extractable and that
+    this spec has historically omitted:
+
+    8. **Corner Radius Scale** — per component type visible (buttons,
+       cards, inputs, modals, avatars/images) — sharp (0px), subtle (4-6px),
+       rounded (8-12px), pill/full — read the actual curvature, don't default
+       to a generic scale
+    9. **Elevation / Depth** — shadow presence and softness per layer
+       (flat/no shadow, subtle 1dp card shadow, floating/modal shadow,
+       any visible blur radius or spread), border-vs-shadow separation
+       style, whether the design uses layering/z-index cues at all
+    10. **Spacing / Density Scale** — how compact or airy the layout reads:
+        estimate padding/gutter sizes relative to a typical 8px base unit,
+        note information density (compact/comfortable/spacious) per section
+        of the image, and call out any inconsistency (e.g. cards are tight
+        but the page margin is generous)
+
+    Interaction States and Accessibility sections should be marked
+    "inferred, not visible in a static image — verify against WCAG 2.1 AA
+    once built" rather than asserted as directly observed, since a
+    screenshot shows only one state per element.
+
+    Write to: {ui_spec_path}
+```
+
+After this step, WIREFRAMES.md generation (Step 2c) still applies if an IA
+decision exists — an image gives you one screen's visual spec, not the
+full screen inventory a multi-screen product needs.
 
 If `flags.existing_ui` or `flags.design_system` provided:
 ```bash
@@ -177,6 +242,9 @@ Task tool call:
     5. **Interaction States** — hover, focus, active, disabled, loading for interactive elements
     6. **Accessibility** — WCAG 2.1 AA compliance checklist, color contrast requirements, keyboard navigation rules
     7. **Responsive Breakpoints** — mobile, tablet, desktop breakpoints and stacking rules
+    8. **Corner Radius Scale** — per component type (buttons, cards, inputs, modals, avatars) — sharp/subtle/rounded/pill, consistent with the chosen variant's mood (e.g. "Bold Craft" implies sharper corners than "Minimal Trust")
+    9. **Elevation / Depth** — shadow scale by layer (flat, card, floating/modal), blur/spread values, when to use border vs. shadow for separation
+    10. **Spacing / Density Scale** — base spacing unit (typically 8px or 4px) and its multiples, plus a stated density target (compact/comfortable/spacious) so component padding stays consistent across the build instead of each screen inventing its own
 
     Write to: {ui_spec_path}
 ```
@@ -301,9 +369,10 @@ Run /rcode-ui-phase, then return to /rcode-plan
 
 ## Success Criteria
 
-- Real reference sites looked at (Step 1c), not just design-library data alone — or explicitly noted as skipped with a reason
-- 2-3 genuinely distinct design variants presented and the user explicitly picked one via AskUserQuestion — no direction silently locked in (skipped only when Step 1 found an existing design system, where there's nothing to choose between)
-- UI-SPEC.md created with all 7 sections, design direction grounded in the chosen variant / `design-library/` lookup / real reference sites (or an existing design system), not invented
+- Real reference sites looked at (Step 1c), not just design-library data alone — or explicitly noted as skipped with a reason (N/A when `flags.image` was provided — Step 1a bypasses this entirely)
+- 2-3 genuinely distinct design variants presented and the user explicitly picked one via AskUserQuestion — no direction silently locked in (skipped only when Step 1 found an existing design system, or when `flags.image` was provided — in both cases there's nothing to choose between)
+- UI-SPEC.md created with all 10 sections, design direction grounded in the chosen variant / `design-library/` lookup / real reference sites / an existing design system / the provided image (Step 1a), not invented
+- Corner radius, elevation/depth, and spacing/density are stated explicitly, not left implicit for the builder to guess per component
 - Color tokens documented with contrast ratios
 - Component inventory complete with variants
 - Accessibility checklist included

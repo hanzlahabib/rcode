@@ -352,6 +352,8 @@ Evaluate `$QUESTION` against these routing rules. Apply the **first matching** r
 | Walk through a change, "checkpoint", "explain this diff", "human review" | `/rcode-checkpoint-preview` | Human-in-the-loop diff walkthrough |
 | Exploring, researching, comparing, or "how does X work" | `/rcode-research-phase` | Domain research before planning |
 | Scope unclear, conflicting UIs/options, "which one", "better UX", "still have confusion", "how should X look", brainstorming vision | `/rcode-discuss-phase` | Decisions not yet locked — gather before planning |
+| User attaches/pastes an image, screenshot, or mockup and says "build this", "make it like this", "is tarah banao/UI banao", "match this design" — **no live URL given** | `/rcode-ui-phase --image <path>` | Drafts UI-SPEC.md (colors, typography, corner radius, depth/shadows, spacing/density) from the image before any code is written. Do NOT route to `rcode-clone-website` here — that skill needs an actual URL for live-DOM extraction, not a static image |
+| "clone this website", "clone this URL/site", "rebuild this page", "pixel-perfect clone", pasted **URL** + rebuild intent | `rcode-clone-website` | Full pixel-perfect clone via live-DOM extraction + parallel worktree builders — requires a real URL, heavier than the image-draft path above |
 | A complex task: refactoring, migration, multi-file architecture, system redesign | `/rcode-add-phase` | Needs a full phase with plan/build cycle |
 | Planning a specific phase, "plan phase N" | `/rcode-plan` | Direct phase-level planning |
 | "Sprint planning", "plan the sprint", "next sprint", "what's in this sprint" | `/rcode-sprint-planning` | Sprint-level scope/capacity planning |

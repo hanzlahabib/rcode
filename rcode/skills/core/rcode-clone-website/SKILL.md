@@ -10,8 +10,12 @@ description: >
   "yeh site clone karo", or "exact same UI chahiye like [URL]". Provide the
   target URL as input. Do NOT use for: creating original designs from scratch
   (use rcode-create-ux-design with Layla), writing new components from a
-  brief (use rcode-dev-story with Hanzla), or inspiration-only references
-  without rebuild intent.
+  brief (use rcode-dev-story with Hanzla), inspiration-only references
+  without rebuild intent, or when the user provides a static image/screenshot/
+  mockup with NO live URL (use rcode-ui-phase's image-driven spec extraction
+  instead — it drafts UI-SPEC.md from the image without the overhead of this
+  skill's live-DOM extraction and parallel worktree build pipeline, which
+  requires an actual URL to introspect).
 triggers:
   # English
   - "clone this website"
