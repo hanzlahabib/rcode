@@ -3,6 +3,75 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.17.0 (2026-09-09) — four new skills, image-driven UI specs, and audits against external reports
+
+New capabilities plus a skill-engagement audit pass: several of rcode's own
+skills existed but had no path for a user's natural-language request, or an
+agent's own stated domain, to ever reach them.
+
+### Four new best-practices skills, sourced from verified-viral references
+
+`nextjs-best-practices` and `react-best-practices` (`rcode/skills/dev-practices/`)
+closed a real gap — rcode had zero Next.js or React skill despite being the
+most common stack rcode users build with. `llm-engineering-best-practices`
+covers prompt design, context/RAG design, and tool-calling patterns.
+`seo-aeo-geo` fills the one gap in the existing 8-skill SEO suite: getting
+cited in AI Overviews/ChatGPT/Perplexity, distinct from classic ranking SEO.
+Each is grounded in a `gh api`-verified, genuinely high-star source
+(vercel/next.js, bulletproof-react, anthropic claude-cookbooks) rather than
+a low-star niche pick, with original prose — not copied text.
+
+### The new skills existed but nothing routed to them
+
+`/rcode-do` had zero natural-language rows for any of the four, Haitham and
+Zayd (the personas whose own stated domains are exactly these skills) had
+no capability-table entry for them, and the AEO/GEO trigger phrases were
+already claimed by an unbundled external plugin instead of the new bundled
+skill. All wired: `do.md` routing, persona capability tables, and
+`seo-audit`'s own dangling "see ai-seo" reference fixed to point at the
+real skill.
+
+### UI-SPEC.md never had corner-radius, depth, or spacing tokens
+
+`/rcode-ui-phase` produced 7 sections (color, typography, components,
+interaction states, accessibility, breakpoints) but no corner-radius scale,
+elevation/shadow scale, or spacing/density scale — regardless of input
+source. Also new: hand it an image with no live URL and it now extracts
+the full spec directly from that image (vision, not generation) instead of
+proposing alternative directions there's nothing to choose between. Fixed
+a routing collision in the process — an image-only request risked matching
+`rcode-clone-website`'s broad triggers and pulling in its much heavier
+live-DOM-extraction pipeline, which needs an actual URL.
+
+### `/rcode-audit-fix` could only audit rcode's own internal artifacts
+
+There was no way to hand rcode an external audit report (SEO, accessibility,
+security scan) and have it apply the findings — `--source` only accepted
+`audit-uat`. The classify/fix/test/commit pipeline was already
+source-agnostic; added `--source <file-path>` for arbitrary report prose,
+plus a matching `external` target in `/rcode-audit`'s menu, and reframed
+the guided-mode question to separate "whole project" / "specific feature"
+/ "external report" intent instead of one flat list.
+
+### The executor's correctness-hazard scan was missing a real bug class
+
+Added Hazard 4: `useEffect`/reference-equality checks keyed on a TanStack
+Query `data` field can go silently stale, because `structuralSharing`
+reuses old object references across genuinely new responses. Also tightened
+the "Prove It Moved the Needle" skill-authoring gate to require 3+
+scenarios and a cross-model-tier spot-check, matching Anthropic's own
+evaluation-driven-development guidance — the gate previously tested one
+scenario on one model tier.
+
+### 58 reference files were missing required navigability headers
+
+Anthropic's Agent Skills best practices require a `## Contents` header on
+any reference file over 100 lines, so Claude can decide whether to load it
+fully after a partial read. Fixed across `rcode/references/`,
+`rcode/skills/seo/*`, and this repo's own installed mirror. (#1073, #1074,
+#1075, #1076, #1077, #1078, #1079, #1080)
+
+---
 ## v4.16.2 (2026-09-02) — the completion gate was lying, and the dashboard could write
 
 A 5-way parallel audit of this repo's own state, planning, dashboard, and
