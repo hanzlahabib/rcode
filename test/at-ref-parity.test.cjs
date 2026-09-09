@@ -40,10 +40,30 @@ function walk(dir, out = []) {
 // `@.rcode/<rest>` ref is valid if it resolves in EITHER layout — the install
 // copy OR the `rcode/<rest>` source. Checking only the install copy produces
 // false positives whenever the local install is stale (#761 / #483).
+//
+// `.rcode/skills/<name>/...` is a special case: install flattens each
+// `rcode/skills/<category>/<name>/` directory (category = core, agents, seo,
+// dev-practices, ...) into `.rcode/skills/<name>/` — the category folder is
+// stripped. A naive `rcode/` + rest check can't find the real source for
+// these, so also try every category directory under `rcode/skills/`.
+const SKILLS_CATEGORIES = fs.existsSync(path.join(SCAN_DIR, 'skills'))
+  ? fs.readdirSync(path.join(SCAN_DIR, 'skills'), { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+  : [];
+
 function refResolves(ref) {
   if (fs.existsSync(path.join(PROJECT_ROOT, ref))) return true;
   if (ref.startsWith('.rcode/')) {
-    return fs.existsSync(path.join(PROJECT_ROOT, 'rcode/' + ref.slice('.rcode/'.length)));
+    const rest = ref.slice('.rcode/'.length);
+    if (fs.existsSync(path.join(PROJECT_ROOT, 'rcode/' + rest))) return true;
+    if (rest.startsWith('skills/')) {
+      const afterSkills = rest.slice('skills/'.length); // e.g. "rcode-init/SKILL.md"
+      return SKILLS_CATEGORIES.some((cat) =>
+        fs.existsSync(path.join(PROJECT_ROOT, 'rcode/skills', cat, afterSkills)),
+      );
+    }
+    return false;
   }
   return false;
 }
