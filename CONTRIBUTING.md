@@ -374,6 +374,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) format. The 
 - `autonomous` — `/rcode-autonomous` workflow, the greenfield prerequisite gate
 - `seo` — `rcode/skills/seo/` module: SEO skill suite (audit, content, growth, AEO/GEO)
 - `scaffold-skill` — `/rcode-scaffold-skill` workflow, the Prove-It skill-authoring gate
+- `resume-work` — `/rcode-resume-work` workflow, crash/session-recovery detection
 - `<phase-id>` — numeric phase scope when committing inside a phase (e.g. `docs(15)`, `feat(8.3)`)
 - `<sprint-id>` — numeric sprint scope inside a phase (e.g. `feat(15.1)`)
 
