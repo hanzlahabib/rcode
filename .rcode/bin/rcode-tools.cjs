@@ -653,6 +653,23 @@ function cmdInit(workflowName, rawArgs) {
     }
   }
 
+  // resume-work.md's own `initialize` step documents parsing roadmap_exists/
+  // project_exists/planning_exists/commit_docs from this init call, but no
+  // branch ever set them for workflowName === 'resume' — they were silently
+  // undefined, so resume-work's state-detection branches on them never fired
+  // as documented. has_interrupted_agent / interrupted_agent_id are NOT set
+  // here on purpose: no code anywhere tracks whether a spawned subagent
+  // completed (there is no agent-history.json writer), so claiming to
+  // populate them would be the same kind of silent-lie bug — resume-work.md
+  // has been updated to derive crash-interruption evidence from
+  // EXECUTION-LOG.md instead, which the executor actually writes.
+  if (workflowName === 'resume') {
+    out.roadmap_exists = fs.existsSync(path.join(PLANNING_DIR, 'ROADMAP.md'));
+    out.project_exists = fs.existsSync(path.join(PLANNING_DIR, 'PROJECT.md'));
+    out.planning_exists = fs.existsSync(PLANNING_DIR);
+    const _rawCommitDocs = config.git?.commit_docs ?? config.commit_docs;
+    out.commit_docs = _rawCommitDocs === undefined ? true : String(_rawCommitDocs) !== 'false';
+  }
 
   return out;
 }
