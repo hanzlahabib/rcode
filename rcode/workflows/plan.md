@@ -643,6 +643,35 @@ Use AskUserQuestion with these 3 options.
 **If "Proceed":** Return to planner with instruction to attempt all decisions at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which D-XX are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected decisions.
 
+## 9.4. Commit Initial Plan (crash-resilience checkpoint, #recovery-hardening)
+
+**Why this step exists.** `rcode-planner` already wrote `*-SPRINT.md` to disk in
+step 9 — that write survives independently of this orchestrating session. But
+nothing commits it, and everything from here through step 13 (specialist
+review panel, sprint-checker, up to 3 revision iterations) can run for hours
+(step 9.5's own docs cite "the first hour of specialist review" on a single
+phase) as pure in-context orchestration with no further disk writes until a
+revision re-invokes the planner. If this session's connection drops anywhere
+in that window, the freshly-planned SPRINT.md sits untracked and easy to lose
+(a stray `git clean`, a `git checkout .` from a confused resume, or simply a
+fresh session with no idea unrecorded work exists) — the file existing on disk
+is not the same as it being safe. Commit it now, before the expensive review
+loop begins:
+
+```bash
+if [ "${commit_docs}" = "true" ]; then
+  git add ${PHASE_DIR}/*-SPRINT.md
+  git commit -m "docs(phase-${PHASE_NUMBER}): initial plan — ${SPRINT_COUNT} sprint(s), pre-review checkpoint"
+fi
+```
+
+Skip silently if `commit_docs` is `false` (project keeps `.planning/` local —
+see step 0's config load). This is a plain commit, not a push — it stays
+local exactly like every other artifact this workflow produces, and later
+steps (9.5 panel findings baked into a revision, the step 12 revision loop,
+the final step 13b) still get their own commit(s) below so nothing here
+replaces the final "planning complete" record.
+
 ## 9.5. Specialist Review Panel (domain-routed)
 
 **Why this step exists.** Until now one generalist (`rcode-planner`) produced the
@@ -935,7 +964,20 @@ Task(
 )
 ```
 
-After planner returns -> spawn checker again (step 10), increment iteration_count.
+After planner returns, checkpoint the revision before spawning the checker
+again (same rationale as step 9.4 — each iteration through this loop can
+itself involve a full specialist re-review, so commit what the planner just
+wrote rather than letting N iterations of uncommitted rewrites accumulate
+behind one crash-vulnerable window):
+
+```bash
+if [ "${commit_docs}" = "true" ]; then
+  git add ${PHASE_DIR}/*-SPRINT.md
+  git commit -m "docs(phase-${PHASE_NUMBER}): plan revision ${iteration_count} — checker/panel feedback addressed"
+fi
+```
+
+Then spawn checker again (step 10), increment iteration_count.
 
 **If iteration_count >= 3:**
 
@@ -1071,6 +1113,20 @@ node ".rcode/bin/rcode-tools.cjs" state planned-phase --phase "${PHASE_NUMBER}" 
 ```
 
 This updates STATUS to "Ready to execute", sets the correct plan count, and timestamps Last Activity.
+
+**Final planning commit.** Steps 9.4 and 12 already checkpointed each SPRINT.md
+revision, but CONTEXT.md is sometimes edited during planning (e.g. a
+"Pre-planning findings" section recording a corrected diagnosis or a chosen
+fix-option) and never gets its own checkpoint. Catch it here, plus anything
+else left uncommitted in the phase directory, so `planned-phase` in STATE.md
+is never true while real planning artifacts sit uncommitted underneath it:
+
+```bash
+if [ "${commit_docs}" = "true" ] && [ -n "$(git status --porcelain -- "${PHASE_DIR}")" ]; then
+  git add "${PHASE_DIR}"
+  git commit -m "docs(phase-${PHASE_NUMBER}): planning complete — ${PLAN_COUNT} plan(s) ready to execute"
+fi
+```
 
 ## 13c. Milestone-health nudge (#942)
 
