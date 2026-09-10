@@ -29,7 +29,7 @@ If `INIT` is empty or `INIT.ok` is false, print error and exit:
 Error: rcode-tools init failed. Is .rcode/ installed? Run: npx @hanzlaa/rcode install
 ```
 
-Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_exists`, `has_interrupted_agent`, `interrupted_agent_id`, `commit_docs`.
+Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_exists`, `commit_docs`.
 
 **If `state_exists` is true:** Proceed to load_state
 **If `state_exists` is false but `roadmap_exists` or `project_exists` is true:** Offer to reconstruct STATE.md
@@ -89,17 +89,26 @@ cat .planning/HANDOFF.json 2>/dev/null || true
 # Check for continue-here files (mid-plan resumption)
 ls .planning/phases/*/.continue-here*.md 2>/dev/null || true
 
-# Check for plans without summaries (incomplete execution)
+# Check for plans without summaries (incomplete execution) — a plan that started
+# executing but never finished is exactly what a WSL/session crash mid-plan
+# looks like on disk: SPRINT.md exists, SUMMARY.md never got written.
 for plan in .planning/phases/*/*-SPRINT.md; do
   [ -e "$plan" ] || continue
-  summary="${plan/PLAN/SUMMARY}"
-  [ ! -f "$summary" ] && echo "Incomplete: $plan"
+  summary="${plan/SPRINT/SUMMARY}"
+  if [ ! -f "$summary" ]; then
+    echo "Incomplete: $plan"
+    # The executor appends one line per completed task to EXECUTION-LOG.md
+    # in the same phase directory specifically so a crash mid-plan is
+    # recoverable — read it for exactly how far execution actually got.
+    log="$(dirname "$plan")/EXECUTION-LOG.md"
+    if [ -f "$log" ]; then
+      echo "  Last logged progress ($log):"
+      tail -3 "$log"
+    else
+      echo "  No EXECUTION-LOG.md — plan may have crashed before task 1 completed, or predates this logging"
+    fi
+  fi
 done 2>/dev/null || true
-
-# Check for interrupted agents (use has_interrupted_agent and interrupted_agent_id from init)
-if [ "$has_interrupted_agent" = "true" ]; then
-  echo "Interrupted agent: $interrupted_agent_id"
-fi
 ```
 
 **If HANDOFF.json exists:**
@@ -119,16 +128,12 @@ fi
 - Read the file for specific resumption context
 - Flag: "Found mid-plan checkpoint"
 
-**If PLAN without SUMMARY exists:**
+**If PLAN without SUMMARY exists (this is the real crash-recovery path — HANDOFF.json/.continue-here only exist after a graceful `/rcode-pause-work`, which a hard crash never gets a chance to run):**
 
 - Execution was started but not completed
-- Flag: "Found incomplete plan execution"
-
-**If interrupted agent found:**
-
-- Subagent was spawned but session ended before completion
-- Read agent-history.json for task details
-- Flag: "Found interrupted agent"
+- If EXECUTION-LOG.md was found: parse its last entry (`{timestamp} | {task-id} | completed | {commit-sha}`) — this is the last task that actually finished before contact was lost. Compare against the SPRINT.md's task count to state concretely how much is left (e.g. "task 4 of 7 completed, resume from task 5").
+- If no EXECUTION-LOG.md exists: the plan has no recorded progress — treat it as needing a full restart of that plan, and say so explicitly rather than guessing
+- Flag: "Found incomplete plan execution" with whatever concrete progress EXECUTION-LOG.md gave
   </step>
 
 <step name="present_status">
@@ -151,13 +156,17 @@ Present complete project status to user:
 ⚠️  Incomplete work detected:
     - [.continue-here file or incomplete plan]
 
-[If interrupted agent found:]
-⚠️  Interrupted agent detected:
-    Agent ID: [id]
-    Task: [task description from agent-history.json]
-    Interrupted: [timestamp]
+[If incomplete plan execution found — a plan has SPRINT.md but no SUMMARY.md:]
+⚠️  Plan execution did not finish:
+    Plan: [plan file]
+    Last completed: [task-id from EXECUTION-LOG.md's last line, or "none recorded"]
+    Progress: [N] of [total tasks from SPRINT.md] tasks done
 
-    Resume with: Task tool (resume parameter with agent ID)
+    /rcode-execute re-run fresh does NOT know this — it has no automatic
+    completed-task detection, so a bare re-run would redo tasks 1-[N] and
+    risk duplicate commits. State the completed range explicitly when you
+    resume, e.g.: "/rcode-execute {phase} — tasks 1-[N] already done per
+    EXECUTION-LOG.md, continue from task [N+1]"
 
 [If pending todos exist:]
 📋 [N] pending todos — /rcode-check-todos to review
@@ -175,10 +184,6 @@ Present complete project status to user:
 
 <step name="determine_next_action">
 Based on project state, determine the most logical next action:
-
-**If interrupted agent exists:**
-→ Primary: Resume interrupted agent (Task tool with resume parameter)
-→ Option: Start fresh (abandon agent work)
 
 **If HANDOFF.json exists:**
 → Primary: Resume from structured handoff (highest priority — specific task/blocker context)
@@ -236,7 +241,7 @@ Present contextual options based on project state:
 What would you like to do?
 
 [Primary action based on state - e.g.:]
-1. Resume interrupted agent [if interrupted agent found]
+1. Complete incomplete plan execution — resume from task [N+1] [if EXECUTION-LOG.md progress found]
    OR
 1. Execute phase (/rcode-execute {phase} ${RCODE_WS})
    OR
