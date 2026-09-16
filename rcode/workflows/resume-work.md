@@ -352,9 +352,12 @@ This handles cases where:
 If user says "continue" or "go":
 - Load state silently
 - Determine primary action
-- Execute immediately without presenting options
+- If the primary action is planning, research, status, or any read-only step: execute immediately without presenting options ("Continuing from [state]... [action]")
+- If the primary action is **execute/build** (any step that spawns executors or writes code): do NOT auto-execute. Print the one-line resume summary and require one explicit confirmation first:
 
-"Continuing from [state]... [action]"
+"Continuing from [state]. Next action: [action] — this will run the build. Proceed? (yes/no)"
+
+Rationale (#1089): "continue" after a *planning* session previously fell through to launching a *build* with no confirmation — the resume safeguard ("resume must never start execution") lived elsewhere in this file but quick_resume overrode it. A single ambiguous word must not be able to spawn mass code generation.
 </quick_resume>
 
 <success_criteria>
