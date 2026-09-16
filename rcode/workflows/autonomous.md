@@ -113,8 +113,13 @@ This prevents accidental commits to the default branch during long autonomous ru
 ```bash
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 ALLOW_MAIN=""
-if echo "$ARGUMENTS" | grep -q '\-\-allow-main'; then
+# Canonical flag is --on-main (git-preflight.md, execute.md) — #1092.
+# --allow-main is a deprecated alias: still works, but warns.
+if echo "$ARGUMENTS" | grep -q '\-\-on-main'; then
   ALLOW_MAIN="true"
+elif echo "$ARGUMENTS" | grep -q '\-\-allow-main'; then
+  ALLOW_MAIN="true"
+  echo "⚠ --allow-main is deprecated — use --on-main (it does the same thing; this alias will be removed)"
 fi
 ```
 
@@ -131,7 +136,7 @@ Display:
 
 ```
 🔀 Created branch: ${BRANCH_NAME}
-   (autonomous mode does not run on main/master — use --allow-main to override)
+   (autonomous mode does not run on main/master — use --on-main to override)
 ```
 
 **If `CURRENT_BRANCH` is `main` or `master` AND `ALLOW_MAIN` is set:**
@@ -139,7 +144,7 @@ Display:
 Display warning:
 
 ```
-⚠ Running on ${CURRENT_BRANCH} — --allow-main override active
+⚠ Running on ${CURRENT_BRANCH} — --on-main override active
 ```
 
 Proceed without branch creation.
@@ -993,9 +998,9 @@ node .rcode/bin/rcode-tools.cjs state add-blocker "Autonomous mode stopped at ph
 - [ ] `--interactive` waits for background agents before post-execution routing
 - [ ] `--interactive` compatible with `--only`, `--from`, and `--to` flags
 - [ ] No `git push` issued by the workflow (per AGENTS.md)
-- [ ] Branch created when on main/master (unless --allow-main override)
+- [ ] Branch created when on main/master (unless --on-main override)
 - [ ] Branch name follows `rcode/autonomous-{version}-{timestamp}` pattern
-- [ ] --allow-main flag skips branch creation with warning
+- [ ] --on-main flag skips branch creation with warning (--allow-main accepted as deprecated alias, with warning)
 - [ ] Non-main/master branches used as-is without branch creation
 - [ ] PR/merge suggestion displayed at lifecycle completion when branch was created
 - [ ] Phase count T re-derived from disk at start of every iteration (compaction guard)

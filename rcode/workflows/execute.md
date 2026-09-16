@@ -77,6 +77,13 @@ route back to the user.
       (e.g. `git switch -c 8-1-aria`). User can override only by passing `--on-main`
       to /rcode-execute and explicitly typing the override on this turn.
 
+      When `--on-main` was granted: every executor spawn prompt (execute-waves.md
+      dispatch, execute-sprint.md Pattern A) must include the line
+      `Branch consent: --on-main (user-granted at orchestrator launch)` — the
+      task_commit protected-branch preflight (#1092) looks for exactly this line
+      and refuses to commit on a protected branch without it. Executors are
+      spawned contexts and never inherit this check on their own.
+
    b. **Working tree clean enough**: if `git status --porcelain` shows
       modified files unrelated to this phase's `files_modified` frontmatter,
       surface them and ask whether to commit, stash, or proceed. Real-session

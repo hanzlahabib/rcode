@@ -144,6 +144,15 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        </objective>
 
        <!--
+         #1092: when the user granted --on-main at orchestrator launch (execute.md
+         branch check), forward that consent verbatim — execute-sprint.md's
+         task_commit preflight refuses to commit on main/master/develop without
+         this line, and spawned executors cannot see the launch-time grant
+         otherwise. Omit entirely when not on a protected branch.
+       -->
+       ${ON_MAIN_GRANTED ? 'Branch consent: --on-main (user-granted at orchestrator launch)' : ''}
+
+       <!--
          #721 i18n: when init JSON's response_language is set, prepend this line
          verbatim to the prompt before the objective. Human-facing prose in
          SUMMARY.md must be in {response_language}; code/identifiers stay English.

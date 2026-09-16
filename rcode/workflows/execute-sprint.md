@@ -344,6 +344,31 @@ git rev-parse --git-dir
 ```
 If this fails, stop and emit: `No git repository found. Run git init first, then re-run this workflow.`
 
+**Preflight — protected-branch check (#1092):**
+```bash
+COMMIT_BRANCH=$(git branch --show-current 2>/dev/null)
+BRANCHING_STRATEGY=$(node .rcode/bin/rcode-tools.cjs config-get git.branching_strategy 2>/dev/null)
+```
+
+If `COMMIT_BRANCH` is `main`, `master`, `develop`, or `v2-prototype` AND `BRANCHING_STRATEGY` is not `none` AND consent is absent from this context — consent is either the `Branch consent: --on-main` line the orchestrator forwards in the spawn prompt (see execute-waves.md dispatch) or the user typing `--on-main` this turn (inline sequential runs) — **STOP before staging anything** and emit:
+
+```
+⛔ Executor refuses to commit: on protected branch '{COMMIT_BRANCH}'.
+
+The orchestrator's launch-time check does not reach this commit — executors
+run in spawned contexts that never inherited it (#1092).
+
+Fix path: run /rcode-execute from a feature branch, or pass --on-main to
+/rcode-execute if committing directly to {COMMIT_BRANCH} is intended.
+```
+
+This mirrors `git-preflight.md`'s protected-branch condition and its
+`branching_strategy: none` skip, but does NOT `@`-include the full contract
+here: git-preflight's dirty-tree check would halt every `task_commit`, since
+the working tree is intentionally dirty at commit time (the task's own changes
+are what's being committed). Worktree-dispatched executors sit on their own
+branch and pass naturally; only an ungated direct-on-main executor trips.
+
 **1. Check:** `git status --short`
 
 **2. Stage individually** (NEVER `git add .` or `git add -A`):
