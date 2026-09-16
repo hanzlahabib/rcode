@@ -144,6 +144,15 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        </objective>
 
        <!--
+         #1092: when the user granted --on-main at orchestrator launch (execute.md
+         branch check), forward that consent verbatim — execute-sprint.md's
+         task_commit preflight refuses to commit on main/master/develop without
+         this line, and spawned executors cannot see the launch-time grant
+         otherwise. Omit entirely when not on a protected branch.
+       -->
+       ${ON_MAIN_GRANTED ? 'Branch consent: --on-main (user-granted at orchestrator launch)' : ''}
+
+       <!--
          #721 i18n: when init JSON's response_language is set, prepend this line
          verbatim to the prompt before the objective. Human-facing prose in
          SUMMARY.md must be in {response_language}; code/identifiers stay English.
@@ -448,7 +457,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
    - Check `git log --oneline --all --grep="{phase}-{plan}"` returns ≥1 commit
    - Check for `## Self-Check: FAILED` marker
 
-   If ANY spot-check fails: report which plan failed, route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
+   If ANY spot-check fails: report which plan failed, set `PRIOR_WAVE_FAILED=true` (so the next wave lazy-loads checkpoints.md via the conditional include in step 3's execution_context — this variable is read there; declaring it without setting it here left that gate permanently false, #1090), route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
 
    If pass — these spot-checks confirm artifacts exist and were committed, not that the wave's goal was achieved. The self-check marker is the executor's own report, not an independent verification. Label the banner accordingly:
    ```
@@ -492,6 +501,8 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
     2. Continue (may cause cascading failures in wave {N+1})
 
     Key-links referencing files in the CURRENT (upcoming) wave are skipped.
+
+    If the user chooses option 2 (continue), set `PRIOR_WAVE_FAILED=true` — same rule as the spot-check failure path in step 6 (#1090).
 
 8. **Execute checkpoint plans between waves** — see `<checkpoint_handling>`.
 
