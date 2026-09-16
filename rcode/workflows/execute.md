@@ -828,7 +828,11 @@ VERIFICATION_FILE=$(ls "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1)
 if [ -z "$VERIFICATION_FILE" ]; then
   VERIFICATION_STATUS="missing"
 elif grep -qE "^status:[[:space:]]*passed" "$VERIFICATION_FILE" 2>/dev/null; then
-  VERIFICATION_STATUS="pass"
+  if grep -qE "^falsification:[[:space:]]*(upheld|human-accepted)" "$VERIFICATION_FILE" 2>/dev/null; then
+    VERIFICATION_STATUS="pass"
+  else
+    VERIFICATION_STATUS="unfalsified"
+  fi
 elif grep -qE "^status:[[:space:]]*(gaps_found|fail)" "$VERIFICATION_FILE" 2>/dev/null; then
   VERIFICATION_STATUS="fail"
 else
@@ -859,16 +863,40 @@ fi
    ```
 3. STOP the workflow. Do NOT proceed to `update_roadmap`. Do NOT call `phase complete`.
 
+**If `VERIFICATION_STATUS` is `unfalsified`** (a VERIFICATION.md says `status: passed` but carries no `falsification:` key):
+
+A `passed` with no falsification stamp means the adversarial falsification pass never ran — the verifier self-certified. Per execute-verify-phase-goal.md L112, treat it as unverified: do NOT print the COMPLETE banner.
+
+1. Mark the phase `status: executed` (not `complete`) via `node ".rcode/bin/rcode-tools.cjs" phase set-status "${PHASE_NUMBER}" executed`.
+2. Print:
+   ```
+   ⚠ Phase {X} VERIFIED but not FALSIFIED.
+
+   VERIFICATION.md says `status: passed`, but the falsification pass never
+   stamped it (`falsification: upheld`). A pass that was never adversarially
+   challenged is the executor grading its own homework.
+
+   Re-run verification so the falsification pass executes, or have a human
+   confirm the `<done>` criteria and stamp the file:
+     falsification: human-accepted
+
+   /rcode-next will refuse to advance until then.
+   ```
+3. STOP. Do NOT call `phase complete`.
+
 **If `VERIFICATION_STATUS` is `fail`:**
 
 1. Mark the phase as `status: executed` (so /rcode-plan --gaps can run a closure cycle).
 2. Surface the tasks whose `<done>` criteria failed human verification.
 3. STOP. Don't mark complete on a failing verification.
 
-**Only when `VERIFICATION_STATUS` is `pass`** — print the closure banner, then proceed to `update_roadmap` below:
+**Only when `VERIFICATION_STATUS` is `pass`** — print the closure banner, then proceed to `update_roadmap` below. Read the stamp so the user knows *which kind* of verification cleared the gate:
+```bash
+FALSIFICATION=$(grep -oE "^falsification:[[:space:]]*[a-z-]+" "$VERIFICATION_FILE" 2>/dev/null | head -1 | sed 's/^falsification:[[:space:]]*//')
+```
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- rcode ► PHASE {NN} COMPLETE ✓
+ rcode ► PHASE {NN} COMPLETE ✓  (verified: {FALSIFICATION — "upheld" | "human-accepted"})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 This is the only point in `<process>` where the banner may be emitted — never
