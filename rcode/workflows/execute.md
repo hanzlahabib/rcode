@@ -355,7 +355,7 @@ CONTEXT_WINDOW=$(node ".rcode/bin/rcode-tools.cjs" config-get context_window 2>/
 
 # Detect if any SPRINT.md in this phase references a checkpoint — used to lazy-load checkpoints.md
 SPRINT_HAS_CHECKPOINT=$(grep -rl "checkpoint" "${phase_dir}"/*-SPRINT.md 2>/dev/null | head -1)
-PRIOR_WAVE_FAILED=false  # set to true by wave failure handler if a prior wave errored
+PRIOR_WAVE_FAILED=false  # set true in execute-waves.md step 6 (spot-check failure) and the pre-wave key-links gate when the user continues past a failed wave — read at step 3 to lazy-load checkpoints.md (#1090)
 ```
 
 When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include richer context:
