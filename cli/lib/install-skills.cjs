@@ -152,7 +152,10 @@ function installSkills(packageRoot, target, options = {}) {
     }
   }
 
-  for (const bucket of ['agents', 'actions', 'core', 'seo']) {
+  // Explicit allowlist: _shared/ is plumbing (no SKILL.md at its roots) and is
+  // intentionally not walked. dev-practices/ was missing until #1083 — its
+  // skills shipped in the package but silently never reached a user's machine.
+  for (const bucket of ['agents', 'actions', 'core', 'seo', 'dev-practices']) {
     walkForSkills(path.join(skillsSource, bucket));
   }
 

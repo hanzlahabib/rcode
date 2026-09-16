@@ -27,9 +27,9 @@ triggers:
   - "حقّق في الخطأ"
   - "أصلح الخطأ"
   - "تتبّع السبب"
-user-invocable: false
+user-invocable: true
 ---
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
+<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable via direct phrase-trigger match, explicit @-inclusion, or direct user invocation (/rcode-debug — flipped user-invocable: true per #1084). See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 ## The Iron Law
 
