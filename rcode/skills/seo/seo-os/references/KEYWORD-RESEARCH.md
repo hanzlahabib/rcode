@@ -1,42 +1,41 @@
-# Keyword Research (stub)
+# Keyword Research (pointer)
 
-**Status:** thin by design. The full normalize → cluster → intent-bucket keyword pipeline is a
-larger extension reserved for a future iteration of this system (see Extension point below) — do
-not build it ad hoc inside a router response.
+**Status:** the full normalize → cluster → intent-bucket keyword pipeline this file used to defer is
+now built — see `KEYWORD-INTELLIGENCE.md`. This file stays as a short pointer to where keyword data
+actually comes from before that pipeline runs.
 
-## What exists today
+## Where raw keyword data comes from
 
 - `rcode-seo-growth-orchestrator`'s GSC page-2 keyword mining play
   (`../../seo-growth-orchestrator/rules/local-seo-stack.md`, play 2) — mines Google Search Console
   for underperforming (position 8-20) commercial-intent queries on an **already-indexed** site. Use
-  this for `EXISTING_SITE_GROWTH` / `SEO_RECOVERY` projects with GSC access.
+  this for `EXISTING_SITE_GROWTH` / `SEO_RECOVERY` projects with GSC access; see `GSC-GROWTH-ENGINE.md`
+  for the export-driven, deterministic complement of this same play.
 - `rcode-seo-content-factory`'s keyword expansion agent
   (`../../seo-content-factory/rules/agents.md`, A2) — expands seed terms across modifier axes
   (industry, location, alternative, comparison, template, statistics, question, tool) using a live
-  keyword-data source. This is the LeadLyze-specific implementation; the *pattern* (seed →
-  modifier-axis expansion → real volume/KD pull, never invented) generalizes.
+  keyword-data source.
 - `rcode-seo-site-builder`'s keyword-strategy step
   (`../../seo-site-builder/rules/03-keyword-strategy.md`) for a new affiliate/content site from a
   validated niche.
+- An Ahrefs organic-keywords export, normalized via `scripts/seo-csv-normalize.cjs` per
+  `DATA-WORKSPACE.md`'s canonical schema — the input `KEYWORD-INTELLIGENCE.md` consumes for the full
+  pipeline below.
 
-## What this router adds on top
+## What happens next
 
-Whichever pipeline runs, the OS-level requirement is unchanged: raw keyword output is an input to
-`SERP-INTENT.md` and `TOPIC-CLUSTERING.md`, not a page-generation instruction. Never let a keyword
-list map one-keyword-per-page — see `TOPIC-CLUSTERING.md`'s normalize → dedupe → cluster → classify
-flow, and `PAGE-TYPE-CLASSIFIER.md`'s page-existence test before any URL is created from a keyword.
-
-## Extension point (not built here)
-
-A richer, general-purpose keyword pipeline — normalize, remove duplicates, detect semantic
-duplicates, intent-bucket, and hand off a clean cluster file regardless of which downstream skill
-consumes it — is reserved for a future prompt in this system's build-out. When it lands it should
-live as `seo-os/scripts/` additions (see `LIFECYCLE-AND-STAGE-GATES.md`'s scripts convention) rather
-than a rewrite of the three existing skills above.
+Whichever source the raw list came from, the OS-level requirement is unchanged: it is an input to
+`KEYWORD-INTELLIGENCE.md` (clean → dedupe → intent/funnel classify → cluster → page-type classify →
+score), never a page-generation instruction. Never let a keyword list map one-keyword-per-page — see
+`TOPIC-CLUSTERING.md`'s normalize → dedupe → cluster → classify flow, and
+`PAGE-TYPE-CLASSIFIER.md`'s page-existence test before any URL is created from a keyword.
 
 ## See also
 
+- `KEYWORD-INTELLIGENCE.md` — the full pipeline: intent/funnel classification, action buckets,
+  ambiguity handling, same-intent detection, topical map, and publishing order.
 - `SERP-INTENT.md` — where raw keywords get validated before clustering.
 - `TOPIC-CLUSTERING.md` — mandatory next step after keywords are gathered.
+- `DATA-WORKSPACE.md` — canonical CSV schema and freshness rules for imported keyword exports.
 - `rcode-seo-growth-orchestrator`, `rcode-seo-content-factory`, `rcode-seo-site-builder` — existing
   mechanics, unmodified by this skill.

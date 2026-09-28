@@ -171,6 +171,9 @@ matching, not causal proof — label conclusions per `EVIDENCE-POLICY.md`.
 | Fast-rising impressions | Potential winner — consider expanding the cluster (`EXPANDING`) |
 | Indexed but zero impressions | Search demand, intent mismatch, keyword targeting, duplicate content, indexation, quality, competition — **investigate before** buying backlinks |
 
+For the full export-driven workflow behind this table (striking-distance analysis, decay detection,
+cannibalization, winner/weak-project detection), see `GSC-GROWTH-ENGINE.md`.
+
 ## Do-not-repeat discipline
 
 Before starting research at any gate, read `.rcode/seo/STATE.md`'s "Do not repeat" list and

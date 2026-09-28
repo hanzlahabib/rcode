@@ -3,6 +3,10 @@
 Single source of truth for the weighted opportunity rubric. `scripts/seo-opportunity-score.cjs`
 implements these numbers 1:1 — do not copy this table into another file; link here instead.
 
+This file has two parts: **Part 1** (below) scores a pre-launch candidate — should we build this at
+all? **Part 2** (at the bottom of this file) scores an already-launched page using real data — what
+should we fix next? Different question, different script, same rubric discipline.
+
 This score is **decision support, not objective truth**. It exists to stop the
 `low KD → available domain → buy it` failure mode (see `DOMAIN-RESEARCH.md`) by forcing every
 candidate through the same nine dimensions before a build decision is made. Always record the
@@ -104,7 +108,81 @@ Output: `{ project, total, band, subtotal, breakdown: { scores: [...], penalties
 `MONETIZATION.md` for dimension 4, `RISK-GUARDRAILS.md` for the penalty definitions
 (YMYL/trademark/impersonation).
 
-**Extension point (not built here):** a richer, data-sourced scoring pass (live GSC/Ahrefs deltas
-feeding sub-scores automatically instead of hand-entered numbers) is reserved for Prompt #2 — see
-`EVIDENCE-POLICY.md`'s extension-point note. The script's `scores`/`riskFlags` shape is designed so
-that swap can happen without changing the output contract.
+---
+
+## Part 2 — post-launch page opportunity score
+
+**Part 1 answers "should we build this?" before anything exists.** Part 2 answers "what should we
+fix next on something already built?" once real data exists. They are deliberately different
+questions, scored by a different script (`seo-page-opportunity-score.cjs`, not
+`seo-opportunity-score.cjs`) with different dimensions — do not conflate them, and do not try to
+retrofit Part 1's pre-launch dimensions (intent fit, domain/brand fit) onto a page that's already
+live and indexed.
+
+This is the "richer, data-sourced scoring pass" this file previously reserved — first-party evidence
+(actual impressions, actual position, actual CTR, actual conversions) now available from
+`GSC-GROWTH-ENGINE.md`'s exports increasingly outweighs the theoretical estimates Part 1 was forced
+to use before launch (see `EVIDENCE-POLICY.md`'s evidence-class hierarchy: `FIRST_PARTY_DATA` and
+`OBSERVATION`-tier evidence beats `TOOL_ESTIMATE`/`INFERENCE`).
+
+### Weighted rubric (100 points)
+
+| Dimension | Weight |
+|---|---|
+| Impression potential | 20 |
+| Position gap | 20 |
+| CTR gap | 15 |
+| Business value | 15 |
+| Internal-link deficit | 10 |
+| Content gap / decay | 10 |
+| Conversion potential | 10 |
+| **Total** | **100** |
+
+- **Impression potential** — how much existing search demand is the page already surfacing for
+  (from `GSC-GROWTH-ENGINE.md`'s striking-distance data), independent of whether it's converting
+  that demand into clicks yet.
+- **Position gap** — how close the page sits to a meaningfully better position (the position 8-20
+  striking-distance band is the highest-opportunity zone; a page already on position 1-3 has little
+  gap left, a page on position 40+ has a gap too large for a small intervention to close).
+- **CTR gap** — actual CTR against the position-appropriate CTR-by-position baseline
+  (`seo-gsc-striking-distance.cjs`'s `ctrGaps` output) — see `GSC-GROWTH-ENGINE.md`'s CTR-cause
+  checklist before assuming the gap is fixable with a title/meta change alone.
+- **Business value** — organic visits, lead count, signup count, revenue, or call count attributable
+  to the page where that data exists (`MONETIZATION.md`'s per-project economics, tracked per spec's
+  business-outcome-integration principle: a page with 500 high-intent visitors producing customers
+  can outrank a page with 20,000 definition-query visits and no conversion path).
+- **Internal-link deficit** — how underlinked the page is relative to its opportunity, per
+  `INTERNAL-LINK-INTELLIGENCE.md`'s link-opportunity prioritization.
+- **Content gap / decay** — missing sections, outdated data, or a `seo-gsc-decay.cjs`-flagged decline
+  relative to a prior period, per `GSC-GROWTH-ENGINE.md`'s content-decay analysis.
+- **Conversion potential** — how likely the page's traffic is to convert given its funnel position
+  and intent (see `KEYWORD-INTELLIGENCE.md`'s funnel classification), distinct from business value
+  already observed — this dimension covers unrealized potential, business value covers what's already
+  measured.
+
+### Decision bands
+
+| Range | Meaning |
+|---|---|
+| 75–100 | Top priority — act this cycle |
+| 60–74 | Worth doing this review cycle if capacity allows |
+| 45–59 | Backlog — revisit next review |
+| < 45 | Low priority / monitor only |
+
+As with Part 1, these bands are decision support, not a verdict — `TECHNICAL-INTELLIGENCE.md`'s
+strategic-override principle applies here too (a site-wide `NOINDEX_ACCIDENT` outranks ten
+high-scoring title fixes regardless of what the numeric bands say).
+
+### Using the script
+
+```bash
+node rcode/skills/seo/seo-os/scripts/seo-page-opportunity-score.cjs path/to/input.json
+```
+
+Same shape as Part 1's script: normalized score entries with evidence preserved verbatim, a config
+override for weights/bands, and the total clamped to 0-100. Output:
+`{ project, url, total, band, breakdown }`.
+
+**See also:** `GSC-GROWTH-ENGINE.md` for where the underlying GSC evidence comes from,
+`INTERNAL-LINK-INTELLIGENCE.md` for the link-deficit dimension, `ACTION-QUEUE.md` for what happens to
+a page once it's scored, `MONETIZATION.md` for the business-value dimension's economics.

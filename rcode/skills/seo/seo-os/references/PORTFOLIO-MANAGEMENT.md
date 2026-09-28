@@ -63,15 +63,55 @@ hand, and nothing to build (no server, no stored index) beyond the script itself
   multiple `DECISIONS.md`/`STATE.md` files directly when asked — the summary script's job is only
   to make "what needs attention across N projects" a single command instead of N manual reads.
 
-## Reserved, not built here
+## Data and actions now exist
 
-- A `data/` subdirectory under `.rcode/seo/` (raw GSC/Ahrefs export drop zone) is reserved for
-  Prompt #2's data-ingest work. Do not create it speculatively.
-- A structured `ACTIONS.md` promoting `STATE.md`'s freeform "Next recommended actions" list into a
-  machine-readable action queue is Prompt #2's job (see `EVIDENCE-POLICY.md` and the design's
-  extension-point notes). `seo-portfolio-summary.cjs` reads the current freeform heading with a
-  regex, not a queue schema, and that parsing choice should not need to change when the queue is
-  added later — it would just start reading richer content under the same heading.
+Two things this file previously reserved are built:
+
+- `.rcode/seo/data/{gsc,ahrefs,analytics,crawls,backlinks,serp,competitors}/` — the raw export
+  drop zone, created on first import. See `DATA-WORKSPACE.md` for the layout and freshness rules.
+- `.rcode/seo/actions/ACTIONS.md` — the structured, machine-readable action queue that promotes
+  `STATE.md`'s freeform "Next recommended actions" list into deduped, prioritized records. See
+  `ACTION-QUEUE.md` and `seo-action-queue.cjs`. `seo-portfolio-summary.cjs` still reads the current
+  freeform "Next recommended actions" heading with a regex, not the queue schema — that parsing
+  choice didn't need to change; `ACTIONS.md` is a separate file the summary doesn't scan, and a
+  project should keep `STATE.md`'s heading pointing at its top items for the portfolio view to stay
+  useful without a script change.
+
+## Capital allocation
+
+Connect real performance data (from `GSC-GROWTH-ENGINE.md`'s winner/weak-project detection) to the
+lifecycle states already defined in `LIFECYCLE-AND-STAGE-GATES.md` — no new states, just a decision
+mapping for what to do once evidence exists:
+
+| Evidence pattern | Decision | Lifecycle expression |
+|---|---|---|
+| Strong organic signals (winner-detection criteria met) | Invest more | `OBSERVING` → `EXPANDING` |
+| Some impressions, weak CTR or unrealized potential | Optimize | `OBSERVING` → `IMPROVING` |
+| No evidence after a reasonable observation window | Hold | `OBSERVING` → `HOLD` |
+| Thesis invalidated (weak-project-detection criteria met) | Kill / reposition | `OBSERVING` → `KILLED` or `CONSOLIDATING` |
+
+This is a business decision, not an emotional one: a project with no evidence after a reasonable test
+gets `HOLD`, not another content sprint on hope. See `GSC-GROWTH-ENGINE.md`'s "Winner detection" and
+"Weak-project detection" sections for the underlying signal lists that justify each row.
+
+## Answering portfolio-level questions
+
+The portfolio view should make these questions answerable without a bespoke investigation each time:
+
+| Question | Where the answer comes from |
+|---|---|
+| Which sites deserve more investment? | `GSC-GROWTH-ENGINE.md` winner detection + this file's capital-allocation table |
+| Which pages are closest to meaningful growth? | `seo-page-opportunity-score.cjs` high-band pages (`OPPORTUNITY-SCORING.md` Part 2) |
+| Which projects have no evidence yet? | `STATE.md` stage = `OBSERVING` with no `.rcode/seo/data/` GSC import yet (`DATA-WORKSPACE.md`) |
+| Which sites are decaying? | `seo-gsc-decay.cjs`'s `decaying[]` output, aggregated per project |
+| Which projects generate leads? | Business-value tracking in `PROJECT.md`/`STATE.md` (`OPPORTUNITY-SCORING.md` Part 2's business-value dimension) |
+| Which experiments are waiting for observation? | `ACTION-QUEUE.md` rows with `status: OBSERVING` and an unreached minimum review date |
+| Which projects should be stopped? | `GSC-GROWTH-ENGINE.md` weak-project detection → this file's `KILLED`/`CONSOLIDATING` row |
+
+Keep the implementation lightweight — this table is a pointer to existing scripts/files, not a new
+aggregation service. Answering "which projects should be stopped" still means running
+`seo-portfolio-summary.cjs` and reading the flagged projects' `STATE.md`/`ACTIONS.md`, not querying a
+database that doesn't exist.
 
 ## Using the script
 
@@ -87,4 +127,7 @@ Prints a Markdown table to stdout. Directories without `.rcode/seo/STATE.md` are
 (not an error) — most sibling directories of a given project will not be rcode SEO projects.
 
 **See also:** `LIFECYCLE-AND-STAGE-GATES.md` for the stage enum, `MONETIZATION.md` for the
-per-project economics a priority decision should be based on.
+per-project economics a priority decision should be based on, `DATA-WORKSPACE.md` for the data drop
+zone, `ACTION-QUEUE.md` for the structured action queue, `GSC-GROWTH-ENGINE.md` for the winner/weak-
+project signals this file's capital-allocation table consumes, `OPPORTUNITY-SCORING.md` Part 2 for
+per-page scoring that feeds the "closest to meaningful growth" question.

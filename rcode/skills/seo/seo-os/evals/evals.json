@@ -108,6 +108,97 @@
         "Distinguishes competitive research from competitive copying explicitly"
       ],
       "files": []
+    },
+    {
+      "id": "I",
+      "prompt": "Here's a 5,000-row Ahrefs export. Tell me what to build.",
+      "expected_output": "Must not eyeball a spreadsheet or dump rows into the response. Should normalize the export via seo-csv-normalize.cjs (ahrefs-organic-keywords schema), then run the KEYWORD-INTELLIGENCE.md pipeline: clean/dedupe/normalize, remove irrelevant rows, cluster by topic (TOPIC-CLUSTERING.md), classify intent and funnel stage, classify page type (PAGE-TYPE-CLASSIFIER.md), and avoid one-keyword-one-page mapping. Should prioritize resulting clusters based on the project's actual context (business model, existing site, monetization) rather than raw volume, and should aggregate/filter locally before reasoning over top candidates only (DATA-WORKSPACE.md's large-dataset-handling discipline) instead of processing all 5,000 rows in-context.",
+      "assertions": [
+        "Normalizes the export through the documented CSV schema instead of eyeballing raw rows",
+        "Clusters keywords by topic/intent rather than mapping one keyword to one page",
+        "Classifies intent, funnel stage, and page type before recommending anything to build",
+        "Prioritizes based on project context, not raw search volume alone",
+        "Aggregates/filters locally before dumping large row counts into reasoning"
+      ],
+      "files": []
+    },
+    {
+      "id": "J",
+      "prompt": "Our traffic dropped 35%.",
+      "expected_output": "Must not offer a single unsupported diagnosis. Should request or use comparative GSC data (current vs. prior period) via seo-gsc-decay.cjs, then investigate page-level decline, query-level decline, technical changes, intent changes, competitor changes, seasonality, and SERP feature changes as parallel hypotheses (GSC-GROWTH-ENGINE.md's content-decay analysis and hypothesis-checklist fields) before recommending a fix. Should explicitly avoid declaring a cause before evidence supports it.",
+      "assertions": [
+        "Requests or uses period-over-period comparative data rather than guessing",
+        "Investigates multiple hypotheses (page-level, query-level, technical, intent, competitor, seasonal, SERP-feature) in parallel",
+        "Does not declare a single cause without checking evidence for it",
+        "References the decay hypothesis-checklist fields rather than inventing an ad hoc explanation",
+        "Does not propose a fix before a hypothesis is supported by evidence"
+      ],
+      "files": []
+    },
+    {
+      "id": "K",
+      "prompt": "GSC shows: query 'speed to lead calculator', position 10.2, impressions 4000, CTR 0.5%.",
+      "expected_output": "Must treat this as a striking-distance candidate (position 8-20 with meaningful impressions, GSC-GROWTH-ENGINE.md) rather than jumping straight to 'build a new page'. Should inspect: is the currently-ranking page the correct one to rank (ranking-page mismatch check), does intent match, is there a missing section/utility gap, is the title/H1 relevant, and are there internal-link opportunities (INTERNAL-LINK-INTELLIGENCE.md) — all before suggesting a new page. Should recommend the smallest useful intervention on the existing page.",
+      "assertions": [
+        "Classifies this as a striking-distance opportunity, not a reason to build something new",
+        "Checks whether the currently-ranking page is the correct one",
+        "Checks intent match and missing content/utility before recommending changes",
+        "Checks internal-link opportunities as part of the investigation",
+        "Recommends the smallest useful intervention rather than a full rebuild or a new page"
+      ],
+      "files": []
+    },
+    {
+      "id": "L",
+      "prompt": "Write 100 articles from these keywords.",
+      "expected_output": "Must not generate 100 pages directly from a raw keyword list. Should cluster first (TOPIC-CLUSTERING.md), detect same-intent/duplicate keywords (KEYWORD-INTELLIGENCE.md's same-intent detection), classify page type per cluster (PAGE-TYPE-CLASSIFIER.md), reject unnecessary URLs the page-existence test wouldn't justify, and generate content briefs (CONTENT-BRIEFS.md) for the surviving clusters rather than blindly drafting 100 pages.",
+      "assertions": [
+        "Clusters and deduplicates keywords before generating any content",
+        "Detects same-intent keywords instead of producing one page per keyword",
+        "Classifies page type per cluster before drafting",
+        "Rejects unnecessary URLs rather than forcing exactly 100 pages",
+        "Produces briefs for review rather than blind bulk drafting"
+      ],
+      "files": []
+    },
+    {
+      "id": "M",
+      "prompt": "This article lost 50% traffic.",
+      "expected_output": "Must investigate before recommending action. Should compare query-level data (position vs. CTR change), check SERP/intent shifts, and walk the content-decay hypothesis checklist (outdated content, stronger competitors, SERP intent changed, cannibalization, lost backlinks, AI answer reduced clicks, technical problem, seasonality — GSC-GROWTH-ENGINE.md) before recommending refresh/expand/rewrite/merge/redirect. Should not refresh the content merely to bump the publish date.",
+      "assertions": [
+        "Compares query-level position and CTR data before diagnosing",
+        "Checks SERP and intent changes as part of the investigation",
+        "Walks the decay hypothesis checklist rather than assuming a single cause",
+        "Recommends an evidence-based action (refresh/expand/rewrite/merge/redirect) rather than a default rewrite",
+        "Does not recommend refreshing solely to change the publish date"
+      ],
+      "files": []
+    },
+    {
+      "id": "N",
+      "prompt": "Add FAQ schema to every article for better rankings.",
+      "expected_output": "Must not blindly add schema site-wide. Should apply TECHNICAL-INTELLIGENCE.md's schema-intelligence check: determine page type, confirm visible content actually supports FAQ schema, identify real entities/questions (never invented ones), and validate eligibility per page before adding anything. Should explain that schema is descriptive markup, not a guaranteed ranking boost, and should decline to fabricate FAQ content that doesn't already exist on the page.",
+      "assertions": [
+        "Does not add FAQ schema to every article without checking eligibility first",
+        "Checks that visible page content actually supports the schema before adding it",
+        "Refuses to invent FAQ questions/answers that aren't genuinely on the page",
+        "Explains that schema does not guarantee a ranking improvement",
+        "Applies a page-by-page eligibility check rather than a blanket site-wide change"
+      ],
+      "files": []
+    },
+    {
+      "id": "O",
+      "prompt": "Claude says this keyword gets 20k searches, let's build it.",
+      "expected_output": "Must reject an unsupported volume claim from the model itself as a data source. Should require a real third-party tool estimate (Ahrefs/Semrush/Keyword Planner, per DATA-WORKSPACE.md's data-source capability map) or first-party evidence before treating the number as real, labeling any unverified number per EVIDENCE-POLICY.md rather than treating a model-generated figure as a TOOL_ESTIMATE or FACT.",
+      "assertions": [
+        "Rejects the model's own unsupported claim as a valid data source",
+        "Requires a real third-party tool export or first-party data before accepting the volume figure",
+        "References the data-source capability map for where a real number should come from",
+        "Applies evidence-policy labeling rather than treating an unverified number as fact",
+        "Does not proceed to build recommendations based on the unverified figure"
+      ],
+      "files": []
     }
   ]
 }

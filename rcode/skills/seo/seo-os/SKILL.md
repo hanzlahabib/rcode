@@ -86,6 +86,12 @@ skill, `rcode-seo-astro-implementation` (Layer B), loaded only when the target p
 | Write one article or page | `rcode-seo-content-writer` |
 | Score a validated opportunity | `references/OPPORTUNITY-SCORING.md` + `scripts/seo-opportunity-score.cjs` (Lane B) |
 | View state across many SEO projects | `scripts/seo-portfolio-summary.cjs` (Lane B), see `references/PORTFOLIO-MANAGEMENT.md` |
+| Ingest a GSC/Ahrefs export | `references/DATA-WORKSPACE.md` + `scripts/seo-csv-normalize.cjs` |
+| Mine GSC data / "why did our traffic drop" (script-driven, from an export) | `references/GSC-GROWTH-ENGINE.md` — the export-driven complement to `rcode-seo-growth-orchestrator`'s browser-driven GSC play above; neither replaces the other |
+| "What should I fix next" / score an existing page | `references/ACTION-QUEUE.md` + `scripts/seo-page-opportunity-score.cjs` |
+| Run the monthly/periodic SEO review | `references/REVIEW-WORKFLOWS.md` |
+| AI-citation / AI-answer visibility tracking | `references/AI-VISIBILITY.md` (thin project-memory wrapper) → `rcode-seo-aeo-geo` for the mechanics |
+| Which persona/agent should own a step (research, build, review) | `references/AGENT-ROLES.md` |
 | A narrow, already-scoped technical fix | Do the fix directly — no module load, no research detour (see Examples: Negative) |
 
 ## Output Format
