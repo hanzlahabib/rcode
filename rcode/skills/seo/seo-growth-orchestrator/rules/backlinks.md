@@ -12,7 +12,7 @@ Two sub-workflows in one run. Prompt: `templates/backlink-research.md`.
 
 **Data source:** connect Ahrefs API for accurate DR/traffic if available. If not, tell the model to *drop the Ahrefs connection and score natively from its own analysis* — works, just label scores as estimates (see don'ts). Re-run every 2–4 weeks; backlink profiles drift.
 
-Delegate the heavy mechanics to `backlink-analyzer` / `competitor-analysis` / `claude-seo:seo-backlinks`. This play is the orchestration + outreach layer on top.
+Delegate the heavy mechanics to `rcode-seo-os` (`references/BACKLINK-INTELLIGENCE.md`, `references/COMPETITOR-RESEARCH.md`) / `claude-seo:seo-backlinks`. This play is the orchestration + outreach layer on top.
 
 ## Method B — Automated backlink exchange (optional, paid)
 

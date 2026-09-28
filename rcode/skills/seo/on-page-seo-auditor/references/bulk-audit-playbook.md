@@ -89,7 +89,7 @@ P2 (single-page refinements):
 - **Key Findings / Output**: per-cluster pattern findings + portfolio priority
 - **Evidence**: "Sampled N/M URLs; extrapolated to cluster level; confidence flagged per finding"
 - **Open Loops**: un-sampled clusters, URLs flagged for individual attention, data gaps (no keyword data, etc.)
-- **Recommended Next Skill**: `content-refresher` (for bulk content edits) OR `meta-tags-optimizer` (for title/description template work) OR `internal-linking-optimizer` (if linking pattern is the dominant issue)
+- **Recommended Next Skill**: `rcode-seo-content-writer` for bulk content edits (no dedicated "content refresher" skill exists — pair with `rcode-seo-os`'s `references/REVIEW-WORKFLOWS.md` to decide priority); title/description template work is already this skill's own Steps 2-3; OR `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`) if linking pattern is the dominant issue
 
 ## Template suggestions (common bulk outputs)
 

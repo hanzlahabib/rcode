@@ -16,7 +16,7 @@ Seed the niche in Google Keyword Planner; it returns hundreds of variations (800
 Open the top-ranking sites in big cities (Dallas, Miami, LA, NYC). Their homepage/service nav lists every subniche they bothered to build: flood damage, structural damage, pipe break, plumbing leak, wet insulation, sewage cleanup, etc. They did the grouping work — copy the map, then find what they *skipped*.
 
 **SERP surfaces**
-Mine People Also Ask, People Also Search For, and Reddit/forum threads via `serp-analysis`. These reveal how real searchers phrase the problem ("basement flooded what do I do") before they know the industry term.
+Mine People Also Ask, People Also Search For, and Reddit/forum threads via `rcode-seo-os` (`references/SERP-INTELLIGENCE.md`). These reveal how real searchers phrase the problem ("basement flooded what do I do") before they know the industry term.
 
 ### AI subniche pass
 
@@ -24,7 +24,7 @@ Mine People Also Ask, People Also Search For, and Reddit/forum threads via `serp
 Use `templates/subniche-research-prompt.md`: "Act as a specialist SEO consultant for a [niche] company. We want to dominate long-tail high-intent searches. Identify 10 subniches ignored by bigger companies." It returns named subniches plus angle ideas (before/after case studies, pairing with ads, etc.).
 
 **Reconcile with the gap analysis**
-Feed manual + AI candidates into `content-gap-analysis` to confirm which subniches the ranking competitors have **no** dedicated page for. Those are the targets.
+Feed manual + AI candidates into `rcode-seo-os` (`references/COMPETITOR-RESEARCH.md`) to confirm which subniches the ranking competitors have **no** dedicated page for. Those are the targets.
 
 ### Select and rank
 
@@ -42,9 +42,9 @@ ceiling water damage from upstairs leak · plumbing overflow cleanup · wet insu
 
 ### Example: Pipeline
 ```
-keyword-research (scoop) ─┐
-competitor-analysis ──────┤→ candidate list → content-gap-analysis → ranked 5–10 subniches
-AI consultant prompt ─────┘
+seo-os keyword-intel (scoop) ─┐
+seo-os competitor-research ───┤→ candidate list → seo-os competitor-research (gap check) → ranked 5–10 subniches
+AI consultant prompt ─────────┘
 ```
 
 ## Anti-Patterns

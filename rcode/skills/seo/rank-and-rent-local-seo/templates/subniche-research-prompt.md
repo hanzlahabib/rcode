@@ -1,6 +1,6 @@
 # Subniche Research Prompt
 
-Drop-in AI prompt to surface ignored, high-intent subniches for a chosen local-service niche. Pair its output with `content-gap-analysis` to confirm competitor absence.
+Drop-in AI prompt to surface ignored, high-intent subniches for a chosen local-service niche. Pair its output with `rcode-seo-os` (`references/COMPETITOR-RESEARCH.md`) to confirm competitor absence.
 
 ## Prompt
 
@@ -30,5 +30,5 @@ Return as a table, ordered by best opportunity (high intent + low competition) f
 
 ## After running
 1. Export the 10 subniches.
-2. Run `content-gap-analysis` against the top 3–5 ranking competitors to confirm none have a dedicated page.
+2. Run `rcode-seo-os` (`references/COMPETITOR-RESEARCH.md`) against the top 3–5 ranking competitors to confirm none have a dedicated page.
 3. Keep the 5–10 with the weakest competitor coverage → feed into `city-matrix-and-pages.md`.

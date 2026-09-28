@@ -112,7 +112,7 @@ Technical SEO checklist for migrating [old domain] to [new domain]
 Pre-migration audit: WordPress to Next.js headless
 ```
 
-The migration flow has 6 stages (baseline snapshot, risk map, redirect map, staging QA, cutover checklist, T+1/T+7/T+30 diff). See [references/pre-migration-playbook.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/technical-seo-checker/references/pre-migration-playbook.md) for the full workflow and red-flag patterns.
+The migration flow has 6 stages (baseline snapshot, risk map, redirect map, staging QA, cutover checklist, T+1/T+7/T+30 diff). See [references/pre-migration-playbook.md](references/pre-migration-playbook.md) for the full workflow and red-flag patterns.
 
 ### LLM Crawler Handling (GPTBot / ClaudeBot / PerplexityBot)
 
@@ -120,7 +120,7 @@ The migration flow has 6 stages (baseline snapshot, risk map, redirect map, stag
 Audit how my site handles AI crawlers — I want to allow retrieval but block training
 ```
 
-As of 2026, robots.txt must make explicit decisions about AI engines. See [references/llm-crawler-handling.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/technical-seo-checker/references/llm-crawler-handling.md) for the bot inventory, three stance patterns (default-open, default-closed, split), robots.txt templates, and the Cloudflare edge-override gotcha.
+As of 2026, robots.txt must make explicit decisions about AI engines. See [references/llm-crawler-handling.md](references/llm-crawler-handling.md) for the bot inventory, three stance patterns (default-open, default-closed, split), robots.txt templates, and the Cloudflare edge-override gotcha.
 
 ### Site-Wide / Bulk Audit (5+ URLs)
 
@@ -134,7 +134,7 @@ Bulk audit: 50 product pages on example.com, 40 not indexed
 Audit all URLs in https://example.com/sitemap.xml
 ```
 
-See [references/bulk-audit-playbook.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/technical-seo-checker/references/bulk-audit-playbook.md) for the full workflow. For platform-specific playbooks (Shopify / WooCommerce / Headless / BigCommerce / Magento 2), see [references/ecommerce-platform-patterns.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/technical-seo-checker/references/ecommerce-platform-patterns.md).
+See [references/bulk-audit-playbook.md](references/bulk-audit-playbook.md) for the full workflow. For platform-specific playbooks (Shopify / WooCommerce / Headless / BigCommerce / Magento 2), see [references/ecommerce-platform-patterns.md](references/ecommerce-platform-patterns.md).
 
 ## Skill Contract
 

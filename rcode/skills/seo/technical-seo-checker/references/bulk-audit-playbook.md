@@ -89,7 +89,7 @@ P2 (single-page):
 - **Key Findings / Output**: pattern-level issues + portfolio priority list
 - **Evidence**: "Sampled N of M pages (deep audit); inferred group issues from URL structure + meta signals"
 - **Open Loops**: un-sampled groups; access blockers; data freshness caveats
-- **Recommended Next Skill**: `content-refresher` (if content issues dominate) OR `schema-markup-generator` (if structured data issues)
+- **Recommended Next Skill**: `rcode-seo-content-writer` if content issues dominate (no dedicated "content refresher" skill exists); OR author/repair JSON-LD directly per this skill's own structured-data step (Step 7) — no standalone schema-generator skill exists outside `rcode-seo-astro-implementation`'s `SchemaRenderer` for Astro projects
 
 ## Minimum viable bulk input
 

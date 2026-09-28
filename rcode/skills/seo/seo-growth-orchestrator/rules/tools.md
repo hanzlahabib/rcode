@@ -9,7 +9,7 @@ The masterclass leans on three tools. **None are required** — every play has a
 | **Blotato** (blotado/blowto) | Social publishing API: schedule posts, auto-generate infographics from blog concepts | Paid. Pulls from RSS to repurpose SEO content into social. |
 
 ## Free substitution map (when the user won't pay)
-- Arvo content layer → `seo-content-writer` + `on-page-seo-auditor` + `internal-linking-optimizer` + `schema-markup-generator` + `meta-tags-optimizer`, then paste/publish manually.
+- Arvo content layer → `seo-content-writer` + `on-page-seo-auditor` (covers title/meta tags directly) + `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`; schema authored per on-page-seo-auditor's Step 9), then paste/publish manually.
 - Arvo backlink exchange → Play 1 Method A (guest-post + competitor mining outreach).
 - Arvo brand/LLM monitor → `claude-seo:seo-geo` + manual prompt checks.
 - Blotato → manual scheduling, or the user's existing social scheduler.

@@ -17,7 +17,7 @@ Edge cases
 Known limitations
 ```
 
-Record this as the tool's spec (spec §72's "Tool specification" concept) — either inline as a code comment block next to the calculation function, or in a per-tool `TOOL-SPEC.md` if the project already keeps tool docs separately. Whichever the target project already does — do not invent a third location.
+Record this as the tool's spec (spec §72's "Tool specification" concept) — either inline as a code comment block next to the calculation function, or in a per-tool spec file (e.g. TOOL-SPEC.md) if the project already keeps tool docs separately. Whichever the target project already does — do not invent a third location.
 
 ## Fixture format
 

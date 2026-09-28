@@ -4,10 +4,10 @@ Goal: SEO-rich blog content → RSS → repurposed social, optionally fully auto
 
 ## The pipeline
 1. **Business context** — Claude asks for site URL, industry, niche, audience (clarify to ≥95%).
-2. **Competitive + opportunity research** — competitor gaps, weak spots, keyword clusters, ranking opportunities. (Delegate to `competitor-analysis`, `content-gap-analysis`, `keyword-research`, `serp-analysis`.)
+2. **Competitive + opportunity research** — competitor gaps, weak spots, keyword clusters, ranking opportunities. (Delegate to `rcode-seo-os`'s `references/COMPETITOR-RESEARCH.md` and `references/KEYWORD-INTELLIGENCE.md`/`references/SERP-INTELLIGENCE.md`.)
 3. **Blog plan** — titles + primary/supporting keywords, mapped to search intent, interlinked with service pages and content clusters.
 4. **Generate content WITH the on-page SEO layer** — title/meta, H2/H3, internal links to money pages (from sitemap), external links to trusted sources, alt text, FAQ schema. **Raw Claude prose lacks this layer — you must add it.** Either:
-   - Use the granular skills: `seo-content-writer` + `on-page-seo-auditor` + `internal-linking-optimizer` + `schema-markup-generator`, OR
+   - Use the granular skills: `seo-content-writer` + `on-page-seo-auditor` + `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`) — schema is authored directly per on-page-seo-auditor's Step 9 or via `rcode-seo-astro-implementation`'s `SchemaRenderer` on Astro, OR
    - Use a tool that bakes SEO structure in on publish (see `tools.md`).
 5. **RSS** — published posts populate the RSS feed.
 6. **Social repurposing** — pull the RSS feed, generate platform social posts that link back to the blog/money pages, attach images (pulled from the article or generated).

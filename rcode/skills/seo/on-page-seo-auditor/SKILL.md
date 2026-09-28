@@ -116,7 +116,7 @@ Bulk audit: all 40 blog posts on example.com/blog/
 Pre-publish audit for these 6 articles: [URLs]
 ```
 
-See [references/bulk-audit-playbook.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/bulk-audit-playbook.md) for the full workflow (cluster classification, sampling, extrapolation, portfolio priority, template suggestions).
+See [references/bulk-audit-playbook.md](references/bulk-audit-playbook.md) for the full workflow (cluster classification, sampling, extrapolation, portfolio priority, template suggestions).
 
 ## Skill Contract
 

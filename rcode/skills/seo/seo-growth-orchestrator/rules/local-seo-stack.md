@@ -32,4 +32,4 @@ Business context → competitive + opportunity analysis → blog titles + keywor
 ## Sequencing logic (Nick-Huber-style 90-day shape)
 Days 1–14: GBP setup + NAP cleanup + first ~10 reviews. Days 15–45: one ultra-strong service/money page + 3–5 neighboring city pages + a trust page + 2 cornerstone posts. Ongoing: review velocity, weekly GBP posts, local link building. The 30-day payoff comes from GBP + pages + reviews — **not** new blog posts (those are 60–180 days).
 
-Delegate mechanics to: `claude-seo:seo-local`, `claude-seo:seo-maps`, `on-page-seo-auditor`, `schema-markup-generator`, `internal-linking-optimizer`.
+Delegate mechanics to: `claude-seo:seo-local`, `claude-seo:seo-maps`, `on-page-seo-auditor`, `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`; schema authored per on-page-seo-auditor's Step 9).

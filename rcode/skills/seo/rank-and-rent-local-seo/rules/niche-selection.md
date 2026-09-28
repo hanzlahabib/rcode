@@ -10,7 +10,7 @@ The niche decides everything downstream. A high-value niche forgives mediocre ex
 ### Lead value first
 
 **High-CPC = high lead value**
-Pull head-term CPC with `keyword-research` / Google Keyword Planner. A high CPC means businesses already pay a lot to acquire one call — so an organically-ranked call is worth the same to them, for free. Examples seen in the field: `water remediation near me` ~$320 CPC, `water damage restoration` ~$88–$150.
+Pull head-term CPC with `rcode-seo-os` (`references/KEYWORD-INTELLIGENCE.md`) / Google Keyword Planner. A high CPC means businesses already pay a lot to acquire one call — so an organically-ranked call is worth the same to them, for free. Examples seen in the field: `water remediation near me` ~$320 CPC, `water damage restoration` ~$88–$150.
 
 **Ticket size**
 Favor niches where one job is worth four or five figures (water damage $7k–$35k, roofing, mold, foundation, personal injury). Big ticket → buyers happily pay $200–$1,500 per qualified call.
@@ -30,14 +30,14 @@ Some high-value niches (water damage, locksmith) are GBP-spam heavy, so map-pack
 
 ### Example: Qualifying "water damage restoration"
 ```
-keyword-research → head CPC $88–$320, big ticket ($7k–$35k), emergency intent → QUALIFIES on value.
-serp-analysis    → head term = ads + EMD incumbents → DO NOT enter on head term.
+seo-os keyword-intel → head CPC $88–$320, big ticket ($7k–$35k), emergency intent → QUALIFIES on value.
+seo-os serp-intel    → head term = ads + EMD incumbents → DO NOT enter on head term.
 Decision: pick niche, proceed to subniche discovery.
 ```
 
 ### Example: Candidate scan
 ```
-Run keyword-research across: water damage, mold remediation, roofing repair,
+Run seo-os keyword-intel across: water damage, mold remediation, roofing repair,
 foundation repair, towing, locksmith, junk removal, personal injury.
 Rank by (CPC × ticket × urgency). Shortlist top 2–3.
 ```

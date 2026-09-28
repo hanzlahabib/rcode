@@ -103,9 +103,9 @@ Programmatic pages can index in weeks; cornerstone editorial is a 60–180 day p
 
 ## Integration (granular skills this factory calls)
 
-- **Keyword/cluster mechanics:** `keyword-research`, `serp-analysis`, `competitor-analysis`, `content-gap-analysis`, `claude-seo:seo-cluster`
-- **Writing/on-page:** `seo-content-writer`, `on-page-seo-auditor`, `meta-tags-optimizer`, `claude-seo:seo-content`
-- **Links/schema/build:** `internal-linking-optimizer`, `schema-markup-generator`, `seo-site-builder`, `claude-seo:seo-schema`, `claude-seo:seo-sitemap`
+- **Keyword/cluster mechanics:** `rcode-seo-os` (`references/KEYWORD-INTELLIGENCE.md`, `references/SERP-INTELLIGENCE.md`, `references/COMPETITOR-RESEARCH.md`), `claude-seo:seo-cluster`
+- **Writing/on-page:** `seo-content-writer`, `on-page-seo-auditor` (also covers title/meta tags), `claude-seo:seo-content`
+- **Links/schema/build:** `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`), `on-page-seo-auditor` (schema, Step 9), `seo-site-builder`, `claude-seo:seo-schema`, `claude-seo:seo-sitemap`
 - **Data:** **Semrush MCP** (`keyword_research`, `organic_research`, `overview_research`, `backlink_research`, `url_research`), GSC via browser/`browser-harness`.
 - **Strategy layer:** `seo-growth-orchestrator` for the judgment/plays around the production.
 

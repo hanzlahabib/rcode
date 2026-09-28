@@ -17,35 +17,35 @@ When a user requests an on-page SEO audit, run steps 1-11:
 3. **Audit Meta Description** — length (150-160 chars), keyword, CTA, uniqueness, accuracy, compelling copy; score /10 and recommend an optimized description
 4. **Audit Header Structure** — single H1, H1 keyword, logical hierarchy, H2 keyword coverage, no skipped levels, descriptive headers; score /10 and recommend changes
 
-   > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the full output templates for Steps 1-4 (audit setup, title analysis, meta description analysis, header structure analysis).
+   > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the full output templates for Steps 1-4 (audit setup, title analysis, meta description analysis, header structure analysis).
 
 5. **Audit Content Quality** — Word count, reading level, comprehensiveness, formatting, E-E-A-T signals, content elements checklist, gap identification
 
-   > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the content quality template (Step 5).
+   > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the content quality template (Step 5).
 
 6. **Audit Keyword Usage** — Primary/secondary keyword placement across all page elements, LSI/related terms, density analysis
 
-   > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the keyword optimization template (Step 6).
+   > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the keyword optimization template (Step 6).
 
 7. **Audit Internal Links** — Link count, anchor text relevance, broken links, recommended additions
 
-   > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the internal linking template (Step 7).
+   > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the internal linking template (Step 7).
 
 8. **Audit Images** — Alt text, file names, sizes, formats, lazy loading
 
-   > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the image optimization template (Step 8).
+   > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the image optimization template (Step 8).
 
 9. **Audit Technical On-Page Elements** — URL, canonical, mobile, speed, HTTPS, schema
 
-   > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the technical on-page template (Step 9).
+   > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the technical on-page template (Step 9).
 
 10. **CORE-EEAT Content Quality Quick Scan** — 17 on-page-relevant items from the 80-item CORE-EEAT benchmark
 
-    > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the CORE-EEAT quick scan template (Step 10). Full benchmark: [CORE-EEAT Benchmark](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/core-eeat-benchmark.md).
+    > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the CORE-EEAT quick scan template (Step 10). Full benchmark: [CORE-EEAT Benchmark](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/core-eeat-benchmark.md).
 
 11. **Generate Audit Summary** — Overall score with visual breakdown, priority issues (critical/important/minor), quick wins, detailed recommendations, competitor comparison, action checklist, expected results
 
-    > **Reference**: See [references/audit-templates.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) for the full audit summary template (Step 11).
+    > **Reference**: See [references/audit-templates.md](references/audit-templates.md) for the full audit summary template (Step 11).
 
 ## Validation Checkpoints
 
@@ -66,7 +66,7 @@ When a user requests an on-page SEO audit, run steps 1-11:
 
 **Output** (abbreviated): scored breakdown — Title 8/10, Meta 6/10, Headers 9/10, Content 7/10, Keywords 8/10 — plus prioritized fix list (rewrite meta description with CTA, add original test data, refresh 2 stale product specs).
 
-> **Reference**: See [references/audit-example.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-example.md) for the full worked example (noise-cancelling headphones audit) and page-type checklists (blog post, product page, landing page).
+> **Reference**: See [references/audit-example.md](references/audit-example.md) for the full worked example (noise-cancelling headphones audit) and page-type checklists (blog post, product page, landing page).
 
 ## Tips for Success
 
@@ -76,7 +76,7 @@ When a user requests an on-page SEO audit, run steps 1-11:
 4. **Audit regularly** - Content degrades over time
 5. **Test changes** - Track ranking changes after updates
 
-> **Scoring details**: For the complete weight distribution, scoring scale, issue resolution playbook, and industry benchmarks, see [references/scoring-rubric.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/scoring-rubric.md).
+> **Scoring details**: For the complete weight distribution, scoring scale, issue resolution playbook, and industry benchmarks, see [references/scoring-rubric.md](references/scoring-rubric.md).
 
 
 ### Save Results
@@ -95,14 +95,16 @@ If any veto-level issue was found (CORE-EEAT T04, C01, R10 or CITE T03, T05, T09
 
 ## Reference Materials
 
-- [Scoring Rubric](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/scoring-rubric.md) — Detailed scoring criteria, weight distribution, and grade boundaries for on-page audits
-- [Audit Templates](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-templates.md) — Detailed output templates for steps 5-11 (content quality, keywords, links, images, technical, CORE-EEAT scan, audit summary)
-- [Audit Example & Checklists](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/on-page-seo-auditor/references/audit-example.md) — Full worked example and page-type checklists (blog, product, landing page)
+- [Scoring Rubric](references/scoring-rubric.md) — Detailed scoring criteria, weight distribution, and grade boundaries for on-page audits
+- [Audit Templates](references/audit-templates.md) — Detailed output templates for steps 5-11 (content quality, keywords, links, images, technical, CORE-EEAT scan, audit summary)
+- [Audit Example & Checklists](references/audit-example.md) — Full worked example and page-type checklists (blog, product, landing page)
 
 ## Next Best Skill
 
-- **Primary**: [content-refresher](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/content-refresher/SKILL.md) — turn page-level findings into concrete edits.
+- **Primary**: `rcode-seo-content-writer` — turn page-level findings into concrete edits. There is no dedicated
+  "content refresher" skill in this package; use it directly for the rewrite, guided by
+  `rcode-seo-os`'s `references/REVIEW-WORKFLOWS.md` for deciding what's stale enough to refresh.
 - **Also consider** (pick by dimension of findings):
-  - [technical-seo-checker](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/technical-seo-checker/SKILL.md) — if issues are infrastructure-level (robots, sitemap, Core Web Vitals, canonicals).
-  - [meta-tags-optimizer](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/meta-tags-optimizer/SKILL.md) — if the main issues are title / meta description / OG tags only.
-  - [internal-linking-optimizer](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/optimize/internal-linking-optimizer/SKILL.md) — if anchor text or orphan-page findings dominate.
+  - [technical-seo-checker](../technical-seo-checker/SKILL.md) — if issues are infrastructure-level (robots, sitemap, Core Web Vitals, canonicals).
+  - Title / meta description / OG tags — already covered by Steps 2-3 of this skill; no separate meta-tags skill exists.
+  - `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`) — if anchor text or orphan-page findings dominate.
