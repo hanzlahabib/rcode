@@ -3,6 +3,52 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.18.0 (2026-09-28) — an SEO operating system, not another one-shot SEO skill
+
+rcode's SEO suite was eight skills that each ran once and produced a report.
+This adds a stateful operating system on top: durable project memory, a
+router that knows what stage a project is in, and deterministic scripts
+that do the arithmetic instead of an LLM re-deriving it (and drifting)
+every run.
+
+### SEO operating system + intelligence engine
+
+`seo-os` (`rcode/skills/seo/seo-os/`) tracks a project through
+`.rcode/seo/PROJECT.md` + `STATE.md` — stage, priority, and decisions
+survive across sessions instead of being re-discovered every invocation.
+The intelligence engine layers GSC/Ahrefs-shaped keyword and page data on
+top: decay detection, striking-distance keywords, opportunity scoring, and
+a portfolio summary across every tracked project, all reference-documented
+in `rcode/skills/seo/seo-os/references/` (SERP intelligence, technical
+intelligence, topic clustering, tool-accuracy caveats, and more).
+
+### Astro implementation skill
+
+`seo-astro-implementation` closes the gap between an SEO recommendation
+and shipped code for Astro projects specifically — schema markup,
+sitemap/robots generation, and Core Web Vitals fixes expressed as actual
+Astro component/config changes rather than framework-agnostic prose.
+
+### Deterministic SEO scripts, not LLM arithmetic
+
+`seo-keyword-preprocess`, `seo-gsc-decay`, `seo-gsc-striking-distance`,
+`seo-opportunity-score`, `seo-page-opportunity-score`,
+`seo-portfolio-summary`, and `seo-action-queue` are plain Node scripts with
+their own CSV parser and keyword-grouping/normalization libs
+(`rcode/skills/seo/seo-os/scripts/lib/`) — scoring and grouping keywords is
+arithmetic, not judgment, and doing it in a script means the same input
+always produces the same output.
+
+### Doctor reference-integrity checks
+
+`rcode doctor` now validates every skill's local file references,
+skill-name references (Related Skills / Delegate.../Next Best Skill), and
+`references/` reachability from SKILL.md (`cli/lib/link-checks.cjs`) —
+enforced on the `seo` bucket, report-only everywhere else so pre-existing
+debt in older buckets never blocks the gate. Repairing what it found fixed
+broken references across the older SEO skills.
+
+---
 ## v4.17.0 (2026-09-09) — four new skills, image-driven UI specs, and audits against external reports
 
 New capabilities plus a skill-engagement audit pass: several of rcode's own
