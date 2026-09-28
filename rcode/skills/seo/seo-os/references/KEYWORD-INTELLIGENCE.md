@@ -26,6 +26,33 @@ clean
   → opportunity / business-value scoring
 ```
 
+`seo-keyword-preprocess.cjs` (`scripts/`) is the deterministic, script-owned half of the first two
+pipeline steps — the cheap, string-level work that would otherwise waste model context on a
+multi-thousand-row export:
+
+```
+seo-csv-normalize.cjs (ahrefs-organic-keywords)
+  → seo-keyword-preprocess.cjs
+      → exact + variant duplicate removal (case/whitespace/hyphen formatting folds only)
+      → candidate grouping (shared ranking URL, token-set overlap) — HYPOTHESES only
+      → aggregate numeric data without inventing (sum/max as documented in the script;
+        missing stays missing, never zero-filled)
+      → compact top-N candidateGroups/singletons/flaggedPairs output
+  → AI semantic review (confirms/rejects each candidate group, resolves intent-divergence
+    flags, assigns real semantic clusters)
+  → topic clustering            (TOPIC-CLUSTERING.md)
+  → page-type classification    (PAGE-TYPE-CLASSIFIER.md)
+  → opportunity / business-value scoring
+```
+
+The script never declares two keywords intent-equivalent and never merges rows because their
+strings merely look similar — every `candidateGroups[]` entry is a hypothesis for the AI reviewer,
+and pairs with high token overlap but a differing intent-signalling modifier (e.g. "near me",
+"free", "vs", "how to", "price"/"cost", "jobs" — see the script's `DIVERGENCE_CUES`) are recorded in
+`flaggedPairs` rather than silently merged. Real semantic clustering (deciding two candidate-group
+members truly share intent, or building the topical clusters below) remains this module's and
+`TOPIC-CLUSTERING.md`'s job, not the script's.
+
 Volume alone never controls priority. A high-volume, wrong-intent, zero-click-dominated keyword
 scores below a modest-volume keyword with strong business fit — see `OPPORTUNITY-SCORING.md` for how
 the two combine into one number once SERP evidence exists.

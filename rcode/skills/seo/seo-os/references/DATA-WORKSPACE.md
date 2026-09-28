@@ -139,14 +139,39 @@ multi-thousand-row export into context is the token-inefficiency failure mode th
 exists to prevent; local script aggregation, filtering, and grouping come first, model reasoning over
 the top candidates comes after.
 
+## Scripts
+
+| Script | Consumes | Produces |
+|---|---|---|
+| `seo-csv-normalize.cjs` | raw CSV export | normalized `{schema, rows, validCount, skipped, warnings}` (see Canonical CSV schemas above) |
+| `seo-keyword-preprocess.cjs` | `seo-csv-normalize.cjs`'s `ahrefs-organic-keywords` output | `{schema, summary, candidateGroups, singletons, flaggedPairs, config, note}` — deterministic dedup + cheap candidate-grouping preprocessing ahead of AI semantic clustering (`KEYWORD-INTELLIGENCE.md`'s pipeline) |
+| `seo-gsc-striking-distance.cjs` | `seo-csv-normalize.cjs`'s `gsc-queries` output | `{strikingDistance, ctrGaps, cannibalization, config}` |
+
+`seo-keyword-preprocess.cjs` usage:
+
+```
+node seo-keyword-preprocess.cjs <normalized.json> [--topN=50] [--jaccardThreshold=0.5]
+  [--tokenBucketCap=50] [--full] [--out=f]
+```
+
+Exact/case/whitespace/hyphen-formatting duplicates are merged (max volume/difficulty/cpc, min
+position across variants); different keywords only ever become a `candidateGroups[]` hypothesis
+(shared ranking URL or token-set overlap), never a silent merge — pairs with high token overlap but
+a diverging intent modifier (e.g. "jobs", "how to", "price") land in `flaggedPairs` instead. Output
+is compact by default (`memberKeywords` only); pass `--full` for full per-member metrics inline. See
+`KEYWORD-INTELLIGENCE.md`'s pipeline section for how this sits ahead of AI semantic clustering.
+
 ## See also
 
 - `EVIDENCE-POLICY.md` — the freshness-tier definitions and evidence-class vocabulary this file
   instantiates per imported dataset.
-- `KEYWORD-INTELLIGENCE.md` — consumes the `ahrefs-organic-keywords` normalized output.
+- `KEYWORD-INTELLIGENCE.md` — consumes the `ahrefs-organic-keywords` normalized output, and
+  `seo-keyword-preprocess.cjs`'s candidate-group output ahead of semantic clustering.
 - `GSC-GROWTH-ENGINE.md` (Lane F) — consumes `gsc-queries`/`gsc-pages` normalized output for
   striking-distance, CTR-gap, and decay analysis.
 - `scripts/seo-csv-normalize.cjs`, `scripts/lib/csv-parser.cjs` (Lane E) — the deterministic
   implementation of the ingestion step.
+- `scripts/seo-keyword-preprocess.cjs` — the deterministic dedup/candidate-grouping preprocessing
+  step, described above.
 - `rcode/templates/seo/DATA-MANIFEST.md` (Lane E) — the manifest template instantiated at
   `.rcode/seo/data/MANIFEST.md` on first accepted import.
