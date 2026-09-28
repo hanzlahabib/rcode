@@ -72,10 +72,15 @@ function getConfiguredBudget(cwd, fallback) {
   }
 }
 
+// `2>/dev/null` is POSIX shell syntax; on Windows, execSync's default shell
+// (cmd.exe) doesn't understand it and the whole command fails, so these
+// silently returned '' / [] on every Windows run (#1100). Suppressing
+// stderr via the `stdio` option instead of shell redirection works
+// identically on every platform without depending on shell semantics.
 function readGitBranch(cwd) {
   try {
-    return execSync('git rev-parse --abbrev-ref HEAD 2>/dev/null', {
-      cwd, encoding: 'utf8', timeout: 2000,
+    return execSync('git rev-parse --abbrev-ref HEAD', {
+      cwd, encoding: 'utf8', timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
   } catch {
     return '';
@@ -84,8 +89,8 @@ function readGitBranch(cwd) {
 
 function readTouchedFiles(cwd) {
   try {
-    const out = execSync('git log -5 --name-only --pretty=format: 2>/dev/null', {
-      cwd, encoding: 'utf8', timeout: 3000,
+    const out = execSync('git log -5 --name-only --pretty=format:', {
+      cwd, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore'],
     });
     return out.split('\n').map((l) => l.trim()).filter(Boolean);
   } catch {
