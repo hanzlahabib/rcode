@@ -1,6 +1,6 @@
 # rcode — Skills Index
 
-All 91 skills in rcode, organized by category: 23 agent skills, 38 action skills, 26 core skills, plus 3 shared modules (SEO, plus the new dev-practices module).
+All 93 skills in rcode, organized by category: 23 agent skills, 38 action skills, 26 core skills, plus 3 shared modules (SEO, plus the new dev-practices module).
 
 ## Agent Skills (23)
 
@@ -140,9 +140,9 @@ When a user picks capability `DS`, Claude invokes the `rcode-dev-story` skill.
 
 ---
 
-## SEO Module (9)
+## SEO Module (11)
 
-Full-spectrum SEO skills — content factory, growth orchestrator, audits, writer, site builder, local SEO, on-page and technical auditors.
+Full-spectrum SEO skills — content factory, growth orchestrator, audits, writer, site builder, local SEO, on-page and technical auditors, plus the framework-agnostic SEO operating system/intelligence router and its Astro implementation layer.
 
 | Skill | Path | Description |
 |---|---|---|
@@ -155,6 +155,8 @@ Full-spectrum SEO skills — content factory, growth orchestrator, audits, write
 | **seo-site-builder** | `rcode/skills/seo/seo-site-builder/` | End-to-end affiliate content site builder: niche discovery, keyword analysis, competitor intel, and site build |
 | **rank-and-rent-local-seo** | `rcode/skills/seo/rank-and-rent-local-seo/` | Rank-and-rent local SEO business playbook: niche selection, long-tail targeting, multi-city expansion |
 | **seo-aeo-geo** | `rcode/skills/seo/seo-aeo-geo/` | Answer-engine and generative-engine optimization: structuring content for citation in AI Overviews, ChatGPT, and Perplexity answers |
+| **seo-os** | `rcode/skills/seo/seo-os/` | Framework-agnostic SEO operating system: project classification, lifecycle/stage gates, opportunity scoring, and the data-driven intelligence layer (GSC/Ahrefs ingestion, striking-distance/decay/action-queue) that routes to the skills above |
+| **seo-astro-implementation** | `rcode/skills/seo/seo-astro-implementation/` | Astro-specific implementation layer for `seo-os` decisions — SEOHead, canonical/OG/Twitter tags, SchemaRenderer, sitemap/hreflang/redirects (internal, invoked by `seo-os`) |
 
 ---
 
