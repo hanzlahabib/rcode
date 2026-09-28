@@ -1,0 +1,67 @@
+---
+// LocationLayout.astro — page shell for LOCATION_PAGE page type.
+// Body hierarchy per spec §35 ("Location") and astro-seo-components.md.
+//
+// Before using: Layer A's LOCAL-SEO.md and spec §27/§28 require this page
+// to carry meaningful, non-fabricated local value (real service coverage,
+// real local considerations) — this layout only arranges markup, it does
+// not substitute for that content requirement. Do NOT mass-generate one of
+// these per city without the content to back it (spec §17 page-existence
+// test, spec §28 "do not mass-spam near-identical city pages").
+
+import SEOHead from "./SEOHead.astro";
+import SchemaRenderer from "./SchemaRenderer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  ogImage?: string;
+  schema: Record<string, unknown> | Record<string, unknown>[]; // typically LocalBusiness + BreadcrumbList
+  h1: string;
+  locationName: string;
+}
+
+const { title, description, canonicalUrl, ogImage, schema, h1, locationName } = Astro.props;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <SEOHead title={title} description={description} canonicalUrl={canonicalUrl} ogImage={ogImage} />
+  <SchemaRenderer schema={schema} />
+</head>
+<body>
+  <slot name="breadcrumbs" />
+
+  <header class="location-header">
+    <h1>{h1}</h1>
+    <p class="location-name">{locationName}</p>
+  </header>
+
+  <section class="location-context">
+    <slot name="local-context" />
+  </section>
+
+  <section class="location-coverage">
+    <slot name="coverage" />
+  </section>
+
+  <section class="location-considerations">
+    <slot name="local-considerations" />
+  </section>
+
+  <section class="location-proof">
+    <slot name="proof-trust" />
+  </section>
+
+  <section class="location-faq">
+    <slot name="faq" />
+  </section>
+
+  <section class="location-conversion">
+    <slot name="conversion" />
+  </section>
+</body>
+</html>

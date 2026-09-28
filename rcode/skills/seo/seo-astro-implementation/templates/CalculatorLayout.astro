@@ -1,0 +1,89 @@
+---
+// CalculatorLayout.astro — page shell for PRIMARY_TOOL / TOOL_VARIANT /
+// CALCULATOR / CONVERTER / GENERATOR page types.
+// Body hierarchy per spec §20/§35 and ../references/astro-seo-components.md.
+//
+// Only SEOHead and SchemaRenderer are imported directly (shipped in this
+// same templates/ directory). Breadcrumbs, FAQ, RelatedTools, and
+// SourceList are NOT shipped as templates here (see
+// astro-seo-components.md) — wire the project's own implementations of
+// those through the named slots below rather than assuming an import path
+// that may not exist in the target project.
+//
+// Tool accuracy gate: do not mark a calculator page "done" until
+// ../../seo-os/references/TOOL-ACCURACY.md's fixture tests have been run
+// against the calculation logic in the `tool` slot's underlying script —
+// this layout only arranges markup, it does not verify correctness.
+
+import SEOHead from "./SEOHead.astro";
+import SchemaRenderer from "./SchemaRenderer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  ogImage?: string;
+  schema: Record<string, unknown> | Record<string, unknown>[];
+  h1: string;
+  promise?: string; // one-line value proposition under the H1
+}
+
+const { title, description, canonicalUrl, ogImage, schema, h1, promise } = Astro.props;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <SEOHead title={title} description={description} canonicalUrl={canonicalUrl} ogImage={ogImage} />
+  <SchemaRenderer schema={schema} />
+</head>
+<body>
+  <slot name="breadcrumbs" />
+
+  <header class="calc-header">
+    <h1>{h1}</h1>
+    {promise && <p class="calc-promise">{promise}</p>}
+  </header>
+
+  <section class="calc-tool" aria-label="Calculator">
+    <slot name="tool" />
+  </section>
+
+  <section class="calc-result" aria-live="polite">
+    <slot name="result" />
+  </section>
+
+  <section class="calc-interpretation">
+    <slot name="interpretation" />
+  </section>
+
+  <section class="calc-methodology">
+    <slot name="formula" />
+  </section>
+
+  <section class="calc-examples">
+    <slot name="examples" />
+  </section>
+
+  <section class="calc-visualization">
+    <slot name="visualization" />
+  </section>
+
+  <section class="calc-explanation">
+    <slot name="explanation" />
+  </section>
+
+  <section class="calc-related">
+    <slot name="related-tools" />
+  </section>
+
+  <section class="calc-faq">
+    <slot name="faq" />
+  </section>
+
+  <section class="calc-sources">
+    <slot name="sources" />
+  </section>
+</body>
+</html>
