@@ -119,7 +119,14 @@ test('CLI: resolves templates from the installed script location, not the caller
 
   assert.strictEqual(result.status, 0, result.stderr);
   const parsed = JSON.parse(result.stdout);
-  assert.strictEqual(parsed.templateSource, templatesDir);
+  // Compare realpath'd: Node's module loader realpaths the entry script's
+  // own path at startup (e.g. macOS's /var -> /private/var symlink), so
+  // __dirname-derived candidates in resolveTemplateSource() may come back
+  // realpath'd even though templatesDir here was built from the
+  // un-realpath'd os.tmpdir() string. Both spellings name the same
+  // directory — a strict string comparison would be platform-dependent for
+  // reasons that have nothing to do with the behavior under test.
+  assert.strictEqual(fs.realpathSync(parsed.templateSource), fs.realpathSync(templatesDir));
   assert.strictEqual(parsed.created.length, 2);
 });
 
