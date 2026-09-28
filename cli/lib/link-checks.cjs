@@ -72,6 +72,18 @@ const { parseFrontmatter } = require('./schemas.cjs');
 // ---------- Skill discovery ----------
 
 /**
+ * Repo-relative path, normalized to forward slashes regardless of platform.
+ * `path.relative()` returns `\`-separated segments on Windows, but every
+ * identifier this module emits (skill dirs, broken-ref file paths,
+ * orphaned-reference paths) is displayed in `doctor` output and compared
+ * against the `rcode/skills/<bucket>/<skill>` spelling used everywhere else
+ * in this repo's docs and tests — so it must be posix-styled on every OS.
+ */
+function toRepoRelative(from, to) {
+  return path.relative(from, to).split(path.sep).join('/');
+}
+
+/**
  * Recursively find every directory that contains a SKILL.md under `root`.
  * Skills nest at different depths across buckets (agents/ is flat,
  * actions/ is two levels, seo/ is flat) so this walks unbounded.
@@ -428,11 +440,11 @@ function checkSkillDir(skillDir, { knownIdentifiers, packageRoot }) {
   const referencesDir = path.join(skillDir, 'references');
   const orphanedReferences = findMarkdownFiles(referencesDir)
     .filter((f) => !reachable.has(f))
-    .map((f) => path.relative(packageRoot, f));
+    .map((f) => toRepoRelative(packageRoot, f));
 
   return {
-    brokenFileRefs: brokenFileRefs.map((r) => ({ file: path.relative(packageRoot, r.file), ref: r.ref })),
-    brokenSkillRefs: brokenSkillRefs.map((r) => ({ file: path.relative(packageRoot, r.file), ref: r.ref })),
+    brokenFileRefs: brokenFileRefs.map((r) => ({ file: toRepoRelative(packageRoot, r.file), ref: r.ref })),
+    brokenSkillRefs: brokenSkillRefs.map((r) => ({ file: toRepoRelative(packageRoot, r.file), ref: r.ref })),
     orphanedReferences,
   };
 }
@@ -460,7 +472,7 @@ function runLinkChecks(packageRoot, { enforce = [], reportOnly = [] } = {}) {
       const result = checkSkillDir(skillDir, { knownIdentifiers, packageRoot });
       const total = result.brokenFileRefs.length + result.brokenSkillRefs.length + result.orphanedReferences.length;
       if (total > 0) {
-        enforced.push({ skill: path.relative(packageRoot, skillDir), ...result });
+        enforced.push({ skill: toRepoRelative(packageRoot, skillDir), ...result });
       }
     }
   }
