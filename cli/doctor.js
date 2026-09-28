@@ -24,6 +24,7 @@ const {
   validateSkillFrontmatter,
   validateAgentFrontmatter,
 } = require('./lib/schemas.cjs');
+const { runLinkChecks } = require('./lib/link-checks.cjs');
 
 // ---------- Shared helpers ----------
 
@@ -448,25 +449,42 @@ function printChecks(checks) {
 
 // ---------- Package compliance ----------
 
-function runCompliance(packageRoot) {
-  const skillDirs = [
-    path.join(packageRoot, 'rcode/skills/agents'),
-    path.join(packageRoot, 'rcode/skills/actions'),
-  ];
-
+/**
+ * The 5-component skill standard, applied to every bucket that has SKILL.md
+ * files. `advisoryDirs` (currently `rcode/skills/seo`) get the identical
+ * check and identical console output, but their failures are NOT added to
+ * the returned count — they are bulk-ported skills (an external skill pack)
+ * that predate this standard and would need a genuine content rewrite (new
+ * Overview/Output Format/Examples sections, 5+ trigger phrases each) to
+ * comply, which is out of scope for a reference-hardening pass ("surgical
+ * edits only — don't rewrite old skills"). Printing them here still makes
+ * the gap visible for a follow-up content-authoring pass, without blocking
+ * `doctor` over pre-existing debt this task didn't introduce and isn't
+ * chartered to fix.
+ */
+function runCompliance(packageRoot, { blockingDirs = [], advisoryDirs = [] } = {}) {
   let totalSkills = 0;
   let failing = 0;
+  let advisoryFailing = 0;
   const problems = [];
+  const advisoryProblems = [];
 
-  for (const dir of skillDirs) {
-    const files = findSkillFiles(dir);
-    for (const file of files) {
+  for (const dir of blockingDirs) {
+    for (const file of findSkillFiles(path.join(packageRoot, dir))) {
       totalSkills++;
       const missing = checkCompliance(file);
       if (missing.length > 0) {
         failing++;
-        const rel = path.relative(packageRoot, file);
-        problems.push({ file: rel, missing });
+        problems.push({ file: path.relative(packageRoot, file), missing });
+      }
+    }
+  }
+  for (const dir of advisoryDirs) {
+    for (const file of findSkillFiles(path.join(packageRoot, dir))) {
+      const missing = checkCompliance(file);
+      if (missing.length > 0) {
+        advisoryFailing++;
+        advisoryProblems.push({ file: path.relative(packageRoot, file), missing });
       }
     }
   }
@@ -482,6 +500,13 @@ function runCompliance(packageRoot) {
       `   ✓ All ${totalSkills} skills compliant with 5-component standard`
     );
   }
+  if (advisoryProblems.length > 0) {
+    console.log(`   ⚠ ${advisoryFailing} advisory (pre-existing, non-blocking) skill(s) non-compliant:`);
+    for (const p of advisoryProblems) {
+      console.log(`     ${p.file}`);
+      console.log(`       missing: ${p.missing.join(', ')}`);
+    }
+  }
 
   return failing;
 }
@@ -495,28 +520,34 @@ function runCompliance(packageRoot) {
  * the non-zero exit path; advisory warnings (e.g. >12 trigger phrases) just
  * print a ⚠.
  *
+ * `advisoryDirs` get the identical validation and output but never count
+ * toward the returned failing total — see `runCompliance`'s doc comment for
+ * why (bulk-ported skills predating the standard; fixing them is a content
+ * rewrite, not reference hardening).
+ *
  * @returns {number} count of artifacts with hard failures
  */
-function runSchemaValidation(packageRoot) {
-  const skillDirs = [
-    path.join(packageRoot, 'rcode/skills/agents'),
-    path.join(packageRoot, 'rcode/skills/actions'),
-  ];
-
+function runSchemaValidation(packageRoot, { blockingDirs = [], advisoryDirs = [] } = {}) {
   let totalSkills = 0;
   let totalAgents = 0;
   let failing = 0;
   let warned = 0;
+  let advisoryFailing = 0;
 
-  for (const dir of skillDirs) {
-    for (const file of findSkillFiles(dir)) {
-      totalSkills++;
+  const validateDir = (dir, { blocking }) => {
+    for (const file of findSkillFiles(path.join(packageRoot, dir))) {
+      if (blocking) totalSkills++;
       const { frontmatter, body } = parseFrontmatter(fs.readFileSync(file, 'utf8'));
       const result = validateSkillFrontmatter(frontmatter, body);
       const rel = path.relative(packageRoot, file);
       if (!result.ok) {
-        failing++;
-        console.log(`   ✗ ${rel}`);
+        if (blocking) {
+          failing++;
+          console.log(`   ✗ ${rel}`);
+        } else {
+          advisoryFailing++;
+          console.log(`   ⚠ (advisory) ${rel}`);
+        }
         for (const err of result.errors) console.log(`       ${err}`);
       }
       if (result.warnings && result.warnings.length > 0) {
@@ -524,7 +555,10 @@ function runSchemaValidation(packageRoot) {
         for (const w of result.warnings) console.log(`   ⚠ ${rel}: ${w}`);
       }
     }
-  }
+  };
+
+  for (const dir of blockingDirs) validateDir(dir, { blocking: true });
+  for (const dir of advisoryDirs) validateDir(dir, { blocking: false });
 
   for (const file of findAgentFiles(path.join(packageRoot, 'rcode/agents'))) {
     totalAgents++;
@@ -545,6 +579,9 @@ function runSchemaValidation(packageRoot) {
     );
   } else {
     console.log(`   ✗ ${failing} artifact(s) failed schema validation`);
+  }
+  if (advisoryFailing > 0) {
+    console.log(`   ⚠ ${advisoryFailing} advisory (pre-existing, non-blocking) artifact(s) failed schema validation`);
   }
 
   return failing;
@@ -621,6 +658,46 @@ function printDuplicateChecks(result) {
   return 1;
 }
 
+// ---------- Reference checks (local file refs, skill-name refs, orphans) ----------
+
+/**
+ * Local-file references, skill-name references, and orphaned reference
+ * modules (see cli/lib/link-checks.cjs for the full rationale). Enforced on
+ * `enforceBuckets` (currently just `seo`, where every finding has been
+ * fixed); every other skill bucket is scanned too but only contributes an
+ * aggregate count, so pre-existing debt elsewhere never blocks `doctor` on
+ * the tree this hardening pass actually covers.
+ *
+ * @returns {number} count of findings in the enforced buckets
+ */
+function runReferenceChecks(packageRoot, { enforceBuckets = [], reportOnlyBuckets = [] } = {}) {
+  const { enforced, reportOnlyCount } = runLinkChecks(packageRoot, {
+    enforce: enforceBuckets,
+    reportOnly: reportOnlyBuckets,
+  });
+
+  let failing = 0;
+  for (const skill of enforced) {
+    const total = skill.brokenFileRefs.length + skill.brokenSkillRefs.length + skill.orphanedReferences.length;
+    failing += total;
+    console.log(`   ✗ ${skill.skill} (${total} issue(s))`);
+    for (const r of skill.brokenFileRefs) console.log(`       broken file ref in ${r.file}: ${r.ref}`);
+    for (const r of skill.brokenSkillRefs) console.log(`       unresolved skill ref in ${r.file}: ${r.ref}`);
+    for (const r of skill.orphanedReferences) console.log(`       orphaned reference module: ${r}`);
+  }
+
+  if (failing === 0) {
+    console.log(`   ✓ No broken references in ${enforceBuckets.join(', ')}`);
+  }
+  if (reportOnlyCount > 0) {
+    console.log(
+      `   ⚠ ${reportOnlyCount} reference issue(s) found in ${reportOnlyBuckets.join(', ')} (report-only, pre-existing — not gating)`,
+    );
+  }
+
+  return failing;
+}
+
 // ---------- Entrypoint ----------
 
 module.exports = function doctor(args, { packageRoot }) {
@@ -637,13 +714,25 @@ module.exports = function doctor(args, { packageRoot }) {
   const duplicateFailures = printDuplicateChecks(dupResult);
 
   console.log(`\nPackage compliance:`);
-  const complianceFailures = runCompliance(packageRoot);
+  const complianceFailures = runCompliance(packageRoot, {
+    blockingDirs: ['rcode/skills/agents', 'rcode/skills/actions'],
+    advisoryDirs: ['rcode/skills/seo'],
+  });
 
   console.log(`\nArtifact schema validation:`);
-  const schemaFailures = runSchemaValidation(packageRoot);
+  const schemaFailures = runSchemaValidation(packageRoot, {
+    blockingDirs: ['rcode/skills/agents', 'rcode/skills/actions'],
+    advisoryDirs: ['rcode/skills/seo'],
+  });
+
+  console.log(`\nReference checks (local file refs, skill refs, orphans):`);
+  const referenceFailures = runReferenceChecks(packageRoot, {
+    enforceBuckets: ['seo'],
+    reportOnlyBuckets: ['agents', 'actions', 'core', 'dev-practices'],
+  });
 
   const totalFailures =
-    preflightFailures + complianceFailures + duplicateFailures + schemaFailures;
+    preflightFailures + complianceFailures + duplicateFailures + schemaFailures + referenceFailures;
   console.log();
   if (totalFailures === 0) {
     console.log(`✅ All checks passed.`);

@@ -21,15 +21,15 @@ H2: Before & after / case study (the conversion angle from subniche research)
 H2: FAQ (seeded from People Also Ask for this subniche)
 [CTA] click-to-call + lead form (call tracking number)
 
-Schema: LocalBusiness + Service (via schema-markup-generator)
+Schema: LocalBusiness + Service (authored per on-page-seo-auditor's Step 9)
 Internal links: → {subniche} hub, → related subniches in {City}, → other cities for {subniche}
 ```
 
 ## Quality gates (before publish)
 - Title/H1 match the `{subniche} {city}` intent exactly (`on-page-seo-auditor`).
-- Genuinely localized — not just `{city}` swapped (`geo-content-optimizer`).
+- Genuinely localized — not just `{city}` swapped (`rcode-seo-os`'s `references/LOCAL-SEO.md`).
 - Indexable, fast, mobile-clean (`technical-seo-checker`).
-- Tracked from launch (`rank-tracker`).
+- Tracked from launch (`rcode-seo-os`'s `references/GSC-GROWTH-ENGINE.md` — no dedicated rank-tracker skill exists).
 
 ## Variables
 - `{subniche}` — from `subniche-discovery.md`

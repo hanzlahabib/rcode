@@ -1,0 +1,68 @@
+---
+// ServiceLayout.astro — page shell for SERVICE_PAGE page type.
+// Body hierarchy per spec §35 ("Service") and astro-seo-components.md.
+//
+// Only SEOHead and SchemaRenderer are imported directly. Breadcrumbs and
+// FAQ are wired through named slots — see the note in CalculatorLayout.astro
+// for why (they are not shipped as templates in this directory).
+
+import SEOHead from "./SEOHead.astro";
+import SchemaRenderer from "./SchemaRenderer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  ogImage?: string;
+  schema: Record<string, unknown> | Record<string, unknown>[]; // typically Service + LocalBusiness
+  h1: string;
+  servicePromise?: string;
+}
+
+const { title, description, canonicalUrl, ogImage, schema, h1, servicePromise } = Astro.props;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <SEOHead title={title} description={description} canonicalUrl={canonicalUrl} ogImage={ogImage} />
+  <SchemaRenderer schema={schema} />
+</head>
+<body>
+  <slot name="breadcrumbs" />
+
+  <header class="service-header">
+    <h1>{h1}</h1>
+    {servicePromise && <p class="service-promise">{servicePromise}</p>}
+  </header>
+
+  <section class="service-problem">
+    <slot name="problem" />
+  </section>
+
+  <section class="service-process">
+    <slot name="process" />
+  </section>
+
+  <section class="service-pricing">
+    <slot name="pricing-factors" />
+  </section>
+
+  <section class="service-why-us">
+    <slot name="why-us" />
+  </section>
+
+  <section class="service-local-relevance">
+    <slot name="local-relevance" />
+  </section>
+
+  <section class="service-faq">
+    <slot name="faq" />
+  </section>
+
+  <section class="service-conversion">
+    <slot name="conversion" />
+  </section>
+</body>
+</html>

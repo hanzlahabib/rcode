@@ -130,7 +130,7 @@ Deliverables:
 - **Key Findings / Output**: baseline snapshot refs + risk map + redirect map + QA checklist
 - **Evidence**: crawl counts, ranking CSV path, redirect CSV path, Core Web Vitals before/after (if staging ready)
 - **Open Loops**: HIGH-VALUE URLs pending redirect confirmation, schema not validated for templates X/Y, rollback trigger thresholds not yet agreed with engineering
-- **Recommended Next Skill**: `content-refresher` if template rewrite surfaced content-quality gaps; `schema-markup-generator` if new templates need schema authored; otherwise `rank-tracker` for post-launch monitoring
+- **Recommended Next Skill**: `rcode-seo-content-writer` if template rewrite surfaced content-quality gaps (no dedicated "content refresher" skill exists); author schema per this skill's own Step 7 (or `rcode-seo-astro-implementation`'s `SchemaRenderer` on Astro) if new templates need it authored; otherwise `rcode-seo-os`'s `references/GSC-GROWTH-ENGINE.md` + `references/REVIEW-WORKFLOWS.md` for post-launch position monitoring — no dedicated rank-tracker skill exists in this package
 
 ## Red-flag patterns (STOP — do not ship until fixed)
 

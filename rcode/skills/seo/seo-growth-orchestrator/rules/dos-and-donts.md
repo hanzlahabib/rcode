@@ -27,7 +27,7 @@ The judgment layer. The plays tell you *what to run*; this tells you *how not to
 - **DON'T bulk-edit GBP** (categories, name, address) all at once or stuff keywords into the business name — flag/suspension risk.
 - **DON'T let NAP drift.** Name/Address/Phone must be byte-identical across every directory; abbreviations ("Ste" vs "Suite") count as inconsistencies.
 - **DON'T auto-send outreach email.** Draft only; the human reviews and sends. (Also a deliverability/spam safeguard.)
-- **DON'T ship AI blog content without the on-page SEO layer** (title/meta, H1–H3, internal links to money pages, alt text, schema). Raw Claude prose lacks it — add it via `on-page-seo-auditor` + `schema-markup-generator` + `internal-linking-optimizer`, or a tool that bakes it in.
+- **DON'T ship AI blog content without the on-page SEO layer** (title/meta, H1–H3, internal links to money pages, alt text, schema). Raw Claude prose lacks it — add it via `on-page-seo-auditor` (title/meta/schema review) + `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`), or a tool that bakes it in.
 - **DON'T jam multiple goals into one Goals Protocol run.** #1 cause of failure. One goal, sequenced.
 - **DON'T present a tool as a silver bullet or shill it.** Recommend a workflow; name tools as one option with their tradeoffs and price.
 - **DON'T promise rankings.** SEO is probabilistic. Promise process and leading indicators (indexation, impressions, position movement, leads), not guaranteed positions.

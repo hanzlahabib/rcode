@@ -9,15 +9,15 @@
 - Meta description: `Get 12 proven email marketing tactics that lift open rates 34% for small businesses. DMA-backed data, real subject-line examples, and a 30-day playbook.` (~156 chars, CTA implied, stat hook)
 - Structure: H2 for each of 12 tactics, bullet lists, comparison table (Mailchimp vs Brevo vs ConvertKit), 6-question FAQ (40-60 word answers for featured snippets), CTA conclusion.
 
-> **Reference**: See [references/seo-writing-checklist.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/seo-writing-checklist.md) for the full article with statistics citations, H1/H2/H3 hierarchy, and FAQ section.
+> **Reference**: See [references/seo-writing-checklist.md](references/seo-writing-checklist.md) for the full article with statistics citations, H1/H2/H3 hierarchy, and FAQ section.
 
 ## Content Type Templates
 
-Quick-start prompts: How-to guide, Comparison article, Listicle, Ultimate guide. See [references/instructions-detail.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/instructions-detail.md#content-type-templates) for all 4 templates.
+Quick-start prompts: How-to guide, Comparison article, Listicle, Ultimate guide. See [references/instructions-detail.md](references/instructions-detail.md#content-type-templates) for all 4 templates.
 
 ## Tips for Success
 
-Match intent, front-load value, use data, write for humans first, include visuals, update regularly. Full list in [references/instructions-detail.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/instructions-detail.md#tips-for-success).
+Match intent, front-load value, use data, write for humans first, include visuals, update regularly. Full list in [references/instructions-detail.md](references/instructions-detail.md#tips-for-success).
 
 
 ### Save Results
@@ -32,17 +32,17 @@ If yes, write a dated summary to `memory/content/YYYY-MM-DD-<topic>.md` containi
 - Open loops or items needing review
 - Source data references
 
-**Gate check recommended**: Run content-quality-auditor before publishing (PostToolUse hook will remind automatically).
+**Gate check recommended**: Run `rcode-on-page-seo-auditor` (Step 5, Content Quality Assessment) before publishing — no separate content-quality-auditor skill exists in this package.
 
 If any findings should influence ongoing strategy, recommend promoting key conclusions to `memory/hot-cache.md`.
 
 ## Reference Materials
 
-- [Instructions Detail](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/instructions-detail.md) - Full step-by-step workflow, CORE-EEAT constraints, issue classification, content type templates, tips
-- [SEO Writing Checklist](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/seo-writing-checklist.md) - On-page SEO checklist, writing template, featured snippet patterns, full example
-- [Title Formulas](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/title-formulas.md) - Proven headline formulas, power words, CTR patterns
-- [Content Structure Templates](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/build/seo-content-writer/references/content-structure-templates.md) - Templates for blog posts, comparisons, listicles, how-tos, pillar pages
+- [Instructions Detail](references/instructions-detail.md) - Full step-by-step workflow, CORE-EEAT constraints, issue classification, content type templates, tips
+- [SEO Writing Checklist](references/seo-writing-checklist.md) - On-page SEO checklist, writing template, featured snippet patterns, full example
+- [Title Formulas](references/title-formulas.md) - Proven headline formulas, power words, CTR patterns
+- [Content Structure Templates](references/content-structure-templates.md) - Templates for blog posts, comparisons, listicles, how-tos, pillar pages
 
 ## Next Best Skill
 
-- **Primary**: [content-quality-auditor](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/content-quality-auditor/SKILL.md) — gate the draft before publishing or handing it off.
+- **Primary**: [on-page-seo-auditor](../on-page-seo-auditor/SKILL.md) — gate the draft before publishing or handing it off (Step 5, Content Quality Assessment).

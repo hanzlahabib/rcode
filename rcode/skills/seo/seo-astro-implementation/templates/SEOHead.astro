@@ -1,0 +1,57 @@
+---
+// SEOHead.astro — single source of truth for <head> SEO tags.
+// Contract documented in ../references/astro-seo-components.md.
+// Before using: check whether the target project already has a head/SEO
+// component (src/components/) and extend it in place instead of adding
+// this in parallel with a different name.
+
+interface LocaleAlternate {
+  locale: string; // BCP-47 / hreflang value, e.g. "en", "es-MX", "x-default"
+  href: string;   // absolute URL for that locale variant
+}
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  ogImage?: string;
+  ogType?: "website" | "article";
+  noindex?: boolean;
+  alternates?: LocaleAlternate[]; // pass from astro:i18n's getAbsoluteLocaleUrl per locale
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  ogImage,
+  ogType = "website",
+  noindex = false,
+  alternates = [],
+} = Astro.props;
+
+// Fall back to a site-wide default OG image via public/ if the page/site
+// config does not supply one. Replace with the project's real default.
+const resolvedOgImage = ogImage ?? new URL("/og-default.png", Astro.site).toString();
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalUrl} />
+
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+{alternates.map((alt) => (
+  <link rel="alternate" hreflang={alt.locale} href={alt.href} />
+))}
+
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={resolvedOgImage} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={resolvedOgImage} />

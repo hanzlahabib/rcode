@@ -1,0 +1,30 @@
+---
+// SchemaRenderer.astro — single point of truth for JSON-LD output.
+// Contract documented in ../references/astro-seo-components.md.
+//
+// Do NOT fabricate ratings, reviews, prices, availability, author, or
+// entity fields. Every value passed in `schema` must trace back to real
+// project data (see Layer A EVIDENCE-POLICY.md and RISK-GUARDRAILS.md).
+// Do NOT emit FAQPage/Product schema unless the page has matching, visible
+// content of that type.
+
+interface Props {
+  schema: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { schema } = Astro.props;
+const payload = Array.isArray(schema) ? schema : [schema];
+
+// JSON.stringify does not escape "</script>" (or "<!--"), so a string value
+// containing it — e.g. a description field with "</script><script>" — would
+// close this tag early and let arbitrary markup/script run on the page. Escape
+// "<" to its unicode form; this is valid inside a JSON string and inert inside
+// <script>, and is unambiguous (it round-trips through JSON.parse untouched).
+function safeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+---
+
+{payload.map((entry) => (
+  <script type="application/ld+json" set:html={safeJsonLd(entry)} />
+))}

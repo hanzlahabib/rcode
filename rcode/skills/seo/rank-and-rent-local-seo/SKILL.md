@@ -40,40 +40,39 @@ Pick one niche and one subniche, then focus for 90 days without chasing shiny ob
 
 ### Phase 1 — Niche selection (is the money here?)
 1. List candidate local-service niches with **emergency / high-ticket** demand.
-2. Use `keyword-research` + Google Keyword Planner to pull CPC and volume for the head terms.
+2. Use `rcode-seo-os` (`references/KEYWORD-INTELLIGENCE.md`) + Google Keyword Planner to pull CPC and volume for the head terms.
 3. Keep niches where head-term CPC is high (lead value high) — see `rules/niche-selection.md`.
 
 ### Phase 2 — Subniche discovery (where is it winnable?)
 1. Scoop the full keyword universe for the seed niche (Keyword Planner → 800+ ideas; download).
-2. Mine competitor **service-page menus**, People Also Ask, People Also Search, Reddit/forum threads with `competitor-analysis` + `serp-analysis`.
-3. Run the AI subniche prompt (`templates/subniche-research-prompt.md`) and reconcile with `content-gap-analysis` to find subniches **ignored by the big players**.
+2. Mine competitor **service-page menus**, People Also Ask, People Also Search, Reddit/forum threads with `rcode-seo-os` (`references/COMPETITOR-RESEARCH.md`, `references/SERP-INTELLIGENCE.md`).
+3. Run the AI subniche prompt (`templates/subniche-research-prompt.md`) and reconcile with `rcode-seo-os`'s `references/COMPETITOR-RESEARCH.md` to find subniches **ignored by the big players**.
 4. Output: a ranked list of 5–10 target subniches. See `rules/subniche-discovery.md`.
 
 ### Phase 3 — Build the matrix (mass pages)
 1. Choose the target cities (start with the cities a buyer already wants calls in).
 2. Generate subniche × city pages with `seo-site-builder` + `seo-content-factory`.
-3. Localize with `geo-content-optimizer` / `entity-optimizer`, add `schema-markup-generator` (LocalBusiness/Service), silo with `internal-linking-optimizer`.
+3. Localize per `rcode-seo-os`'s `references/LOCAL-SEO.md` (city landmarks, neighborhoods, service-area language, NAP), author LocalBusiness/Service schema per `on-page-seo-auditor`'s Step 9, silo per `rcode-seo-os`'s `references/INTERNAL-LINK-INTELLIGENCE.md`.
 4. QA every page with `on-page-seo-auditor` + `technical-seo-checker`. See `rules/city-matrix-and-pages.md`.
 
 ### Phase 4 — Rank & monetize
 1. Secure exact-match domains where cheap/available; consider GBP where the niche allows (see caveats).
-2. Track with `rank-tracker`; build authority with `backlink-analyzer` / `domain-authority-auditor`.
+2. Track rankings via `rcode-seo-os`'s `references/GSC-GROWTH-ENGINE.md` (no dedicated rank-tracker skill exists in this package); build authority with `rcode-seo-os`'s `references/BACKLINK-INTELLIGENCE.md`.
 3. Convert calls → income: rent the site, sell leads per-call, or flat monthly. See `rules/monetization.md`.
 
 ## Quick Reference
 
-### Skills this playbook orchestrates
-| Skill | Used for |
+### Skills and seo-os modules this playbook orchestrates
+| Skill / module | Used for |
 |-------|----------|
-| `keyword-research` | Seed keywords, CPC/volume, Keyword Planner scoop |
-| `competitor-analysis`, `serp-analysis` | Competitor service pages, SERP/PAA mining |
-| `content-gap-analysis` | Finding subniches the big players ignore |
+| `rcode-seo-os` `references/KEYWORD-INTELLIGENCE.md` | Seed keywords, CPC/volume, Keyword Planner scoop |
+| `rcode-seo-os` `references/COMPETITOR-RESEARCH.md`, `references/SERP-INTELLIGENCE.md` | Competitor service pages, SERP/PAA mining, finding subniches the big players ignore |
 | `seo-site-builder`, `seo-content-factory` | Programmatic subniche×city pages |
-| `geo-content-optimizer`, `entity-optimizer` | Local relevance, NAP, "near me" intent |
-| `schema-markup-generator` | LocalBusiness / Service structured data |
-| `internal-linking-optimizer` | City/subniche silo structure |
+| `rcode-seo-os` `references/LOCAL-SEO.md` | Local relevance, NAP, "near me" intent |
+| `on-page-seo-auditor` (Step 9) | LocalBusiness / Service structured data |
+| `rcode-seo-os` `references/INTERNAL-LINK-INTELLIGENCE.md` | City/subniche silo structure |
 | `on-page-seo-auditor`, `technical-seo-checker` | Per-page QA |
-| `rank-tracker`, `backlink-analyzer`, `domain-authority-auditor` | Ranking + off-page |
+| `rcode-seo-os` `references/GSC-GROWTH-ENGINE.md`, `references/BACKLINK-INTELLIGENCE.md` | Ranking + off-page (no dedicated rank-tracker skill exists) |
 
 ## File References
 - **Niche selection**: `rules/niche-selection.md`
@@ -82,7 +81,7 @@ Pick one niche and one subniche, then focus for 90 days without chasing shiny ob
 - **Monetization**: `rules/monetization.md`
 
 ## Integration
-- **Related Skills**: keyword-research, competitor-analysis, content-gap-analysis, seo-site-builder, seo-content-factory, geo-content-optimizer, schema-markup-generator, internal-linking-optimizer, rank-tracker, seo-growth-orchestrator
+- **Related Skills**: seo-site-builder, seo-content-factory, on-page-seo-auditor, technical-seo-checker, seo-growth-orchestrator, seo-os
 - **Templates**: `templates/subniche-research-prompt.md`, `templates/service-city-page.md`
 
 ## Validation Checklist

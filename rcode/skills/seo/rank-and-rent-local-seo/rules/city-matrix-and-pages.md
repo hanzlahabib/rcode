@@ -21,10 +21,10 @@ Build one subniche fully across the priority cities before adding the next subni
 `seo-site-builder` for the page framework/templating; `seo-content-factory` for the per-page copy. Each page targets `<subniche> <city>` and its near-me / emergency variants.
 
 **Localize**
-`geo-content-optimizer` + `entity-optimizer` for genuine local relevance — city landmarks, neighborhoods, service-area language, NAP. Avoid pure {city} token-swap pages.
+`rcode-seo-os` (`references/LOCAL-SEO.md`) for genuine local relevance — city landmarks, neighborhoods, service-area language, NAP. Avoid pure {city} token-swap pages.
 
 **Structure & markup**
-`schema-markup-generator` for LocalBusiness/Service JSON-LD. `internal-linking-optimizer` to silo: subniche hub → city pages, and cross-link related subniches.
+Author LocalBusiness/Service JSON-LD per `on-page-seo-auditor`'s Step 9. `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`) to silo: subniche hub → city pages, and cross-link related subniches.
 
 **QA every page**
 `on-page-seo-auditor` (title/H1/intent match) + `technical-seo-checker` (indexability, speed, mobile). No page ships unaudited.
@@ -46,15 +46,15 @@ A Google Business Profile / map-pack listing helps where the niche permits. In s
 Subniche: basement flooding cleanup
 Cities (buyer-supplied): Dallas, Houston, Austin, Phoenix, Atlanta, Las Vegas, ...
 1. Build hub page + all city pages for THIS subniche (geo + schema + silo + QA)
-2. rank-tracker on the set
+2. Track rankings via `rcode-seo-os`'s `references/GSC-GROWTH-ENGINE.md` (no dedicated rank-tracker skill exists) on the set
 3. Only then start subniche #2
 ```
 
 ### Example: Page pipeline
 ```
-seo-site-builder → seo-content-factory → geo-content-optimizer/entity-optimizer
-→ schema-markup-generator → internal-linking-optimizer
-→ on-page-seo-auditor + technical-seo-checker → publish → rank-tracker
+seo-site-builder → seo-content-factory → seo-os local-seo
+→ on-page-seo-auditor (schema) → seo-os internal-link-intel
+→ on-page-seo-auditor + technical-seo-checker → publish → seo-os gsc-growth-engine
 ```
 
 ## Anti-Patterns
@@ -65,7 +65,7 @@ seo-site-builder → seo-content-factory → geo-content-optimizer/entity-optimi
 
 ### Publish-and-forget
 **Problem**: 100 pages live, none tracked, no idea what ranks.
-**Instead**: `rank-tracker` from day one; double down on the subniche/city cells that move.
+**Instead**: track from day one via `rcode-seo-os`'s `references/GSC-GROWTH-ENGINE.md`; double down on the subniche/city cells that move.
 
 ## Related
 - `subniche-discovery.md` — supplies the rows

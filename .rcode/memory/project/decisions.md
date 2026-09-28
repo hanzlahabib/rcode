@@ -23,6 +23,15 @@ Append-only. Newest at top. Each entry: date, decision, rationale, alternatives 
 
 <!-- Append new decisions above this line -->
 
+### 2026-09-28 — SEO Operating System: router-over-skills, framework-split, progressive memory
+
+**Decision:** `rcode-seo-os` is a strategy+intelligence router that classifies project type/lifecycle and delegates to the 9 existing `seo/*` skills rather than replacing them; Astro implementation lives in a separate framework-specific skill (`rcode-seo-astro-implementation`); per-project memory under `.rcode/seo/` is created progressively at stage gates, not all at once; and the operating-system layer (lifecycle, evidence policy, opportunity scoring) and the intelligence layer (GSC/Ahrefs data ingestion, action queue) extend the same lifecycle enum, evidence vocabulary, scoring doc, and project memory rather than each defining their own.
+**Rationale:** avoids duplicating classification/evidence/scoring logic across 9 skills; keeps strategy framework-independent so a second framework (Next.js, WordPress) doesn't require rewriting the router; avoids empty-bureaucracy template scaffolding for stages a project never reaches; and prevents two sources of truth for project stage or evidence trust level.
+**Alternatives considered:** fold strategy into each of the 9 skills (rejected — duplicates logic 9x); one monolithic skill (rejected — breaks file-size cap, throws away tested mechanics); scaffold all 15+ memory templates eagerly (rejected — dead-weight empty files); separate lifecycle/evidence models per layer (rejected — drift risk); a new cross-project database/dashboard (rejected — portfolio table is derived by scanning sibling `STATE.md` files instead).
+**Who decided:** Hanzla (user), via issues #1098/#1099.
+**Reversibility:** Mixed — router and framework split are easy to reverse (additive, delegation-only); the lifecycle enum's cross-link-only extension is a deliberate one-way constraint. See full ADR for per-decision detail.
+**ADR:** [docs/adr/0004-seo-operating-system-architecture.md](../../../docs/adr/0004-seo-operating-system-architecture.md)
+
 ### 2026-08-06 — Wire named-engineer persona dispatch into /rcode-execute
 
 **Decision:** `rcode-hanzla`/`yousef`/`haitham`/`omar` added to `execute.md`'s subagent allowlist; `execute-waves.md` now classifies each plan by `files_modified` globs (fallback: objective keywords) into frontend/backend/full-stack/other and routes to the matching persona (Haitham/Yousef/Hanzla), falling back to generic `rcode-executor` only when ambiguous or docs/config-only.

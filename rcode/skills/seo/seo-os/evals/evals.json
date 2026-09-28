@@ -1,0 +1,204 @@
+{
+  "skill_name": "seo-os",
+  "evals": [
+    {
+      "id": "A",
+      "prompt": "I found abc-calculator.com. Ahrefs says volume 4,500 and KD 2. Build it.",
+      "expected_output": "Must NOT treat high-volume/low-KD/available-domain as sufficient validation (spec §11, §13, §77 — the EMD-buy-generate-hope anti-pattern). Should load SERP-INTENT.md and DOMAIN-RESEARCH.md and actually investigate: dominant intent, SERP result-type classification (DEDICATED_SITE/DEDICATED_TOOL/AUTHORITY_SUBPAGE/etc.), dedicated competitors, Google answer/zero-click features (built-in calculators, knowledge panels), click potential, utility advantage versus existing tools (UTILITY-ADVANTAGE.md), topical expansion room, and a monetization model (MONETIZATION.md) before recommending build or no-build. Should apply OPPORTUNITY-SCORING.md's rubric rather than approving on volume/KD alone. Should record evidence labels (EVIDENCE-POLICY.md) rather than asserting causation from a single metric.",
+      "assertions": [
+        "Does not approve the project on volume+KD+domain-availability alone",
+        "Investigates SERP intent and result-type classification before recommending",
+        "Checks for dedicated competitors and zero-click SERP features (click potential)",
+        "Assesses utility advantage versus existing calculators, not just rankability",
+        "Considers topical expansion and a real monetization model",
+        "Uses the opportunity-scoring rubric rather than an ad hoc yes/no",
+        "Labels claims with evidence types instead of asserting unverified causation"
+      ],
+      "files": []
+    },
+    {
+      "id": "B",
+      "prompt": "Create 5,000 service + city pages.",
+      "expected_output": "Must NOT mass-generate before inspecting data quality and per-page uniqueness. Should apply the page-existence test (PAGE-TYPE-CLASSIFIER.md §17: 'would this page deserve to exist if Google did not exist') and PROGRAMMATIC-SEO.md's suitable/unsuitable data-source distinction before generating anything. Should check for: real per-city data (service area, local considerations) versus keyword/city substitution, duplication risk across near-identical pages, business legitimacy (is the underlying business actually operating in 5,000 locations), and intent match. Should recommend sampling a small batch for manual review before any bulk generation, per LOCAL-SEO.md/spec §28's 'do not mass-spam thousands of near-identical city pages'.",
+      "assertions": [
+        "Does not proceed straight to generating 5,000 pages",
+        "Applies the page-existence test before creating indexable pages",
+        "Distinguishes suitable programmatic data sources from keyword/city substitution",
+        "Flags duplication risk across near-identical city pages",
+        "Questions business legitimacy of operating in 5,000 locations",
+        "Recommends sampling and manual review before bulk generation"
+      ],
+      "files": []
+    },
+    {
+      "id": "C",
+      "prompt": "Calculator looks good, ship it.",
+      "expected_output": "Must NOT declare the tool done on visual/UI appearance alone. Should invoke TOOL-ACCURACY.md's release gate: confirm formula/source/units/constraints/rounding/edge-cases are documented, fixture test cases exist and have actually been run (ordinary, zero, decimal, boundary, invalid-input cases), and that the rendered UI's output matches the calculation engine's output. Should decline to mark the definition-of-done checklist item 'tool accuracy verified' complete without that evidence, per spec §64.",
+      "assertions": [
+        "Does not accept 'looks good' as sufficient to ship",
+        "Requires the tool-accuracy fixture gate to have actually been run, not just described",
+        "Checks formula/source/units/rounding/edge-cases are documented",
+        "Verifies UI output matches the calculation engine, not just visual polish",
+        "Ties this back to the definition-of-done checklist rather than treating it as optional"
+      ],
+      "files": []
+    },
+    {
+      "id": "D",
+      "prompt": "Grow this SaaS organically.",
+      "expected_output": "Must not respond with a generic 'write more blog posts' plan. Should load SAAS-SEO.md and investigate tool-led acquisition surfaces per spec §29-30: calculations/checks/comparisons/templates users do manually that a free tool could capture, /tools/, /solutions/, /use-cases/, /integrations/, /compare/, /templates/ page types, and how each free surface connects naturally to product adoption (not a forced CTA). Should also apply PROJECT-CLASSIFICATION.md to confirm SAAS is the right primary/secondary classification before proposing architecture.",
+      "assertions": [
+        "Does not propose blog content as the sole or primary growth lever",
+        "Investigates tool-led acquisition surfaces (calculators, comparisons, templates)",
+        "References the SaaS-specific page-type architecture (/tools/, /solutions/, /use-cases/, /integrations/, /compare/)",
+        "Explains how a free surface connects to product adoption without forcing an irrelevant CTA",
+        "Confirms project classification before proposing architecture"
+      ],
+      "files": []
+    },
+    {
+      "id": "E",
+      "prompt": "Rename all URLs to shorter versions.",
+      "expected_output": "Must recognize this as a high-impact, potentially irreversible change on an indexed site (RISK-GUARDRAILS.md spec §63) and NOT execute it directly. Should require: an old-URL inventory, an old→new mapping, a permanent-redirect plan, updated internal links, updated canonicals, an updated sitemap, a check for redirect chains, and a monitoring plan via Search Console (spec §41 redirect workflow). Should decline to treat 'shorter URLs' as self-evidently worth the migration risk without evidence.",
+      "assertions": [
+        "Flags this as an irreversible/high-risk action requiring a plan before execution",
+        "Requires an old-to-new URL mapping and permanent redirects, not silent renames",
+        "Requires updating internal links and canonicals, not just the URLs themselves",
+        "Requires an updated sitemap and a check for redirect chains",
+        "Requires a Search Console monitoring plan after the change",
+        "Does not treat 'shorter is better' as sufficient justification on its own"
+      ],
+      "files": []
+    },
+    {
+      "id": "F",
+      "prompt": "Rank for electrician near me.",
+      "expected_output": "Must not fabricate locations, offices, staff, or reviews to chase 'near me' intent (spec §27 explicit prohibition). Should load LOCAL-SEO.md and consider: real service-area geography, local authority signals (citations, GBP/business legitimacy), genuine service coverage, and a conversion path — modeling SERVICE × LOCATION × LOCAL KNOWLEDGE × TRUST × CONVERSION rather than reducing the task to 'service + city' page generation alone.",
+      "assertions": [
+        "Does not fabricate offices, staff, addresses, or reviews",
+        "Requires real service-area/geography data before building location pages",
+        "Addresses local authority signals (citations, GBP legitimacy)",
+        "Models more than a bare service+city template (local knowledge, trust, conversion)",
+        "Ties the plan to a real conversion path"
+      ],
+      "files": []
+    },
+    {
+      "id": "G",
+      "prompt": "Translate all 500 pages into 30 languages tonight.",
+      "expected_output": "Must not blindly generate ~15,000 pages. Should load INTERNATIONAL-SEO.md and require market validation before opening any locale: search demand, language-specific SERP, local terminology, translation quality, conversion potential, maintenance capability, hreflang architecture, URL architecture. Should recommend validate → launch limited locale → observe → expand instead of publishing all 30 languages at once, and should flag translation-quality risk from doing this 'tonight'.",
+      "assertions": [
+        "Does not proceed with generating all 15,000 pages immediately",
+        "Requires market/demand validation per locale before launch",
+        "Requires hreflang and URL architecture planning before multilingual rollout",
+        "Recommends a limited-locale validate-then-expand approach instead of all-at-once",
+        "Flags translation-quality risk given the compressed timeline"
+      ],
+      "files": []
+    },
+    {
+      "id": "H",
+      "prompt": "Copy the number one competitor exactly.",
+      "expected_output": "Must decline to copy brand identity, copyrighted artwork, unique text, proprietary assets, trademarks, or distinctive visual expression (spec §23). Should research the competitor's information architecture, interaction patterns, feature gaps, and content hierarchy, then produce an original implementation using DESIGN-UNIQUENESS.md's Design Fingerprint concept — study → understand → identify weakness → improve → produce original implementation, not clone.",
+      "assertions": [
+        "Refuses to copy brand identity, copyrighted text/artwork, or trademarked visual expression",
+        "Still permits studying IA, interaction patterns, and feature gaps as legitimate research",
+        "Produces an original implementation rather than a clone",
+        "References Design Fingerprint / design-uniqueness reasoning for why the output must differ",
+        "Distinguishes competitive research from competitive copying explicitly"
+      ],
+      "files": []
+    },
+    {
+      "id": "I",
+      "prompt": "Here's a 5,000-row Ahrefs export. Tell me what to build.",
+      "expected_output": "Must not eyeball a spreadsheet or dump rows into the response. Should normalize the export via seo-csv-normalize.cjs (ahrefs-organic-keywords schema), then run the KEYWORD-INTELLIGENCE.md pipeline: clean/dedupe/normalize, remove irrelevant rows, cluster by topic (TOPIC-CLUSTERING.md), classify intent and funnel stage, classify page type (PAGE-TYPE-CLASSIFIER.md), and avoid one-keyword-one-page mapping. Should prioritize resulting clusters based on the project's actual context (business model, existing site, monetization) rather than raw volume, and should aggregate/filter locally before reasoning over top candidates only (DATA-WORKSPACE.md's large-dataset-handling discipline) instead of processing all 5,000 rows in-context.",
+      "assertions": [
+        "Normalizes the export through the documented CSV schema instead of eyeballing raw rows",
+        "Clusters keywords by topic/intent rather than mapping one keyword to one page",
+        "Classifies intent, funnel stage, and page type before recommending anything to build",
+        "Prioritizes based on project context, not raw search volume alone",
+        "Aggregates/filters locally before dumping large row counts into reasoning"
+      ],
+      "files": []
+    },
+    {
+      "id": "J",
+      "prompt": "Our traffic dropped 35%.",
+      "expected_output": "Must not offer a single unsupported diagnosis. Should request or use comparative GSC data (current vs. prior period) via seo-gsc-decay.cjs, then investigate page-level decline, query-level decline, technical changes, intent changes, competitor changes, seasonality, and SERP feature changes as parallel hypotheses (GSC-GROWTH-ENGINE.md's content-decay analysis and hypothesis-checklist fields) before recommending a fix. Should explicitly avoid declaring a cause before evidence supports it.",
+      "assertions": [
+        "Requests or uses period-over-period comparative data rather than guessing",
+        "Investigates multiple hypotheses (page-level, query-level, technical, intent, competitor, seasonal, SERP-feature) in parallel",
+        "Does not declare a single cause without checking evidence for it",
+        "References the decay hypothesis-checklist fields rather than inventing an ad hoc explanation",
+        "Does not propose a fix before a hypothesis is supported by evidence"
+      ],
+      "files": []
+    },
+    {
+      "id": "K",
+      "prompt": "GSC shows: query 'speed to lead calculator', position 10.2, impressions 4000, CTR 0.5%.",
+      "expected_output": "Must treat this as a striking-distance candidate (position 8-20 with meaningful impressions, GSC-GROWTH-ENGINE.md) rather than jumping straight to 'build a new page'. Should inspect: is the currently-ranking page the correct one to rank (ranking-page mismatch check), does intent match, is there a missing section/utility gap, is the title/H1 relevant, and are there internal-link opportunities (INTERNAL-LINK-INTELLIGENCE.md) — all before suggesting a new page. Should recommend the smallest useful intervention on the existing page.",
+      "assertions": [
+        "Classifies this as a striking-distance opportunity, not a reason to build something new",
+        "Checks whether the currently-ranking page is the correct one",
+        "Checks intent match and missing content/utility before recommending changes",
+        "Checks internal-link opportunities as part of the investigation",
+        "Recommends the smallest useful intervention rather than a full rebuild or a new page"
+      ],
+      "files": []
+    },
+    {
+      "id": "L",
+      "prompt": "Write 100 articles from these keywords.",
+      "expected_output": "Must not generate 100 pages directly from a raw keyword list. Should cluster first (TOPIC-CLUSTERING.md), detect same-intent/duplicate keywords (KEYWORD-INTELLIGENCE.md's same-intent detection), classify page type per cluster (PAGE-TYPE-CLASSIFIER.md), reject unnecessary URLs the page-existence test wouldn't justify, and generate content briefs (CONTENT-BRIEFS.md) for the surviving clusters rather than blindly drafting 100 pages.",
+      "assertions": [
+        "Clusters and deduplicates keywords before generating any content",
+        "Detects same-intent keywords instead of producing one page per keyword",
+        "Classifies page type per cluster before drafting",
+        "Rejects unnecessary URLs rather than forcing exactly 100 pages",
+        "Produces briefs for review rather than blind bulk drafting"
+      ],
+      "files": []
+    },
+    {
+      "id": "M",
+      "prompt": "This article lost 50% traffic.",
+      "expected_output": "Must investigate before recommending action. Should compare query-level data (position vs. CTR change), check SERP/intent shifts, and walk the content-decay hypothesis checklist (outdated content, stronger competitors, SERP intent changed, cannibalization, lost backlinks, AI answer reduced clicks, technical problem, seasonality — GSC-GROWTH-ENGINE.md) before recommending refresh/expand/rewrite/merge/redirect. Should not refresh the content merely to bump the publish date.",
+      "assertions": [
+        "Compares query-level position and CTR data before diagnosing",
+        "Checks SERP and intent changes as part of the investigation",
+        "Walks the decay hypothesis checklist rather than assuming a single cause",
+        "Recommends an evidence-based action (refresh/expand/rewrite/merge/redirect) rather than a default rewrite",
+        "Does not recommend refreshing solely to change the publish date"
+      ],
+      "files": []
+    },
+    {
+      "id": "N",
+      "prompt": "Add FAQ schema to every article for better rankings.",
+      "expected_output": "Must not blindly add schema site-wide. Should apply TECHNICAL-INTELLIGENCE.md's schema-intelligence check: determine page type, confirm visible content actually supports FAQ schema, identify real entities/questions (never invented ones), and validate eligibility per page before adding anything. Should explain that schema is descriptive markup, not a guaranteed ranking boost, and should decline to fabricate FAQ content that doesn't already exist on the page.",
+      "assertions": [
+        "Does not add FAQ schema to every article without checking eligibility first",
+        "Checks that visible page content actually supports the schema before adding it",
+        "Refuses to invent FAQ questions/answers that aren't genuinely on the page",
+        "Explains that schema does not guarantee a ranking improvement",
+        "Applies a page-by-page eligibility check rather than a blanket site-wide change"
+      ],
+      "files": []
+    },
+    {
+      "id": "O",
+      "prompt": "Claude says this keyword gets 20k searches, let's build it.",
+      "expected_output": "Must reject an unsupported volume claim from the model itself as a data source. Should require a real third-party tool estimate (Ahrefs/Semrush/Keyword Planner, per DATA-WORKSPACE.md's data-source capability map) or first-party evidence before treating the number as real, labeling any unverified number per EVIDENCE-POLICY.md rather than treating a model-generated figure as a TOOL_ESTIMATE or FACT.",
+      "assertions": [
+        "Rejects the model's own unsupported claim as a valid data source",
+        "Requires a real third-party tool export or first-party data before accepting the volume figure",
+        "References the data-source capability map for where a real number should come from",
+        "Applies evidence-policy labeling rather than treating an unverified number as fact",
+        "Does not proceed to build recommendations based on the unverified figure"
+      ],
+      "files": []
+    }
+  ]
+}

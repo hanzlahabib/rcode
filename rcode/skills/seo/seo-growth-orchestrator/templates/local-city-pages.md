@@ -24,4 +24,4 @@ Constraint: every page must have a genuine local angle (real neighborhoods, land
 local specifics) — no thin doorway pages that only swap the city name.
 ```
 
-Then validate schema with `schema-markup-generator` and links with `internal-linking-optimizer`.
+Then validate schema per `on-page-seo-auditor`'s Step 9 and links with `rcode-seo-os` (`references/INTERNAL-LINK-INTELLIGENCE.md`).
