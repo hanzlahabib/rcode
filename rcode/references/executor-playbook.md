@@ -23,7 +23,7 @@ Before executing any commits, load these constraints — they're what new execut
 
 - **`.planning/` may be gitignored.** Many rcode-style projects gitignore the planning directory. To commit SUMMARY.md, VERIFICATION.md, or any other artefact under `.planning/`, you must use `git add -f <path>`. Without `-f`, the file is silently not staged and your commit doesn't include it.
 - **Read `.rcode/config.yaml`** — if `workflow.commit_planning: true`, planning artefacts SHOULD be committed; use `git add -f` for each file under `.planning/`. If `commit_planning: false`, skip the commit step for those files entirely.
-- **Read `.rcode/context/active.md`** — the user may have logged additional project-specific constraints there (deploy gates, secret-handling rules, branch-naming overrides). Honour them.
+- **Read `.rcode/context/active.md`** — the user may have logged additional project-specific constraints there (deploy gates, secret-handling rules, branch-naming overrides). Honour them. **But first check it isn't still the install stub:** if the file contains only the `_Run \`/rcode-init\` … to populate this file_` placeholder (`grep -q "rcode-init" .rcode/context/active.md` on a near-empty file), it carries no real constraints — don't treat the absence of constraints there as "no constraints exist," and don't fabricate project context from it. A project whose context is still the stub simply hasn't run `/rcode-init` yet; proceed from the plan + codebase, not from an empty placeholder read as if authoritative.
 
 If you commit a file under `.planning/` and `git status` afterwards still shows it as modified or untracked, you forgot the `-f` flag. Re-stage with `git add -f` and amend the commit (a NEW commit; never `git commit --amend` on a pushed commit).
 

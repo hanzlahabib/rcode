@@ -230,6 +230,7 @@ function parseArgs(argv) {
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (arg === '--commit-planning') opts.commitPlanning = true;
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
+    else if (arg === '--model-profile') opts.modelProfile = argv[++i];
     else if (arg === '--non-destructive') opts.nonDestructive = true;
     else if (arg === '--force-overwrite') opts.forceOverwrite = true;
     else if (arg === '--show-diff') opts.showDiff = true;       // #251 full unified diff
@@ -1101,6 +1102,11 @@ function printInstallSummary(opts, report) {
   console.log(`  ${bold('Next:')}`);
   console.log(`    cd ${opts.target}`);
   console.log('    claude              # start Claude Code (reload window if already open)');
+  // #1085: /rcode-init leads here because docs/getting-started.md and README
+  // both call it THE first command — it scans the project and populates the
+  // context files every other command reads. Listing /rcode-progress first
+  // sent users down a path the docs call wrong, right at install time.
+  console.log('    /rcode-init         # THE first command: scan project, set up context');
   console.log('    /rcode-progress     # where you are, what\'s next');
   console.log('    /rcode-do           # interactive command picker');
   console.log('    /rcode-council <q>  # multi-agent strategic answer');
@@ -1711,6 +1717,9 @@ async function main() {
 
   if (interactive) {
     await runInstallWizard(opts);
+    // #1086: config.yaml from this point carries real user answers, not
+    // installer defaults — see the marker fork in generateConfigYaml.
+    opts.wizardRan = true;
   }
 
   try {
@@ -1817,7 +1826,23 @@ async function runInstallWizard(opts) {
   if (isCancel(planningChoice)) { cancel('Installation cancelled.'); process.exit(0); }
   opts.commitPlanning = planningChoice;
 
-  // ── 6. User name ──────────────────────────────────────────────────────
+  // ── 6. Model profile ──────────────────────────────────────────────────
+  // #1086: the auto-init-guard's only question the wizard didn't cover —
+  // asking it here (and marking the config wizard-seeded) lets the guard
+  // skip re-asking everything on the user's first command.
+  const profileChoice = await select({
+    message: 'Model profile? (agent cost vs quality)',
+    options: [
+      { value: 'quality',  label: 'Quality',  hint: 'strongest models for reasoning' },
+      { value: 'balanced', label: 'Balanced', hint: 'recommended — standard models' },
+      { value: 'budget',   label: 'Budget',   hint: 'fastest, cheapest models' },
+    ],
+    initialValue: 'balanced',
+  });
+  if (isCancel(profileChoice)) { cancel('Installation cancelled.'); process.exit(0); }
+  opts.modelProfile = profileChoice;
+
+  // ── 7. User name ──────────────────────────────────────────────────────
   const nameInput = await text({
     message: 'Your name? (used in agent responses)',
     placeholder: opts.userName,

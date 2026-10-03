@@ -267,9 +267,24 @@ function checkStaleness(cwd) {
   // Context files exist but no fingerprint stored — fresh install with stub
   // context files, or state.json got truncated before fingerprint was written.
   if (!stored) {
+    // #1087: distinguish "never scanned (install stubs on disk)" from "scan
+    // happened but state.json lost the fingerprint" — the first is every
+    // fresh install's normal state and shouldn't read as drift.
+    const stillStub = [activePath, briefPath].some(p => {
+      try {
+        return /_Run `\/rcode-init`/.test(fs.readFileSync(p, 'utf8'));
+      } catch {
+        return false;
+      }
+    });
     return {
       status: 'stale',
-      reasons: ['run /rcode-init in your editor to populate project context'],
+      stub: stillStub,
+      reasons: [
+        stillStub
+          ? 'project context is still the install stub — run /rcode-init to scan the project'
+          : 'run /rcode-init in your editor to populate project context',
+      ],
       current,
       stored,
       context_files,

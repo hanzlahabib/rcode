@@ -1,0 +1,127 @@
+rcode Demo - Full Execution Prompt Chain
+
+Practice this exact sequence in a fresh project before your live demo.
+Everything below is what we actually ran and verified working, live, in demo-rcode-app.
+
+0. Fresh project setup (one-time, before the terminal opens)
+
+mkdir ~/demo-rcode-app && cd ~/demo-rcode-app
+git init
+npm init -y
+Add a few real files so it's brownfield, not empty - the empty-repo path is less interesting
+mkdir -p src
+... your app's starter files here (we used a small Express app with register/login) ...
+git add -A && git commit -m "initial commit"
+npx @hanzlaa/rcode install . --yes --ide claude
+
+1. Open Claude Code in the project
+
+claude
+
+2. Initialize rcode - writes JOURNEY.md, CLAUDE.md, AGENTS.md
+
+/rcode-init
+Watch for: no "recovery" language on a genuine first run (fixed this session). Both CLAUDE.md and AGENTS.md should exist afterward.
+
+3. Scan the existing codebase
+
+/rcode-scan
+Watch for: it should actually scan (no --focus needed - defaults to tech+arch, fixed this session). Then check .planning/PROJECT.md and .planning/STATE.md - should show real content, not install-stub placeholders.
+
+4. Council - real parallel multi-agent architecture discussion
+
+/rcode-council "how should we architect a password reset flow for this app -- token strategy, email delivery, security tradeoffs"
+Watch for: genuine parallel dispatch (multiple named specialists - Waleed/Yousef/Fatima or similar - running concurrently, not one voice talking sequentially). If it asks which panel to convene, answer, don't skip.
+
+5. Add the phase
+
+/rcode-add-phase password-reset
+(We deliberately used this instead of council's own generic "Next Up: /rcode-plan" suggestion - no phase existed yet, so add-phase has to come first.)
+
+6. Plan it - grounded in the council session
+
+/rcode-plan 1
+If asked about CONTEXT.md: choose "Continue without context" - this is the more interesting demo moment, since it proves the planner pulls from the council session directly, not a separate capture step.
+
+Watch for: the resulting SPRINT.md should cite the council session's specific decisions by name (token strategy, security tradeoffs) - open it and show the traceability if you want a strong beat here.
+
+7. Execute - this is the main "watch agents work" moment
+
+/rcode-execute 1
+Important: when the mode menu appears (Autonomous / Interactive / Wave-only), pick Autonomous run, not Interactive. Interactive mode edits inline in the same session with no visible subagent spawn - Autonomous is what actually dispatches a named engineer (Hanzla/Yousef/Haitham) as a real, watchable subagent.
+
+It'll run through: task execution -> code-review gate (real rcode-reviewer spawn) -> regression gate -> phase-goal verification (real rcode-verifier spawn) -> UAT gate -> phase complete.
+
+8. Show the proof, not just the process
+
+cat .planning/council-sessions/council-.md next to cat .planning/phases/1-/1-1-SPRINT.md - line up the council's decisions against the plan's tasks.
+Dashboard, if running: currentPhase.status should flip to "complete", progress.pct to 100.
+
+9. Optional - "no context loss across sessions" beat
+
+Open a brand new terminal, no prior context:
+claude
+/rcode-progress
+It should immediately know exactly where the project is - proves the memory bank / STATE.md persistence story without you having to explain it.
+
+Step 9 - herdr multi-pane (parallel, isolated, persistent agents)
+
+Separate copy, so this doesn't collide with the guided/auto demo runs:
+cp -r ~/demo-rcode-app ~/demo-rcode-app-herdr
+cd ~/demo-rcode-app-herdr && rm -rf .git && git init && git add -A && git commit -m "initial commit"
+rcode is already installed in this copy (from the master template). No re-install needed.
+
+Three small, genuinely independent hardening tasks - each touches exactly one existing
+source file (plus its own new file), so they can't collide even if merged later:
+
+| Task | Touches | New file |
+|---|---|---|
+| Rate-limiting on /auth/register + /auth/login | src/routes/auth.js only | src/middleware/rateLimiter.js |
+| Input validation (email format, min password length) in createUser | src/models/user.js only | - |
+| /health enhancement (uptime, timestamp, memory) + new /ready endpoint | src/server.js only | - |
+
+herdr's actual CLI is a socket-API over an already-running persistent session (herdr with
+no args launches/attaches to it) - it is not a bare interactive-only TUI with no
+scriptable surface. herdr agent start <name> --cwd PATH --split right|down -- <argv...>
+opens a new pane and launches an argv directly in it (verified live in this session - several
+running panes, e.g. gigtax-fixes, graze-backlinks, were started exactly this way). That's
+the real mechanism to open 2-3 panes and hand each one a task in one command, no manual
+typing-then-Enter dance needed.
+
+Open pane 1 (rate limiting):
+herdr agent start ratelimit-agent --cwd ~/demo-rcode-app-herdr --split right -- claude "/rcode-quick \"add rate-limiting middleware to the /auth/register and /auth/login routes in src/routes/auth.js -- create src/middleware/rateLimiter.js using an in-memory sliding window (max 5 requests per minute per IP), return 429 with a clear error message when exceeded, wire it only inside auth.js\""
+
+Open pane 2 (input validation):
+herdr agent start validation-agent --cwd ~/demo-rcode-app-herdr --split down -- claude "/rcode-quick \"add input validation inside createUser in src/models/user.js -- validate email format and enforce a minimum 8-character password, throwing a clear descriptive Error on invalid input\""
+
+Open pane 3 (health/readiness):
+herdr agent start health-agent --cwd ~/demo-rcode-app-herdr --split right -- claude "/rcode-quick \"enhance the /health endpoint in src/server.js to include uptime in seconds, an ISO timestamp, and process memory usage, and add a new /ready readiness endpoint returning 200 once the server has started listening\""
+
+Each uses /rcode-quick (not /rcode-do or /rcode-add-phase) - every task is a single-file,
+few-minute change with no new dependency or architecture shift, which is exactly quick.md's
+inline-scope gate (3 files, 2 min, no research). Stagger the three agent start calls by
+10-20s each so the audience visually sees pane 1 mid-work, pane 2 just starting, pane 3 not
+yet opened - matching the narration beat.
+
+To check status live instead of eyeballing scrollback:
+herdr agent list
+herdr agent wait ratelimit-agent --status done --timeout 120000
+
+Watch for:
+Panes must actually be running concurrently, not queued. herdr agent list shows
+  agent_status per pane (working/idle/done) - glance at it before claiming "these are
+  all running in parallel," don't just assert it from the visual layout.
+A /rcode-quick call can silently fall through the bulk-detection or scope-check gate
+  (see quick.md) and print a redirect ("looks non-trivial, use /rcode-add-phase instead")
+  rather than executing - if a pane looks stuck at a prompt instead of showing tool calls,
+  read the last few lines before assuming it's just slow.
+Persistence proof, if you want the "close the laptop" beat: run herdr agent list from
+  a different terminal/session (or after literally closing and reopening the herdr client) -
+  the panes and their claude sessions are server-side and keep running detached; reattaching
+  doesn't restart them.
+
+Known things to be aware of live
+
+Commands sometimes auto-populate in the input box between steps - always send explicitly yourself, don't rely on the pre-fill firing on its own.
+If mode is guided (not yolo), you'll get real AskUserQuestion pauses - that's expected, just answer them.
+The dashboard (if you run it alongside) refreshes on a 30s poll for phases/sprints/tasks, 4s for live session status, instant only for WebSocket terminal output - don't expect the summary cards to update the instant something happens.
