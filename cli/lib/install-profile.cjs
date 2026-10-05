@@ -44,7 +44,10 @@ function parseInlineList(raw) {
 function parseProfilesYaml(text) {
   const profiles = {};
   let current = null;
-  for (const raw of text.split('\n')) {
+  // The `purposes:` section is parsed by install-purpose.cjs; its nested
+  // `commands:`/`skills:` lines must not leak into a profile entry.
+  const body = text.split(/^purposes:\s*$/m)[0];
+  for (const raw of body.split('\n')) {
     const line = raw.replace(/#.*$/, '').trimEnd();
     if (!line.trim()) continue;
     const top = line.match(/^(\w[\w-]*):\s*$/);
@@ -167,6 +170,7 @@ function removalsForSwitch(staleRels, profile, profiles = loadProfiles()) {
 }
 
 module.exports = {
+  parseInlineList,
   PROFILE_NAMES,
   DEFAULT_NEW_PROFILE,
   DEFAULT_GLOBAL_PROFILE,

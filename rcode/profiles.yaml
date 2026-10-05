@@ -13,3 +13,32 @@ minimal:
   agents: [rcode-planner, rcode-executor, rcode-verifier, rcode-sprint-checker, rcode-phase-researcher, rcode-project-researcher, rcode-research-synthesizer, rcode-roadmapper, rcode-codebase-mapper, rcode-debugger, rcode-integration-checker, rcode-code-reviewer, rcode-code-fixer, rcode-advisor-researcher, rcode-assumptions-analyzer, rcode-nyquist-auditor, rcode-waleed, rcode-fatima, rcode-ux-designer]
 full:
   extends: minimal
+
+# Purpose bundles: additive on top of `minimal` (the core loop is always
+# installed). Chosen with `--purpose a,b` or the interactive picker and
+# persisted as `purposes:` in the manifest. Membership follows what the
+# bundle's own commands/workflows/skills spawn or reference, and is checked by
+# test/install-purposes.test.cjs (every name exists; no workflow spawns an
+# uninstalled agent). Council panels read the installed agent list at runtime,
+# so a smaller roster narrows the panel instead of breaking it.
+purposes:
+  frontend:
+    description: Frontend and UI work (design specs, UI review, React/Next.js practices)
+    commands: [ui-review]
+    skills: [rcode-frontend-design, rcode-create-ux-design, rcode-browser-verify, rcode-theme-system, rcode-clone-website, rcode-haitham-frontend, rcode-layla-designer, rcode-zahra-branding, rcode-react-best-practices, rcode-nextjs-best-practices]
+    agents: [rcode-ui-auditor, rcode-haitham, rcode-layla, rcode-zahra]
+  seo:
+    description: SEO and content (SEO OS, audits, content factory, programmatic and local SEO)
+    commands: []
+    skills: [rcode-seo-os, rcode-seo-audit, rcode-seo-astro-implementation, rcode-seo-aeo-geo, rcode-seo-content-factory, rcode-seo-content-writer, rcode-seo-growth-orchestrator, rcode-seo-site-builder, rcode-on-page-seo-auditor, rcode-technical-seo-checker, rcode-rank-and-rent-local-seo, rcode-domain-research, rcode-market-research]
+    agents: [rcode-hanzla, rcode-haitham, rcode-noor, rcode-layla]
+  strategy:
+    description: Product and strategy (council, PRD, architecture, epics and stories, sprint planning)
+    commands: [council, discuss, brainstorm, prfaq, create-prd, edit-prd, validate-prd, create-architecture, create-epics-and-stories, create-story, sprint-planning, sprint-status, check-implementation-readiness, correct-course, dev-story, retrospective]
+    skills: [rcode-majlis-council, rcode-sadiq-analyst, rcode-mariam-marketing, rcode-hussain-pm, rcode-hussain-sm, rcode-ahmed-hassani-director, rcode-nasser-eng-manager, rcode-noor-writer, rcode-waleed-architect, rcode-product-brief, rcode-create-prd, rcode-edit-prd, rcode-validate-prd, rcode-prfaq, rcode-create-architecture, rcode-create-epics-and-stories, rcode-create-story, rcode-create-milestone, rcode-sprint-planning, rcode-sprint-status, rcode-check-implementation-readiness, rcode-correct-course, rcode-dev-story, rcode-retrospective, rcode-brainstorming, rcode-party-mode, rcode-advanced-elicitation, rcode-market-research, rcode-technical-research, rcode-domain-research]
+    agents: [rcode-sadiq, rcode-mariam, rcode-hussain-pm, rcode-ahmed, rcode-nasser, rcode-noor, rcode-khalid, rcode-yousef, rcode-zayd, rcode-omar, rcode-hanzla, rcode-deviation-analyzer, rcode-remediation-planner]
+  audits:
+    description: Audits and quality (lens audit, security, dependencies, i18n, cross-platform, QA)
+    commands: [audit, lens-audit, secure-phase, karpathy-audit, analyze-dependencies, audit-fix, audit-uat, audit-milestone, feature-drift, validate-phase, add-tests, forensics]
+    skills: [rcode-fatima-qa, rcode-dep-auditor, rcode-i18n-auditor, rcode-cross-platform-auditor, rcode-observability-auditor, rcode-deviation-analyzer, rcode-auth-audit, rcode-review-adversarial-general, rcode-review-edge-case-hunter, rcode-harden, rcode-perf, rcode-prove-it, rcode-qa-generate-e2e-tests, rcode-incident-record]
+    agents: [rcode-security-auditor, rcode-security-adversary, rcode-edge-case-hunter, rcode-dep-auditor, rcode-i18n-auditor, rcode-cross-platform-auditor, rcode-observability-auditor, rcode-deviation-analyzer, rcode-docs-auditor, rcode-hanzla, rcode-layla]

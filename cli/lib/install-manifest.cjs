@@ -16,6 +16,7 @@ const { homedir } = require('./homedir.cjs');
 const { PACKAGE_ROOT, SOURCE_ROOT } = require('./install-shared.cjs');
 const { parseFrontmatter } = require('./install-skills.cjs');
 const { listAvailableModules } = require('./install-plan.cjs');
+const { parseInlineList } = require('./install-profile.cjs');
 
 function readPackageVersion() {
   try {
@@ -288,6 +289,7 @@ function generateInstallManifest(opts) {
   let existingModules = [];
   let previousVersion = null;
   let existingProfile = null;
+  let existingPurposes = [];
   const existingPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
   if (fs.existsSync(existingPath)) {
     const text = fs.readFileSync(existingPath, 'utf8');
@@ -298,6 +300,7 @@ function generateInstallManifest(opts) {
         if (semver.valid(v) && v !== version) previousVersion = v;
       }
       if (line.startsWith('profile:')) existingProfile = line.replace('profile:', '').trim();
+      if (line.startsWith('purposes:')) existingPurposes = parseInlineList(line.replace('purposes:', ''));
       if (line.startsWith('modules:')) { inModules = true; continue; }
       if (inModules && line.trim().startsWith('-')) { existingModules.push(line.trim().slice(1).trim()); }
       else if (inModules && !line.startsWith(' ')) { inModules = false; }
@@ -315,6 +318,10 @@ function generateInstallManifest(opts) {
   // did not resolve a profile must keep whatever was persisted, never invent one.
   const profile = opts.profile || existingProfile;
   if (profile) lines.push(`profile: ${profile}`);
+  // Purposes only exist on top of minimal; a caller that resolved none keeps the
+  // persisted ones, so a bare re-install or `update` never drops them.
+  const purposes = opts.purposes || existingPurposes;
+  if (profile === 'minimal' && purposes.length) lines.push(`purposes: [${purposes.join(', ')}]`);
   lines.push('modules:', moduleLines, 'ides:', '  - claude-code', '');
   return lines.join('\n');
 }
