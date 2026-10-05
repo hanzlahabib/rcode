@@ -18,9 +18,10 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const WF = path.join(ROOT, 'rcode', 'workflows');
+const { readWorkflowWithSteps } = require('./helpers/workflow-text.cjs');
 
 function wf(name) {
-  return fs.readFileSync(path.join(WF, name), 'utf8');
+  return readWorkflowWithSteps(name);
 }
 
 // ─── execute.md ───────────────────────────────────────────────────────────────

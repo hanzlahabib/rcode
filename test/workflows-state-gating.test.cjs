@@ -18,10 +18,11 @@ const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const WORKFLOWS_DIR = path.join(PROJECT_ROOT, 'rcode', 'workflows');
+const { readWorkflowWithSteps } = require('./helpers/workflow-text.cjs');
 
 function readWorkflow(name) {
   const p = path.join(WORKFLOWS_DIR, name);
-  return { path: p, text: fs.readFileSync(p, 'utf8') };
+  return { path: p, text: readWorkflowWithSteps(name) };
 }
 
 test('workflows-state-gating: execute.md gates phase complete on VERIFICATION.md', () => {
