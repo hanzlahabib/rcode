@@ -1,12 +1,11 @@
 ---
 name: rcode-ux-designer
-description: UX & Design Specialist — spawned for UI/UX reviews, design system work, accessibility audits, usability testing strategy, and design-driven decisions.
+description: "UX & Design Specialist — spawned for UI/UX reviews, design system work, accessibility audits, usability testing strategy, and design-driven decisions."
 tools: Read, Grep, Glob, WebFetch
 color: cyan
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/ux-designer-playbook.md
 

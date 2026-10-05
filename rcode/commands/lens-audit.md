@@ -19,7 +19,7 @@ not-for:
   - phase audit (use /rcode-audit phase)
   - milestone audit (use /rcode-audit milestone)
   - karpathy audit without lens context (use /rcode-review --karpathy)
-description: Run a structured 16-lens code audit. Picks one lens or all 16 sequentially. Prints findings and ready-to-paste GitHub issue bodies. Never auto-fixes — audit-first.
+description: "Run a structured 16-lens code audit (one lens or all) and print ready-to-paste GitHub issue bodies."
 argument-hint: "[<1-16> | <lens-name> | all]"
 allowed-tools: Read, Write, Bash, AskUserQuestion
 ---

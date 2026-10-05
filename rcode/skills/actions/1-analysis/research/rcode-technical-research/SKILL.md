@@ -1,22 +1,14 @@
 ---
 name: rcode-technical-research
 internal: true
-description: >
-  Research technical feasibility, architecture options, and implementation
-  approaches for a proposed product or feature. Activates when the user says
-  "technical research", "feasibility study", "research implementation
-  options", "how would we build X", "what stack for", or "technical
-  feasibility for". Do NOT use for final architecture decisions (use
-  rcode-create-architecture) or market analysis.
+description: "Technical feasibility, architecture options and implementation approaches. Use when: \"feasibility study\", \"what stack for\". Not for final ADRs."
 triggers:
   - "technical research"
   - "feasibility study"
-  - "research implementation
-  options"
+  - "research implementation options"
   - "how would we build X"
   - "what stack for"
-  - "technical
-  feasibility for"
+  - "technical feasibility for"
 user-invocable: true
 ---
 @.rcode/references/karpathy-guidelines.md
@@ -46,3 +38,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Speculative Request
 **Input:** "Research how to build AGI"
 **Expected behavior:** Decline speculative. "This is a research problem, not a technical feasibility. I can research narrower applications of current AI tech instead."
+
+## Boundaries
+
+Do NOT use for final architecture decisions (use rcode-create-architecture) or market analysis.

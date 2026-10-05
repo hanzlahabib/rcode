@@ -1,6 +1,6 @@
 ---
 name: rcode-stats
-description: Show project statistics from state.json — phases, plans, decisions, council sessions, timeline
+description: "Show project statistics from state.json — phases, plans, decisions, council sessions, timeline"
 argument-hint: ""
 allowed-tools:
   - Read

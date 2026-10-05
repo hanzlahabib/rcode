@@ -1,7 +1,7 @@
 ---
 name: rcode-harden
 internal: true
-description: Security hardening checklist for SaaS applications.
+description: "Security hardening checklist for SaaS applications."
 triggers:
   - "harden this"
   - "security check"

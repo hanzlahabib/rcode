@@ -1,7 +1,7 @@
 ---
 name: rcode-browser-verify
 internal: true
-description: Use Chrome DevTools MCP to verify browser behaviour — DOM state, console errors, network requests,.
+description: "Verify browser behavior via Chrome DevTools MCP: DOM, console errors, network, CSS, performance. Use when checking real UI runtime behavior."
 triggers:
   - "verify in browser"
   - "check the dom"

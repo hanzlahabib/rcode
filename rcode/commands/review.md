@@ -1,6 +1,6 @@
 ---
 name: rcode-review
-description: Cross-AI peer review — invoke external AI CLIs to independently review phase plans.
+description: "Cross-AI peer review — invoke external AI CLIs to independently review phase plans."
 argument-hint: ""
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---

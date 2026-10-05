@@ -1,6 +1,6 @@
 ---
 name: rcode-theme-system
-description: Audit a frontend's design tokens BEFORE launch.
+description: "Audit a frontend's design tokens BEFORE launch."
 triggers:
   - "theme audit"
   - "design tokens"

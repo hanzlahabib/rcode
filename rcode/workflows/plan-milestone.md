@@ -18,7 +18,7 @@ Parse `$ARGUMENTS`:
 - `--wave <N>` — start from wave N (resume after partial failure)
 
 ```bash
-INIT_JSON=$(node ".rcode/bin/rcode-tools.cjs" state read 2>/dev/null || echo '{}')
+INIT_JSON=$(node ".rcode/bin/rcode-tools.cjs" state brief 2>/dev/null || echo '{}')
 ROADMAP_PHASES=$(node ".rcode/bin/rcode-tools.cjs" roadmap list-phases 2>/dev/null || echo '[]')
 ```
 

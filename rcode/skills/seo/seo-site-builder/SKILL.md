@@ -1,6 +1,6 @@
 ---
 name: rcode-seo-site-builder
-description: End-to-end skill for finding, researching, planning, and building profitable affiliate SEO websites — from niche idea to live Next.js site.
+description: "Find, research, plan and build profitable affiliate SEO sites from niche to live Next.js. Use when: \"build an affiliate site\", \"niche site\"."
 ---
 
 # seo-site-builder

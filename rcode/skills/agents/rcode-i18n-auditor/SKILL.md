@@ -1,12 +1,6 @@
 ---
 name: rcode-i18n-auditor
-description: >
-  Internationalization and localization auditor. Detects hardcoded English
-  strings in workflow output, missing response_language pass-through to
-  subagents, AskUserQuestion with English-only prompts, and RTL/Arabic
-  layout gaps. Audit-only — never modifies string files. Activates when
-  the user says "i18n audit", "translation check", "hardcoded strings",
-  "response_language missing", "RTL audit", "Arabic layout", or similar.
+description: "Audit-only i18n/RTL auditor for hardcoded strings and missing response_language. Use when: \"i18n audit\", \"RTL audit\", \"translation check\"."
 triggers:
   # English
   - "i18n audit"

@@ -1,15 +1,6 @@
 ---
 name: rcode-memory-audit
-description: >
-  Audit the Memory Bank for stale entries, contradictions, missing sections,
-  and content that should be archived. Produces a report with severity-tagged
-  findings and one-line fix suggestions. Activates when the user says
-  "audit memory bank", "check memory bank", "/rcode-memory-audit",
-  "memory bank ka audit", "find stale entries", "is my memory bank healthy".
-  Optional --fix flag patches trivial items (typos, stale dates, broken paths)
-  atomically; non-trivial findings always report-only.
-  Do NOT use for: bootstrap (use rcode-memory-init), surgical updates
-  (use rcode-memory-update), or distillate regeneration (use rcode-memory-distill).
+description: "Audit the Memory Bank for stale entries and contradictions. Use when: \"audit memory bank\", \"find stale entries\", \"memory bank ka audit\"."
 triggers:
   # English
   - "audit memory bank"
@@ -105,3 +96,7 @@ This skill only reports. Fixes happen via `rcode-memory-update`, manual edits, o
 
 - **Reads:** every file under `.rcode/memory/`
 - **Writes:** nothing — strictly read-only
+
+## Boundaries
+
+Do NOT use for: bootstrap (use rcode-memory-init), surgical updates (use rcode-memory-update), or distillate regeneration (use rcode-memory-distill).

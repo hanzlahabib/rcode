@@ -1053,6 +1053,7 @@ function cmdInitExecute(rawArgs) {
 const STATE_PATH = path.join(RCODE_DIR, 'state.json');
 
 const stateIO = require(path.join(__dirname, 'lib', 'state-io.cjs'));
+const { RawOutput } = require(path.join(__dirname, 'lib', 'state-projections.cjs'));
 
 // Canonical phase status enum (#955, reconciled #1060), state read/write,
 // and migration now live in lib/state-io.cjs (#204 step 2) — this module
@@ -1104,6 +1105,18 @@ function cmdState(subArgs) {
     milestoneCloseNudge, PLANNING_DIR, PROJECT_ROOT, RCODE_DIR, STATE_PATH,
   };
 
+  // --- brief / get <path> / field / phase-status (token-cheap projections, #1104) ---
+  {
+    const projectionsLib = require(path.join(__dirname, 'lib', 'state-projections.cjs'));
+    const r = projectionsLib.dispatch(subArgs, stateDeps);
+    if (r !== undefined) return r;
+  }
+  // --- archive-phases / restore-phase (finished-phase bodies out of state.json, #1104) ---
+  {
+    const archiveLib = require(path.join(__dirname, 'lib', 'state-archive.cjs'));
+    const r = archiveLib.dispatch(subArgs, stateDeps);
+    if (r !== undefined) return r;
+  }
   // --- read / get ---
   {
     const lifecycleLib = require(path.join(__dirname, 'lib', 'state-lifecycle.cjs'));
@@ -4179,6 +4192,12 @@ async function main() {
         console.log('State subcommands:');
         console.log('  state read                                   → print full state.json');
         console.log('  state get                                    → alias for state read');
+        console.log('  state brief [--phase N] [--full-history]    → compact JSON digest (~1k tokens) instead of full state');
+        console.log('  state get <path> [<path> ...]                → JSON of only those dot-paths (e.g. current_phase phases)');
+        console.log('  state field <path>                           → one raw scalar value, for $(...) capture');
+        console.log('  state phase-status [N]                       → {number,name,status} for phase N, or all phases');
+        console.log('  state archive-phases [--keep N] [--dry-run]  → move sprint/story bodies of finished phases to .rcode/state-archive/ (keeps last N, default 2)');
+        console.log('  state restore-phase <N>                      → put an archived phase back inline');
         console.log('  state init --project <name>                  → create state.json if missing');
         console.log('  state set-phase <name>                       → set current_phase, reset current_plan, append to phases[]');
         console.log('  state advance-plan                           → increment current_plan counter');
@@ -4221,7 +4240,7 @@ async function main() {
         console.log('  state story list [--sprint <NN.S>] [--status <status>]');
         return;
       default: {
-        const stateSubs = ['read','get','init','set-phase','advance-plan','snapshot','update-progress','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','set-intent','reset'];
+        const stateSubs = ['read','get','brief','field','phase-status','archive-phases','restore-phase','init','set-phase','advance-plan','snapshot','update-progress','record-execution','record-council','record-chain','add-decision','decisions-global','add-blocker','resolve-blocker','record-session','set-ids-in-state','migrate-ids','migrate-schema','next-phase-id','next-plan-id','next-task-id','resolve-id','workstream-create','workstream-switch','workstream-list','workstream-status','workstream-complete','workstream-validate','insert-phase','planned-phase','begin-phase','complete-phase','set-intent','reset'];
         // Issue #656 — top-level aliases for intuitive guesses.
         const intuitionAliases = {
           blocker: 'state resolve-blocker',
@@ -4260,7 +4279,8 @@ async function main() {
         process.exit(1);
       }
     }
-    console.log(JSON.stringify(result, null, 2));
+    if (result instanceof RawOutput) console.log(result.text);
+    else console.log(JSON.stringify(result, null, 2));
   } catch (err) {
     console.error(`rcode-tools error: ${err.message}`);
     if (process.env.DEBUG) console.error(err.stack);

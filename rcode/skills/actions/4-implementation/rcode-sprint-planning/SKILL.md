@@ -1,12 +1,8 @@
 ---
 name: rcode-sprint-planning
 internal: true
-description: >
-  Generate or update a sprint plan that sequences stories for dev execution.
-  Activates when the user says "plan the sprint", "create sprint plan", "run
-  sprint planning", "sequence the next sprint", or "generate sprint N plan".
-  Do NOT use for epic breakdown (use rcode-create-epics-and-stories) or
-  status reporting (use rcode-sprint-status).
+description: "Generate or update a sprint plan that sequences stories for dev. Use when: \"plan the sprint\", \"sequence the next sprint\". Not for epic breakdown."
+disable-model-invocation: true
 triggers:
   # English
   - "plan the sprint"
@@ -62,3 +58,7 @@ Follow the instructions in ./workflow.md.
 ### Negative Example: Fabricated Capacity
 **Input:** "Plan the sprint" (no prior capacity info, no `mode: yolo`, no `--auto`)
 **Expected behavior:** DO NOT assume "1 senior FT, 30 pts/week" or any other capacity. DO NOT write `sprint-N.md` until the user provides numeric answers for devs/PTO/velocity. If the user resists, point them at the two sanctioned bypass paths (`.rcode/config.yaml` → `mode: yolo` or `/rcode-do --auto`). See `../../_shared/no-autonomous-bypass.md`.
+
+## Boundaries
+
+Do NOT use for epic breakdown (use rcode-create-epics-and-stories) or status reporting (use rcode-sprint-status).

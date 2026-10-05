@@ -1,12 +1,11 @@
 ---
 name: rcode-ui-auditor
-description: UI Auditor — spawned to audit user interface for usability, consistency, accessibility, and design quality. Identifies UX issues, design inconsistencies, and accessibility gaps.
+description: "UI Auditor: audits interfaces for usability, consistency, accessibility and design quality; reports UX issues and gaps."
 tools: Read, Grep, Glob, Bash, WebFetch
 color: cyan
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/auditor-shared-checklists.md
 

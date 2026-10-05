@@ -17,11 +17,13 @@ const { ok, fail, dim, bold, PACKAGE_ROOT } = require('./install-shared.cjs');
  * --force-overwrite clobbers them. Closes #381 — without this, customized
  * .claude/agents/rcode-*.md and similar files were silently lost.
  *
+ * `extraRels` adds paths outside the plan (profile-switch removals).
+ *
  * Returns { ok, path, warning, fileCount } — ok=false means we couldn't
  * create the backup (tar missing, no paths, etc.); the caller decides
  * whether to abort or continue.
  */
-function createInstallBackup(target, plan) {
+function createInstallBackup(target, plan, extraRels = []) {
   const { spawnSync } = require('child_process');
 
   // Build the list of files that EXIST and are about to be overwritten.
@@ -35,6 +37,11 @@ function createInstallBackup(target, plan) {
     if (fs.existsSync(fullDest)) {
       paths.push(relPath);
     }
+  }
+  // Files a profile switch is about to delete are not in the plan, but they
+  // are exactly what the user needs back if the switch was a mistake.
+  for (const relPath of extraRels) {
+    if (fs.existsSync(path.join(target, relPath))) paths.push(relPath);
   }
   // Also include the package-managed state files even though install
   // explicitly preserves them — defensive: if install regresses and starts
@@ -165,6 +172,22 @@ function runInstallHealthCheck(target, counts) {
       }
     }
   } catch { /* keep hardcoded fallback */ }
+
+  // A restricted profile ships only its manifest's surfaces, so measure the
+  // install against that, not against the whole package.
+  if (counts.profile) {
+    try {
+      const def = require('./install-profile.cjs').loadProfiles()[counts.profile];
+      if (def && !def.all) {
+        const tolerate = (n) => Math.max(1, Math.floor(n * 0.9));
+        expected = {
+          agents: tolerate(def.agents.size),
+          commands: tolerate(def.commands.size),
+          skills: tolerate(def.skills.size),
+        };
+      }
+    } catch { /* keep package-wide expectations */ }
+  }
 
   function check(label, fn) {
     try {

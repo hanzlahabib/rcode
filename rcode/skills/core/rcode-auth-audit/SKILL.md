@@ -1,6 +1,6 @@
 ---
 name: rcode-auth-audit
-description: Audit Keycloak ↔ Active Directory sync, JWT validation, and tenant isolation in multi-org Postgres.
+description: "Audit Keycloak ↔ Active Directory sync, JWT validation, and tenant isolation in multi-org Postgres."
 triggers:
   - "auth audit"
   - "keycloak ad sync"

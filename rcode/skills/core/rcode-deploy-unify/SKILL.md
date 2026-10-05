@@ -1,6 +1,6 @@
 ---
 name: rcode-deploy-unify
-description: Detect and unify multiple deployment paths in a single project.
+description: "Detect and unify multiple deployment paths in a single project."
 triggers:
   - "deploy unify"
   - "multiple deploy paths"

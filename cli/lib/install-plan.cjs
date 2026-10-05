@@ -218,11 +218,18 @@ function listAvailableModules() {
 function filterPlanByModules(plan, moduleNames) {
   if (moduleNames.length === 0) return plan; // no filter = install everything
   const allowed = new Set();
+  const allowedWorkflowStepDirs = [];
   for (const modName of moduleNames) {
     const mod = readModuleManifest(modName);
     if (!mod) { console.warn(`  ⚠ Unknown module: ${modName}`); continue; }
     for (const a of mod.agents) allowed.add(path.join('.claude', 'agents', a));
-    for (const w of mod.workflows) allowed.add(path.join('.rcode', 'workflows', w));
+    for (const w of mod.workflows) {
+      allowed.add(path.join('.rcode', 'workflows', w));
+      // Split workflows keep their step files in workflows/<name>/steps/; a
+      // module that lists <name>.md must carry them or the orchestrator's
+      // "Read the step file" instructions dangle.
+      if (w.endsWith('.md')) allowedWorkflowStepDirs.push(path.join('.rcode', 'workflows', w.slice(0, -3)) + path.sep);
+    }
     for (const c of mod.commands) allowed.add(path.join('.claude', 'commands', `rcode-${c}`));
     for (const r of mod.references) allowed.add(path.join('.rcode', 'references', r));
   }
@@ -230,6 +237,7 @@ function filterPlanByModules(plan, moduleNames) {
   return plan.filter((entry) => {
     if (entry.rel.startsWith(path.join('.rcode', 'bin'))) return true;
     if (entry.rel.startsWith(path.join('.rcode', 'data'))) return true;
+    if (allowedWorkflowStepDirs.some((dir) => entry.rel.startsWith(dir))) return true;
     return allowed.has(entry.rel);
   });
 }

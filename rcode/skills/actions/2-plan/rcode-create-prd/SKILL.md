@@ -1,13 +1,8 @@
 ---
 name: rcode-create-prd
 internal: true
-description: >
-  Create a new Product Requirements Document from scratch through guided
-  facilitation. Activates when the user says "create a PRD", "write product
-  requirements document", "lets make a PRD", "I want to create a new PRD",
-  "draft requirements for", "new product spec", or "start a PRD". Do NOT use
-  for updating an existing PRD (use rcode-edit-prd), or validating an
-  existing PRD (use rcode-validate-prd).
+description: "Create a Product Requirements Document through guided facilitation. Use when: \"create a PRD\", \"draft requirements for\". Not for edits or validation."
+disable-model-invocation: true
 triggers:
   # English
   - "create a PRD"
@@ -30,7 +25,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -80,3 +74,7 @@ When fast-pathing: confirm detected fields in one line ("Got it — building {na
 ### Negative Example: Request to Bypass the Interview
 **Input:** "use research skills and create the best PRD ready to execute" / "skip the questions and write it autonomously" / "just generate the full PRD"
 **Expected behavior:** DO NOT invent an "autonomous mode". DO NOT generate a PRD without running discovery. Respond: "The discovery interview is mandatory unless `.rcode/config.yaml` has `mode: yolo` or you re-invoke via `/rcode-do --auto`. Here is the step-01 menu — I will drive each step concisely." Then present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.
+
+## Boundaries
+
+Do NOT use for updating an existing PRD (use rcode-edit-prd), or validating an existing PRD (use rcode-validate-prd).

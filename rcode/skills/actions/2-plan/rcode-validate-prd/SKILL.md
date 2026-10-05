@@ -1,23 +1,18 @@
 ---
 name: rcode-validate-prd
 internal: true
-description: >
-  Validate an existing PRD for comprehensiveness, leanness, organization,
-  and internal consistency. Activates when the user says "validate the PRD",
-  "review the PRD", "check the PRD", "is the PRD ready", "PRD quality
-  check", or "audit the PRD". Do NOT use to create or edit a PRD.
+description: "Validate a PRD for completeness, leanness and consistency. Use when: \"validate the PRD\", \"is the PRD ready\", \"PRD quality check\". Not for create or edit."
+disable-model-invocation: true
 triggers:
   - "validate the PRD"
   - "review the PRD"
   - "check the PRD"
   - "is the PRD ready"
-  - "PRD quality
-  check"
+  - "PRD quality check"
   - "audit the PRD"
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -45,3 +40,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: PRD Missing Sections
 **Input:** (PRD is missing Kill Criteria section)
 **Expected behavior:** Report as Critical: "Missing Kill Criteria section. Without this, the project has no exit strategy. Recommended fix: [template snippet]."
+
+## Boundaries
+
+Do NOT use to create or edit a PRD.

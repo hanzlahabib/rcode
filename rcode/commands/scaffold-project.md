@@ -1,6 +1,6 @@
 ---
 name: rcode-scaffold-project
-description: "Scaffold a new project from the official rcode template repo, or add rcode to an existing project with --here."
+description: "Scaffold a new project from the official rcode template, or add rcode to an existing one with --here."
 argument-hint: "[project-name | --here]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

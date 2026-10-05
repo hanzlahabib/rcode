@@ -1,19 +1,12 @@
 ---
 name: rcode-qa-generate-e2e-tests
 internal: true
-description: >
-  Generate end-to-end tests for an existing feature using the project's
-  standard test framework. Activates when the user says "generate e2e
-  tests", "write e2e tests for", "add end-to-end test coverage", "qa this
-  feature", or "generate integration tests". Do NOT use for unit test
-  generation or code review (use rcode-review).
+description: "Generate end-to-end tests for an existing feature with the project's test framework. Use when: \"generate e2e tests\", \"qa this feature\". Not unit tests."
 triggers:
-  - "generate e2e
-  tests"
+  - "generate e2e tests"
   - "write e2e tests for"
   - "add end-to-end test coverage"
-  - "qa this
-  feature"
+  - "qa this feature"
   - "generate integration tests"
 user-invocable: true
 ---
@@ -45,3 +38,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: No Test Framework Detected
 **Input:** (project has no test setup)
 **Expected behavior:** Report: "No test framework detected. Install Playwright/Jest/Vitest first, or tell me which framework to scaffold." Do NOT invent a framework.
+
+## Boundaries
+
+Do NOT use for unit test generation or code review (use rcode-review).

@@ -1,14 +1,13 @@
 ---
 name: rcode-roadmapper
-description: Creates project roadmaps with phase breakdown, requirement mapping, success criteria derivation, and coverage validation. Spawned by /rcode-new-project orchestrator.
+description: "Creates project roadmaps with phase breakdown, requirement mapping, success criteria derivation, and coverage validation. Spawned by /rcode-new-project orchestrator."
 tools: Read, Write, Bash, Glob, Grep
 color: purple
 ---
 
 
-@.rcode/references/response-style.md
+@.rcode/references/agent-core.md
 @.rcode/references/output-realism.md
-@.rcode/references/karpathy-guidelines.md
 @.rcode/references/source-of-truth-grounding.md
 @.rcode/references/roadmapper-playbook.md
 

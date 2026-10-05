@@ -1,25 +1,18 @@
 ---
 name: rcode-correct-course
 internal: true
-description: >
-  Course-correct when major change is discovered mid-sprint or
-  mid-implementation. Activates when the user says "course correct", "change
-  the scope mid-sprint", "we need to pivot", "correct course", "handle scope
-  change", or "change story mid-way". Do NOT use for normal sprint updates
-  (use rcode-sprint-status).
+description: "Course-correct when a major change appears mid-sprint. Use when: \"course correct\", \"we need to pivot\", \"handle scope change\". Not for routine status."
+disable-model-invocation: true
 triggers:
   - "course correct"
-  - "change
-  the scope mid-sprint"
+  - "change the scope mid-sprint"
   - "we need to pivot"
   - "correct course"
-  - "handle scope
-  change"
+  - "handle scope change"
   - "change story mid-way"
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -46,3 +39,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Silent Addition Attempted
 **Input:** "Just add X to the sprint"
 **Expected behavior:** Refuse silent addition. Force tradeoff: "Capacity is fixed. What do we remove? Without an explicit tradeoff, the sprint slips silently."
+
+## Boundaries
+
+Do NOT use for normal sprint updates (use rcode-sprint-status).

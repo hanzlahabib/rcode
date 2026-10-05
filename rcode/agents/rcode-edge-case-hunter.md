@@ -1,12 +1,11 @@
 ---
 name: rcode-edge-case-hunter
-description: Edge Case Hunter — spawned to enumerate edge cases, boundary conditions, and corner cases for features. Identifies what breaks, what's undefined, and what requires defensive coding.
+description: "Edge Case Hunter: enumerates edge cases, boundary conditions and undefined behavior for features, and what needs defensive coding."
 tools: Read, Grep, Glob, Bash, WebFetch
 color: red
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/auditor-shared-checklists.md
 

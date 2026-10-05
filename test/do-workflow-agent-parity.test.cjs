@@ -14,7 +14,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const DO_MD = path.join(ROOT, 'rcode', 'workflows', 'do.md');
+// The persona alias table moved out of the router (do.md) into a reference that
+// is read on demand, so the parity check follows it there. The table content is
+// unchanged; only its location moved (token diet, #1103).
+const DO_MD = path.join(ROOT, 'rcode', 'references', 'do-persona.md');
 const TEAM_YAML = path.join(ROOT, 'rcode', 'team.yaml');
 
 function teamAgentIds(text) {

@@ -1,12 +1,6 @@
 ---
 name: rcode-brainstorming
-description: >
-  Facilitate interactive brainstorming sessions using diverse creative
-  techniques and ideation methods. Activates when the user says "brainstorm",
-  "help me brainstorm", "help me ideate", "ideation session", "creative
-  thinking", "generate ideas", "idea generation", "divergent thinking",
-  "lateral thinking", or "think outside the box". Do NOT use for strategic
-  analysis (use rcode-sadiq-analyst) or product requirements (use rcode-create-prd).
+description: "Interactive brainstorming with diverse ideation techniques. Use when: \"brainstorm\", \"generate ideas\", \"think outside the box\". Not for strategy analysis."
 triggers:
   # English
   - "brainstorm"
@@ -114,3 +108,7 @@ Follow the instructions in ./workflow.md.
 
 - **Reads:** `.rcode/memory/project/glossary.md` (so generated ideas use project domain terms)
 - **Writes:** the brainstorm output document at the user-specified path; if any idea becomes a committed direction, the user should run `rcode-memory-update` to log it as a decision
+
+## Boundaries
+
+Do NOT use for strategic analysis (use rcode-sadiq-analyst) or product requirements (use rcode-create-prd).

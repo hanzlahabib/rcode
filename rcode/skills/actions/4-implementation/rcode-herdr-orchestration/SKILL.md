@@ -1,6 +1,6 @@
 ---
 name: rcode-herdr-orchestration
-description: Orchestrate parallel cld agents in herdr — fan-out or autonomous wave campaign.
+description: "Orchestrate parallel cld agents in herdr — fan-out or autonomous wave campaign."
 triggers:
   - "orchestrate agents"
   - "run agents in herdr"

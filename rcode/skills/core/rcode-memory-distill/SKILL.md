@@ -1,15 +1,6 @@
 ---
 name: rcode-memory-distill
-description: >
-  Generate or regenerate Memory Bank distillates — token-optimised, lossless
-  compressions of Memory Bank source files for fast LLM context loading.
-  Produces `distillates/project.distillate.md` and `distillates/stack.distillate.md`.
-  Activates when the user says "distill memory bank", "regenerate distillates",
-  "refresh distillates", "/rcode-memory-distill", "compress memory bank",
-  "memory bank ko compress karo". Do NOT use for: bootstrap (use rcode-memory-init),
-  surgical updates (use rcode-memory-update), or finding stale entries (use
-  rcode-memory-audit). For non-Memory-Bank document compression, use the
-  existing rcode-distillator skill.
+description: "Regenerate Memory Bank distillates for fast context loading. Use when: \"distill memory bank\", \"refresh distillates\", \"memory bank ko compress karo\"."
 triggers:
   - "distill memory bank"
   - "regenerate distillates"
@@ -87,3 +78,7 @@ User wants to compress `docs/REFERENCE.md`. Wrong skill — direct them to `rcod
 - **Reads:** every file under `.rcode/memory/{project,people,milestones,incidents}/`
 - **Writes:** `.rcode/memory/distillates/project.distillate.md`, `.rcode/memory/distillates/stack.distillate.md`
 - **Idempotent:** safe to re-run; skips work when sources are unchanged
+
+## Boundaries
+
+Do NOT use for: bootstrap (use rcode-memory-init), surgical updates (use rcode-memory-update), or finding stale entries (use rcode-memory-audit). For non-Memory-Bank document compression, use the existing rcode-distillator skill.

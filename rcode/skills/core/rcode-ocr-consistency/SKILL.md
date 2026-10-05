@@ -1,6 +1,6 @@
 ---
 name: rcode-ocr-consistency
-description: OCR pipeline determinism + ground-truth validation.
+description: "OCR pipeline determinism + ground-truth validation."
 triggers:
   - "ocr inconsistency"
   - "ocr pipeline"

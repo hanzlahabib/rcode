@@ -1,12 +1,11 @@
 ---
 name: rcode-research-synthesizer
-description: Synthesizes research outputs from parallel researcher agents into SUMMARY.md. Spawned by /rcode-new-project after 4 researcher agents complete.
+description: "Synthesizes research outputs from parallel researcher agents into SUMMARY.md. Spawned by /rcode-new-project after 4 researcher agents complete."
 tools: Read, Write, Bash
 color: purple
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/research-synthesis-playbook.md
 
 <role>

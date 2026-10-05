@@ -33,16 +33,7 @@ Follow all banner and status-symbol conventions from output-format.md.
 Read project state to determine current position:
 
 ```bash
-STATE=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "
-import json, sys
-d = json.load(sys.stdin)
-print(json.dumps({
-    'current_phase': d.get('current_phase'),
-    'current_sprint': d.get('current_sprint'),
-    'phases': [{'number': p.get('number'), 'status': p.get('status')} for p in d.get('phases', [])],
-    'blockers': d.get('blockers', [])[:3],
-}))
-" 2>/dev/null || echo '{}')
+STATE=$(node .rcode/bin/rcode-tools.cjs state get current_phase current_sprint phases blockers.0 blockers.1 blockers.2 2>/dev/null || echo '{}')
 SPRINT_STATUS=$(node .rcode/bin/rcode-tools.cjs state sprint status 2>/dev/null || echo '{}')
 VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity 2>/dev/null || echo '{}')
 [ -f .planning/ROADMAP.md ] && ROADMAP_EXISTS=1 || ROADMAP_EXISTS=0

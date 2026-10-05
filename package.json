@@ -16,6 +16,7 @@
     "prepack": "node scripts/prepack-strip.cjs && node scripts/build.cjs",
     "postpack": "node scripts/postpack-restore.cjs",
     "dogfood": "bash scripts/dogfood-check.sh",
+    "token-budget": "node scripts/token-budget.cjs",
     "test:skills": "node test/skill-snapshot.test.cjs"
   },
   "files": [

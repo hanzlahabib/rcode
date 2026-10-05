@@ -1,6 +1,6 @@
 ---
 name: rcode-note
-description: Capture inline notes instantly. Append to a dated note file with YAML frontmatter. No friction, single Write operation.
+description: "Capture an inline note instantly into a dated note file; single Write, no friction."
 argument-hint: "<text> [--global] | list | count"
 allowed-tools:
   - Read

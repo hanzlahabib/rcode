@@ -28,7 +28,7 @@ If `rcode-tools.cjs` does not yet expose the needed subcommand, fall back to `st
 
 ## Verification After Sync
 
-- `node .rcode/bin/rcode-tools.cjs state read` returns a phase count that matches the phase table in `ROADMAP.md`.
+- `node .rcode/bin/rcode-tools.cjs state phase-status` lists a phase count that matches the phase table in `ROADMAP.md`.
 - `/rcode-status` and `/rcode-progress`, run back-to-back, agree on the current milestone name and phase count.
 
 ## Why This Matters

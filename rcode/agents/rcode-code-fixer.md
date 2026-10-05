@@ -1,12 +1,11 @@
 ---
 name: rcode-fixer
-description: Code Fix Specialist — spawned to apply code review findings, implement style fixes, refactor for maintainability, and resolve code quality issues identified by reviewers.
+description: "Code Fix Specialist: applies code review findings, style fixes and maintainability refactors."
 tools: Read, Grep, Glob, Bash, Edit
 color: cyan
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/code-fixer-playbook.md
 

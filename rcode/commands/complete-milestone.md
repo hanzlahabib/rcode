@@ -1,6 +1,6 @@
 ---
 name: rcode-complete-milestone
-description: Archive and reset — move completed milestone to archive and prepare for next cycle
+description: "Archive and reset — move completed milestone to archive and prepare for next cycle"
 argument-hint: "[--archive-path=PATH]"
 allowed-tools:
   - Read

@@ -1,17 +1,11 @@
 ---
 name: rcode-create-ux-design
 internal: true
-description: >
-  Guide through realizing a UX design that informs architecture and
-  implementation — user flows, wireframes, design system updates. Activates
-  when the user says "create UX design", "design the user flow", "wireframe
-  this", "UX plan", "design this screen", or "create the design for". Do NOT
-  use for UI code (use rcode-dev-story) or visual code review.
+description: "Guide UX design: user flows, wireframes, design system updates. Use when: \"create UX design\", \"wireframe this\", \"design the user flow\". Not for UI code."
 triggers:
   - "create UX design"
   - "design the user flow"
-  - "wireframe
-  this"
+  - "wireframe this"
   - "UX plan"
   - "design this screen"
   - "create the design for"

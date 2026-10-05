@@ -1,7 +1,7 @@
 ---
 name: rcode-trim
 internal: true
-description: Code simplification.
+description: "Code simplification."
 triggers:
   - "trim this"
   - "simplify this code"

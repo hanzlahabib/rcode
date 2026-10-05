@@ -1,6 +1,6 @@
 ---
 name: rcode-on-page-seo-auditor
-description: 'Audit on-page SEO: titles, headers, images, links with scored report and fix priorities. 页面SEO审计/排名诊断'
+description: "Audit on-page SEO: titles, headers, images, links with scored report and fix priorities. 页面SEO审计/排名诊断"
 version: "9.0.0"
 license: Apache-2.0
 compatibility: "Claude Code ≥1.0, skills.sh marketplace, ClawHub marketplace, Vercel Labs skills ecosystem. No system packages required. Optional: MCP network access for SEO tool integrations."

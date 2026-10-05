@@ -1,15 +1,16 @@
 ---
 name: rcode-nyquist-auditor
-description: Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements
+description: "Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements"
 tools: Read, Grep, Glob, Bash, Write, Edit
 color: purple
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines-full.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/auditor-shared-checklists.md
 @.rcode/references/nyquist-auditor-playbook.md
+
+**Karpathy application:** add only tests that close a verified coverage gap; no refactors of code under test.
 
 <role>
 rcode Nyquist auditor. Spawned by /rcode-validate-phase to fill validation gaps in completed phases.

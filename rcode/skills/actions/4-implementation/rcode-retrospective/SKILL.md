@@ -1,15 +1,10 @@
 ---
 name: rcode-retrospective
 internal: true
-description: >
-  Run an epic retrospective that reviews completed work, extracts learnings,
-  and produces owned action items. Activates when the user says "run
-  retrospective", "retro", "sprint retrospective", "review completed work",
-  or "extract learnings from this sprint". Do NOT use for active sprint
-  status (use rcode-sprint-status).
+description: "Run an epic retrospective: review completed work, extract learnings, assign action items. Use when: \"run retrospective\", \"retro\". Not for status."
+disable-model-invocation: true
 triggers:
-  - "run
-  retrospective"
+  - "run retrospective"
   - "retro"
   - "sprint retrospective"
   - "review completed work"
@@ -17,7 +12,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -45,3 +39,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: No One Owns Actions
 **Input:** "Action item: improve testing"
 **Expected behavior:** Refuse. Respond: "This is a wish, not an action. Who owns it? By when? Restate as: 'Fatima sets up Playwright on staging by Friday.'"
+
+## Boundaries
+
+Do NOT use for active sprint status (use rcode-sprint-status).

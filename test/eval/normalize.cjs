@@ -74,7 +74,13 @@ function quotedPhrases(text) {
 function extractDescriptionTriggers(fmText) {
   const m = fmText.match(/^description:\s*([\s\S]*?)(?=^\S|$(?![\r\n]))/m);
   if (!m) return [];
-  let desc = m[1];
+  let desc = m[1].trim();
+  // Descriptions are single-line double-quoted YAML scalars (token diet #1101).
+  // Decode first: otherwise the wrapping quotes read as one giant "trigger
+  // phrase" and escaped inner quotes (\") corrupt the real ones.
+  if (/^"[\s\S]*"$/.test(desc)) {
+    try { desc = JSON.parse(desc); } catch { desc = desc.slice(1, -1); }
+  }
   const negAt = desc.search(/Do NOT use|Don't use/i);
   if (negAt !== -1) desc = desc.slice(0, negAt);
   return quotedPhrases(desc);

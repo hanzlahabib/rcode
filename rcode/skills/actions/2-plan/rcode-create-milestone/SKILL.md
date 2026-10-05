@@ -1,21 +1,13 @@
 ---
 name: rcode-create-milestone
 internal: true
-description: >
-  Design the milestone roadmap (M1..Mn) for a project from an approved PRD.
-  Activates when the user says "create milestones", "plan milestones",
-  "create roadmap", "what milestones do I need", "break this project into
-  milestones", or "roadmap for this product". Do NOT use for milestone
-  lifecycle (use rcode-new-milestone / rcode-complete-milestone), for
-  decomposing one milestone into epics (use rcode-create-epics-and-stories),
-  or for single-phase planning (use rcode-plan-phase).
+description: "Design the milestone roadmap (M1..Mn) from an approved PRD. Use when: \"create milestones\", \"roadmap for this product\". Not for milestone lifecycle."
 triggers:
   - "create milestones"
   - "plan milestones"
   - "create roadmap"
   - "what milestones do I need"
-  - "break this project into
-  milestones"
+  - "break this project into milestones"
   - "roadmap for this product"
 user-invocable: true
 ---
@@ -61,3 +53,7 @@ Follow the instructions in ./workflow.md.
 ### Negative Example: Request to Bypass the Interview
 **Input:** "just generate the full roadmap autonomously"
 **Expected behavior:** DO NOT invent an "autonomous mode". Point the user to the two sanctioned bypass paths (`.rcode/config.yaml` → `mode: yolo` or `/rcode-do --auto`) and present the step-01 menu. See `../../_shared/no-autonomous-bypass.md`.
+
+## Boundaries
+
+Do NOT use for milestone lifecycle (use rcode-new-milestone / rcode-complete-milestone), for decomposing one milestone into epics (use rcode-create-epics-and-stories), or for single-phase planning (use rcode-plan-phase).

@@ -1,7 +1,7 @@
 ---
 name: rcode-prove-it
 internal: true
-description: Test-first development.
+description: "Test-first development."
 triggers:
   - "prove it"
   - "tdd"

@@ -1,23 +1,17 @@
 ---
 name: rcode-document-project
 internal: true
-description: >
-  Analyze an existing codebase and produce documentation for both human and
-  LLM consumption (brownfield analysis). Activates when the user says
-  "document this project", "analyze this codebase", "generate docs for
-  existing code", "brownfield analysis", or "create LLM-friendly docs". Do
-  NOT use for writing net-new docs (use write-document prompt).
+description: "Analyze an existing codebase and write human- and LLM-friendly docs. Use when: \"document this project\", \"brownfield analysis\". Not for net-new docs."
+disable-model-invocation: true
 triggers:
   - "document this project"
   - "analyze this codebase"
-  - "generate docs for
-  existing code"
+  - "generate docs for existing code"
   - "brownfield analysis"
   - "create LLM-friendly docs"
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 

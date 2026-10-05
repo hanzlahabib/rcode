@@ -171,7 +171,7 @@ Run these after installation checks. Skip if `.rcode/state.json` doesn't exist.
 
 ```bash
 ROADMAP_PHASES=$(grep -c '^## Phase\|^### Phase\|^- Phase' .planning/ROADMAP.md 2>/dev/null || echo 0)
-STATE_PHASES=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('phases',[])) if d else 0)" 2>/dev/null || echo 0)
+STATE_PHASES=$(node .rcode/bin/rcode-tools.cjs state phase-status 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).length)}catch{console.log(0)}})")
 ```
 
 If counts match: `✓ PASS — {N} phases in ROADMAP.md and state.json are in sync`
@@ -180,7 +180,7 @@ If they differ: `⚠ WARN — ROADMAP.md has ${ROADMAP_PHASES} phases, state.jso
 **Check 8 — current phase has a SPRINT.md or CONTEXT.md**
 
 ```bash
-CURRENT=$(node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('current_phase',''))" 2>/dev/null)
+CURRENT=$(node .rcode/bin/rcode-tools.cjs state field current_phase 2>/dev/null)
 find .planning/phases/*${CURRENT}* -name "*-SPRINT.md" -o -name "*-CONTEXT.md" 2>/dev/null | head -1
 ```
 

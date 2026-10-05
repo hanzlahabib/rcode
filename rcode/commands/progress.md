@@ -1,6 +1,6 @@
 ---
 name: rcode-progress
-description: Alias of /rcode-status --verbose — full project state dashboard with decisions, blockers, and next-step routes
+description: "Alias of /rcode-status --verbose: full state dashboard with decisions, blockers and next steps."
 argument-hint: ""
 allowed-tools: Bash, Read, Grep
 ---

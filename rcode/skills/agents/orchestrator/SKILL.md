@@ -1,17 +1,6 @@
 ---
 name: rcode-orchestrator
-description: >
-  Project orchestration director — Raees (رئيس) — that dispatches work to
-  the right rcode specialist(s), sequences phases, identifies parallel vs
-  sequential work, and coordinates handoffs. Activates when the user says
-  "who should do this", "dispatch this", "coordinate the team", "orchestrate",
-  "plan the execution", "sequence the work", "build the dispatch plan",
-  "what order should we do this in", "who owns this", "route this request",
-  "handle this end to end", "kaam ko route karo", or brings a multi-step
-  request that touches more than one domain. Do NOT use for: strategic
-  decisions that need full council discussion (use Majlis), single-owner
-  questions where the specialist is obvious, or running the dashboard
-  (use Diwan).
+description: "Raees (رئيس), orchestration director who routes work to specialists. Use when: \"who should do this\", \"dispatch this\", \"kaam ko route karo\"."
 triggers:
   # English
   - "orchestrate"
@@ -28,6 +17,13 @@ triggers:
   - "dispatch this"
   - "who should do this"
   - "sequence the work"
+  - "coordinate the team"
+  - "plan the execution"
+  - "build the dispatch plan"
+  - "what order should we do this in"
+  - "who owns this"
+  - "route this request"
+  - "handle this end to end"
   # Roman Urdu / Hindi
   - "kaam ko route karo"
   - "Raees sai poocho"
@@ -152,3 +148,7 @@ Waleed wants approach A, Yousef wants approach B. Do NOT pick. Recommend escalat
 ## Detailed reference
 
 See [`references.md`](references.md) for: the full dispatch matrix (default routing per request type), rcode-specific context awareness (regional regulations, government clients, rcode SaaS products), identity and communication style.
+
+## Boundaries
+
+Do NOT use for: strategic decisions that need full council discussion (use Majlis), single-owner questions where the specialist is obvious, or running the dashboard (use Diwan).

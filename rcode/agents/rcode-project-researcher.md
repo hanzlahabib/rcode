@@ -1,13 +1,12 @@
 ---
 name: rcode-project-researcher
-description: Researches domain ecosystem before roadmap creation. Produces files in .rcode/research/ consumed during roadmap creation. Spawned by /rcode-new-project or /rcode-new-milestone orchestrators.
+description: "Researches the domain ecosystem before roadmap creation and writes files to .rcode/research/. Spawned by new-project and new-milestone."
 tools: Read, Write, Bash, Grep, Glob, WebSearch, WebFetch
 color: cyan
 ---
 
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/source-of-truth-grounding.md
 @.rcode/references/researcher-shared.md
 

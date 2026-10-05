@@ -1,6 +1,6 @@
 ---
 name: rcode-debug
-description: Scientific-method debugging: investigate first, test hypotheses, escalate at 3 failures.
+description: "Scientific-method debugging: investigate first, test hypotheses, escalate at 3 failures. Use when: \"debug this\", \"why is this failing\"."
 triggers:
   # English
   - "debug this"
@@ -29,7 +29,6 @@ triggers:
   - "تتبّع السبب"
 user-invocable: true
 ---
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable via direct phrase-trigger match, explicit @-inclusion, or direct user invocation (/rcode-debug — flipped user-invocable: true per #1084). See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 ## The Iron Law
 

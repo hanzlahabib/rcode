@@ -1,18 +1,6 @@
 ---
 name: rcode-majlis-council
-description: >
-  Multi-agent consulting council that convenes the rcode team to discuss
-  any topic, collects perspectives from all relevant specialists, and
-  delivers a synthesised answer with explicit dissent noted. Activates
-  when the user says "convene the majlis", "consult the team", "ask
-  everyone", "what does the team think", "get all perspectives", "team
-  consultation", "council decision", "discuss this with the team",
-  "multi-agent discussion", "ask all agents", "sab sa consult karo",
-  "team meeting", "crisis mode", "incident response", or asks a question
-  that touches multiple domains (strategy + tech + product + ops). Do
-  NOT use for: single-specialist questions where one agent is clearly the
-  right owner (invoke that agent directly), or running the read-only
-  dashboard (use Diwan).
+description: "Convene the rcode team for a synthesized answer with dissent. Use when: \"convene the majlis\", \"ask everyone\", \"sab sa consult karo\"."
 triggers:
   # English
   - "council"
@@ -114,3 +102,7 @@ Do NOT invent dissent for variety. Report honestly: "The council is unanimous â€
 ## Detailed reference
 
 See [`references.md`](references.md) for: dispatch modes (real vs fast), principles list, the cultural context, and the full session record template.
+
+## Boundaries
+
+Do NOT use for: single-specialist questions where one agent is clearly the right owner (invoke that agent directly), or running the read-only dashboard (use Diwan).

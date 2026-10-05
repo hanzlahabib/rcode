@@ -362,9 +362,8 @@ function spliceMarkedBlockIntoFile(filePath, begin, end, block) {
 
 /**
  * Ensure every installed IDE's rule file carries a short, rcode-owned block
- * pointing agents at `/rcode-do` as the preferred entry point for non-trivial
- * work. This is NOT a full CLAUDE.md/AGENTS.md rewrite — it only owns its own
- * marked section (or, for cursor/windsurf, a dedicated rcode-* rule file) so
+ * naming the rcode core loop and `/rcode-do` as the fallback router. This is
+ * NOT a full CLAUDE.md/AGENTS.md rewrite — it only owns its own marked section (or, for cursor/windsurf, a dedicated rcode-* rule file) so
  * a project's existing rule content is never touched or reordered.
  *
  * - claude / vscode → root CLAUDE.md (splice, file created if missing)
@@ -379,42 +378,41 @@ function ensureRcodePreferredCommandRule(target, ides) {
   const results = {};
   const idSet = new Set(ides || []);
 
+  // Kept to ~60 words: this block is in context on every turn. It names the
+  // core loop and makes /rcode-do the fallback, not the gate — routing every
+  // task through the picker costs a workflow load plus a question per task.
   const md = (heading) => [
     `## ${heading}`,
     '',
-    'This project has [rcode](https://www.npmjs.com/package/@hanzlaa/rcode) installed —',
-    'persistent project memory, specialist agents, and structured workflows under `.rcode/`.',
-    '',
-    'For any non-trivial task (new feature, bug fix that needs investigation, multi-file',
-    'change, planning) prefer routing through **`/rcode-do <task description>`** — rcode\'s',
-    'command picker — instead of working ad hoc. It picks the right rcode command (plan,',
-    'execute, review, debug, etc.) for the task and keeps `.rcode/state.json` and the',
-    'Memory Bank in sync. Skip it only for trivial single-line/single-file edits that',
-    'don\'t need planning or memory.',
+    'This project uses rcode (`.rcode/`, `.planning/`). Core loop: /rcode-plan -> /rcode-execute ->',
+    '/rcode-verify-phase -> /rcode-ship. /rcode-status shows state, /rcode-next advances,',
+    '/rcode-quick does a small task end-to-end, /rcode-help lists the rest. Use the command that',
+    'matches the task directly; use /rcode-do only if unsure which command fits. Trivial',
+    'single-file edits need none of this.',
   ].join('\n');
 
   if (idSet.has('claude') || idSet.has('vscode')) {
     const BEGIN = '<!-- ===== rcode-managed rule block (npx @hanzlaa/rcode install) ===== -->';
     const END = '<!-- ===== end rcode-managed rule block ===== -->';
-    const block = `${BEGIN}\n\n${md('Working with rcode')}\n\n${END}\n`;
+    const block = `${BEGIN}\n\n${md('rcode')}\n\n${END}\n`;
     results.claude = spliceMarkedBlockIntoFile(path.join(target, 'CLAUDE.md'), BEGIN, END, block);
   }
 
   if (idSet.has('codex')) {
     const BEGIN = '<!-- ===== rcode-managed rule block (npx @hanzlaa/rcode install) ===== -->';
     const END = '<!-- ===== end rcode-managed rule block ===== -->';
-    const block = `${BEGIN}\n\n${md('Working with rcode')}\n\n${END}\n`;
+    const block = `${BEGIN}\n\n${md('rcode')}\n\n${END}\n`;
     results.codex = spliceMarkedBlockIntoFile(path.join(target, 'AGENTS.md'), BEGIN, END, block);
   }
 
   if (idSet.has('cursor')) {
     const content = [
       '---',
-      'description: Prefer rcode\'s /rcode-do command for non-trivial work',
+      'description: rcode core loop and when to use /rcode-do',
       'alwaysApply: true',
       '---',
       '',
-      md('Working with rcode'),
+      md('rcode'),
       '',
     ].join('\n');
     try {
@@ -430,11 +428,11 @@ function ensureRcodePreferredCommandRule(target, ides) {
   if (idSet.has('windsurf')) {
     const content = [
       '---',
-      'description: Prefer rcode\'s /rcode-do command for non-trivial work',
+      'description: rcode core loop and when to use /rcode-do',
       'trigger: always_on',
       '---',
       '',
-      md('Working with rcode'),
+      md('rcode'),
       '',
     ].join('\n');
     try {

@@ -1,11 +1,11 @@
 ---
 name: rcode-zahra
-description: Branding & Creative Director — spawned by /rcode-council for brand identity, visual language, typography (Latin + Arabic), color systems, design tokens, and cross-touchpoint brand consistency.
+description: "Branding and Creative Director for brand identity, typography (Latin and Arabic), color systems, design tokens and consistency."
 tools: Read, Grep, Glob, WebFetch
 color: magenta
 ---
 
-@.rcode/references/response-style.md
+@.rcode/references/agent-core.md
 @.rcode/references/codebase-grounding.md
 @.rcode/skills/agents/zahra-branding/SKILL.md
 

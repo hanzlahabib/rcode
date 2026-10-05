@@ -1,6 +1,6 @@
 ---
 name: rcode-seo-aeo-geo
-description: When the user wants their brand cited, quoted, or featured inside AI-generated answers rather than just ranking a page in classic search results. Use when the user says "why isn't ChatGPT mentioning us," "how do I get cited in AI Overviews," "optimize for AI search," "AI SEO," "answer engine optimization," "generative engine optimization," "AEO," "GEO," "how do we show up in Perplexity," "will AI Overviews kill our traffic," "structure our content so LLMs can quote it," "add an llms.txt," or "are we visible to ChatGPT/Claude/Gemini search." AEO/GEO is a distinct discipline from classic organic SEO — it targets whether a generative engine quotes and attributes your content inside its answer, not whether your page ranks #1 in a list of blue links. Do NOT use this for classic ranking diagnosis, crawlability, indexation, Core Web Vitals, or technical audits — use seo-audit or technical-seo-checker for those. Do NOT use this for scoring on-page elements like title tags, headers, images, or internal links — use on-page-seo-auditor for that. This skill assumes those fundamentals are in place and adds the AI-citation layer on top.
+description: "Get a brand cited in AI answers (AEO/GEO). Use when: \"get cited in AI Overviews\", \"why isn't ChatGPT mentioning us\", \"show up in Perplexity\"."
 metadata:
   version: 1.0.0
 ---
@@ -144,3 +144,7 @@ Never fabricate or estimate a citation-share number the user hasn't actually mea
 - **on-page-seo-auditor**: title tags, headers, images, internal links — scored on-page report
 - **seo-content-writer**: for drafting the actual replacement content once a rewrite is scoped here
 - **seo-growth-orchestrator**: for sequencing AEO/GEO work alongside the rest of an organic growth program
+
+## Boundaries
+
+Do NOT use this for classic ranking diagnosis, crawlability, indexation, Core Web Vitals, or technical audits — use seo-audit or technical-seo-checker for those. Do NOT use this for scoring on-page elements like title tags, headers, images, or internal links — use on-page-seo-auditor for that. This skill assumes those fundamentals are in place and adds the AI-citation layer on top.

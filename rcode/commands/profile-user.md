@@ -1,6 +1,6 @@
 ---
 name: rcode-profile-user
-description: Classify developer on 4 dimensions — communication style, autonomy preference, domain depth, and iteration speed. Produces .rcode/USER-PROFILE.md with YAML frontmatter.
+description: "Classify the developer on 4 dimensions and write .rcode/USER-PROFILE.md."
 argument-hint: "[--json <json-blob>]"
 allowed-tools: Agent, Read, Write
 ---

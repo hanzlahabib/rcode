@@ -35,16 +35,8 @@ awk '/^## /{p=(tolower($0) ~ /vision|principle|non-negotiable|rule|preference/)}
 awk '/^## /{p=(tolower($0) ~ /accept|constraint|must-have|scope/)} p' .planning/REQUIREMENTS.md 2>/dev/null
 
 # STATE.md — Current progress + decisions logged so far, not the raw JSON dump
-node .rcode/bin/rcode-tools.cjs state read 2>/dev/null | python3 -c "
-import json, sys
-d = json.load(sys.stdin)
-print('milestone:', d.get('milestone'))
-print('current_phase:', d.get('current_phase'))
-print('current_plan:', d.get('current_plan'))
-print('current_sprint:', d.get('current_sprint'))
-print('blockers:', json.dumps(d.get('blockers', [])))
-print('decisions:', json.dumps(d.get('decisions', [])[-5:]))
-"
+node .rcode/bin/rcode-tools.cjs state brief
+node .rcode/bin/rcode-tools.cjs state get milestone current_sprint
 ```
 
 Extract from these:

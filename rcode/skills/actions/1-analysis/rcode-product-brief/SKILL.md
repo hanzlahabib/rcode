@@ -1,16 +1,10 @@
 ---
 name: rcode-product-brief
 internal: true
-description: >
-  Create a product brief through guided discovery or autonomous research.
-  Activates when the user says "create a product brief", "write a product
-  brief", "draft a brief for", "product briefing", or "create the brief". Do
-  NOT use for full PRD (use rcode-create-prd) or market analysis alone (use
-  rcode-market-research).
+description: "Create a product brief through guided discovery or research. Use when: \"create a product brief\", \"draft a brief for\". Not for a full PRD."
 triggers:
   - "create a product brief"
-  - "write a product
-  brief"
+  - "write a product brief"
   - "draft a brief for"
   - "product briefing"
   - "create the brief"
@@ -121,3 +115,7 @@ This workflow uses:
 ### Edge Case: Brief Bloat
 **Input:** (user wants to add a 10-page appendix)
 **Expected behavior:** Decline. "A brief over 2 pages becomes a PRD. Let me save the appendix content separately and link it, or escalate to rcode-create-prd."
+
+## Boundaries
+
+Do NOT use for full PRD (use rcode-create-prd) or market analysis alone (use rcode-market-research).

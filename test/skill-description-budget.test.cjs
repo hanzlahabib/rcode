@@ -102,3 +102,31 @@ test('skill description over-budget count does not exceed baseline', () => {
     );
   }
 });
+
+// Source-tree gate (token diet T1, #1102): the installed-skills check above is
+// vacuous when nothing is installed, so also cap the SOURCE descriptions that
+// feed the Claude Code skill listing (name + description cost tokens in every
+// session). 200 chars = design hard cap; target is ~160.
+const SOURCE_CAP_CHARS = 200;
+
+function sourceSkillFiles(dir, out = []) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) sourceSkillFiles(p, out);
+    else if (e.name === 'SKILL.md') out.push(p);
+  }
+  return out;
+}
+
+test('source skill descriptions stay within the 200-char listing cap', () => {
+  const files = sourceSkillFiles(path.join(PROJECT_ROOT, 'rcode', 'skills'));
+  assert.ok(files.length > 90, `expected >90 source skills, got ${files.length}`);
+  const offenders = [];
+  for (const f of files) {
+    const m = fs.readFileSync(f, 'utf8').match(/^description:\s*"(.*)"\s*$/m);
+    if (!m) { offenders.push(`${path.relative(PROJECT_ROOT, f)}: description is not a single-line double-quoted scalar`); continue; }
+    const len = JSON.parse(`"${m[1]}"`).length;
+    if (len > SOURCE_CAP_CHARS) offenders.push(`${path.relative(PROJECT_ROOT, f)}: ${len} chars`);
+  }
+  assert.deepStrictEqual(offenders, []);
+});

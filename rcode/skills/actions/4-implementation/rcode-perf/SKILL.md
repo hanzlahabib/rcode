@@ -1,7 +1,7 @@
 ---
 name: rcode-perf
 internal: true
-description: Performance optimisation for the rcode-default stack — Next.js (LCP / TBT / CLS / hydration),.
+description: "Measure-first performance work: Next.js LCP/TBT/CLS, Postgres, Three.js frame budget. Use when optimizing performance or something is slow."
 triggers:
   - "optimize performance"
   - "page is slow"

@@ -213,16 +213,16 @@ function generateFilesManifest(plan, target, { mergeExistingManifest = false, ex
  *
  * Returns the number of orphan files removed.
  */
-function sweepStaleInstalledFiles(target, newPlan) {
+function listStaleInstalledFiles(target, newPlan) {
   const manifestPath = path.join(target, '.rcode', '_config', 'files-manifest.csv');
-  if (!fs.existsSync(manifestPath)) return 0;
+  if (!fs.existsSync(manifestPath)) return [];
 
   let oldRels;
   try {
     const rows = fs.readFileSync(manifestPath, 'utf8').split('\n').slice(1).filter(Boolean);
     oldRels = rows.map(r => r.split(',')[0]).filter(Boolean);
   } catch {
-    return 0;
+    return [];
   }
 
   const newRelsSet = new Set(newPlan.map(e => e.rel.split(path.sep).join('/')));
@@ -234,6 +234,20 @@ function sweepStaleInstalledFiles(target, newPlan) {
   // voice / examples / project-specific rules without losing them on update.
   const isLocalOverride = (rel) => /\.local\.(md|mdc|json|yaml|yml|toml|js|ts)$/.test(rel);
 
+  return oldRels.filter((rel) => {
+    if (newRelsSet.has(rel)) return false;
+    if (neverSweep.test(rel)) return false;
+    if (isLocalOverride(rel)) return false; // #382 — never sweep user-owned overrides
+    // Reject relative paths that obviously try to escape before even hitting fs.
+    if (rel.includes('..') || path.isAbsolute(rel)) return false;
+    return fs.existsSync(path.join(target, rel));
+  });
+}
+
+function sweepStaleInstalledFiles(target, newPlan) {
+  const stale = listStaleInstalledFiles(target, newPlan);
+  if (stale.length === 0) return 0;
+
   let removed = 0;
   const emptyCandidateDirs = new Set();
   // Issue #703: a tampered or malformed CSV could contain a rel like
@@ -241,14 +255,8 @@ function sweepStaleInstalledFiles(target, newPlan) {
   // the project root. Use safeRmSync's project-root containment check —
   // any rel whose realpath escapes target is refused with reason='outside-root'.
   const targetRoot = path.resolve(target);
-  for (const rel of oldRels) {
-    if (newRelsSet.has(rel)) continue;
-    if (neverSweep.test(rel)) continue;
-    if (isLocalOverride(rel)) continue; // #382 — never sweep user-owned overrides
-    // Reject relative paths that obviously try to escape before even hitting fs.
-    if (rel.includes('..') || path.isAbsolute(rel)) continue;
+  for (const rel of stale) {
     const full = path.join(target, rel);
-    if (!fs.existsSync(full)) continue;
     const result = safeRmSync(full, targetRoot);
     if (result.ok) {
       emptyCandidateDirs.add(path.dirname(full));
@@ -279,6 +287,7 @@ function generateInstallManifest(opts) {
   // Merge with existing manifest if present; capture previous_version for rollback (#253).
   let existingModules = [];
   let previousVersion = null;
+  let existingProfile = null;
   const existingPath = path.join(opts.target, '.rcode', '_config', 'manifest.yaml');
   if (fs.existsSync(existingPath)) {
     const text = fs.readFileSync(existingPath, 'utf8');
@@ -288,6 +297,7 @@ function generateInstallManifest(opts) {
         const v = line.replace('version:', '').trim();
         if (semver.valid(v) && v !== version) previousVersion = v;
       }
+      if (line.startsWith('profile:')) existingProfile = line.replace('profile:', '').trim();
       if (line.startsWith('modules:')) { inModules = true; continue; }
       if (inModules && line.trim().startsWith('-')) { existingModules.push(line.trim().slice(1).trim()); }
       else if (inModules && !line.startsWith(' ')) { inModules = false; }
@@ -301,6 +311,10 @@ function generateInstallManifest(opts) {
     `installDate: ${new Date().toISOString()}`,
   ];
   if (previousVersion) lines.push(`previous_version: ${previousVersion}`);
+  // A missing profile key means "full" (pre-profile installs), so a caller that
+  // did not resolve a profile must keep whatever was persisted, never invent one.
+  const profile = opts.profile || existingProfile;
+  if (profile) lines.push(`profile: ${profile}`);
   lines.push('modules:', moduleLines, 'ides:', '  - claude-code', '');
   return lines.join('\n');
 }
@@ -311,5 +325,6 @@ module.exports = {
   generateAgentManifest,
   generateFilesManifest,
   sweepStaleInstalledFiles,
+  listStaleInstalledFiles,
   generateInstallManifest,
 };

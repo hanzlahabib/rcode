@@ -38,7 +38,8 @@ No state found. Run /rcode-council or execute a plan to initialize state.
 ## Step 2 — Read state
 
 ```bash
-cat .rcode/state.json
+node .rcode/bin/rcode-tools.cjs state brief --full-history
+node .rcode/bin/rcode-tools.cjs state get created updated current_plan
 ```
 
 Parse the JSON. Extract:
@@ -79,7 +80,7 @@ Extract counts:
 
 ### Step 5a — Prefer measured totals from cost.jsonl
 
-If the `cost-track` hook (#745) is enabled, it appends one usage record per
+If the `cost-track` hook is enabled, it appends one usage record per
 response to `.rcode/telemetry/cost.jsonl`. Check for it first:
 
 ```bash

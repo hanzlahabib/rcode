@@ -149,6 +149,18 @@ This is why the compliance check runs against the source tree but the reload win
 
 ---
 
+## Token budget — keep the always-listed surfaces small
+
+Claude Code lists every installed command, skill and agent description on every turn, and inlines a command's `@` includes when it runs. Both are budgeted and enforced in CI by `test/token-budget.test.cjs` (run it standalone with `pnpm run token-budget` or `node scripts/token-budget.cjs [--json]`; it prints a per-profile table).
+
+- Descriptions: single-line, double-quoted YAML scalar, about 160 characters (hard cap 200; agents 180). Shape: `<what it does>. Use when: "phrase", "phrase". Not for: <x>.` Keep the long Do NOT list in a `## Boundaries` section of the body, and extra trigger phrases in the `triggers:` list, which costs no listing tokens.
+- A skill that duplicates a command of the same name should set `disable-model-invocation: true` (it stays reachable as `/name` and drops out of the listing).
+- Big workflows are an orchestrator (about 150 lines) plus `<workflow>/steps/NN-*.md` files referenced WITHOUT `@`, so they load only when the step runs.
+- New command, skill or agent: decide whether it belongs in `minimal` (`rcode/profiles.yaml`). Default to full-only.
+- If the gate fails, shorten the text. Raise a threshold in `scripts/token-budget.cjs` only with a written reason in the PR.
+
+---
+
 ## Who owns what — contribute to YOUR slice
 
 rcode v2 is organized around **role ownership** (issue #160). Find your role, touch only that slice, open a focused PR. CODEOWNERS in `.github/CODEOWNERS` routes reviews automatically.

@@ -1,6 +1,6 @@
 ---
 name: rcode-pause-work
-description: Capture project state and blocking constraints before pausing work. Creates HANDOFF.json and .continue-here.md for context restoration.
+description: "Capture project state and blockers before pausing; writes HANDOFF.json and .continue-here.md."
 argument-hint: ""
 allowed-tools: Read, Write, Bash, AskUserQuestion
 ---

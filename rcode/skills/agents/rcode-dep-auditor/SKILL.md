@@ -1,11 +1,6 @@
 ---
 name: rcode-dep-auditor
-description: >
-  Dependency health auditor — scans for outdated packages, CVEs, unused
-  dependencies, loose version pins, and missing lock files. Audit-only:
-  never modifies package.json or runs installs. Activates when the user
-  says "audit dependencies", "dep health", "CVE scan", "check packages",
-  "outdated deps", or similar.
+description: "Audit-only dependency health auditor: outdated packages, CVEs, loose pins. Use when: \"audit dependencies\", \"CVE scan\", \"outdated deps\"."
 triggers:
   # English
   - "audit dependencies"

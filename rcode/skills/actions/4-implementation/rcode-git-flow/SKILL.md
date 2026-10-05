@@ -1,7 +1,7 @@
 ---
 name: rcode-git-flow
 internal: true
-description: Branching, commits, conflicts, parallel work — aligned with the rcode Epic→Feature→Task hierarchy.
+description: "Branching, commits, conflicts and parallel work aligned with the Epic, Feature, Task hierarchy. Use when planning branches or resolving conflicts."
 triggers:
   - "git flow"
   - "branching strategy"

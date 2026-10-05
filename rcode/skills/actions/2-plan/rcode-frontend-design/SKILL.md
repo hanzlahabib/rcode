@@ -1,17 +1,7 @@
 ---
 name: rcode-frontend-design
 internal: true
-description: >
-  Create distinctive, production-grade frontend interfaces with a committed
-  aesthetic direction — typography, colour, motion, spatial composition,
-  backgrounds, visual details — that avoid generic "AI slop". Activates when
-  the user says "design this UI", "build a beautiful frontend", "distinctive
-  design", "creative UI", "unforgettable interface", "award-winning design",
-  "not generic", "bold aesthetic", "brutalist", "editorial", "maximalist",
-  "minimalist luxury", "design a landing page", "standout hero section",
-  "make this look amazing", or "frontend design". Pairs with rcode-clone-website
-  (for copying) and rcode-agent-zahra (branding). Do NOT use for: cloning
-  existing sites (use rcode-clone-website), pure backend, or documentation.
+description: "Distinctive, production-grade frontend interfaces with a committed aesthetic, avoiding generic AI slop. Use when: \"design this UI\", \"creative UI\", \"not generic\"."
 triggers:
   - "AI slop"
   - "design this UI"
@@ -94,3 +84,7 @@ Do NOT include: Inter or Space Grotesk as default fonts, generic purple/blue gra
 ## Detailed reference
 
 See [`references.md`](references.md) for: typography pairings (Latin + Arabic), colour philosophy, motion principles, spatial composition rules, the "what to avoid" list, and rcode-specific RTL + government-client guidelines.
+
+## Boundaries
+
+Do NOT use for: cloning existing sites (use rcode-clone-website), pure backend, or documentation.

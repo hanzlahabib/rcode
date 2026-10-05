@@ -1,6 +1,6 @@
 ---
 name: rcode-execute
-description: Execute one or more SPRINT.md files. Spawns rcode-executor subagents in parallel per dependency wave. Pauses at checkpoints and waits for human verification or decisions.
+description: "Execute SPRINT.md files with parallel rcode-executor subagents per wave; pauses at checkpoints."
 argument-hint: "<plan-file.md | phase-dir> [--wave N] [--interactive] [--continue] [--option=A]"
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 ---

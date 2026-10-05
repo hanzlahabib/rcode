@@ -18,8 +18,7 @@ Parse `$ARGUMENTS`:
 - `--phase <N>` — execute only this phase (single-phase mode)
 
 ```bash
-INIT_JSON=$(node ".rcode/bin/rcode-tools.cjs" state read 2>/dev/null || echo '{}')
-CURRENT_MILESTONE=$(echo "$INIT_JSON" | grep -o '"current_milestone":"[^"]*"' | cut -d'"' -f4 || echo '')
+CURRENT_MILESTONE=$(node ".rcode/bin/rcode-tools.cjs" state field current_milestone 2>/dev/null || echo '')
 MILESTONE_TARGET="${MILESTONE_ARG:-$CURRENT_MILESTONE}"
 ```
 
@@ -81,7 +80,7 @@ Invoke `/rcode-execute {PHASE_NUMBER}` via Skill or Agent dispatch.
 
 After each phase execution completes:
 ```bash
-VERIFY_RESULT=$(node ".rcode/bin/rcode-tools.cjs" state read | grep -o '"status":"[^"]*"' | head -1 || echo '"status":"unknown"')
+VERIFY_RESULT=$(node ".rcode/bin/rcode-tools.cjs" state phase-status {N} 2>/dev/null || echo '{"status":"unknown"}')
 ```
 
 Spawn `rcode-verifier` for the phase. On `FAIL` or `PARTIAL`:

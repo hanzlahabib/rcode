@@ -1,11 +1,11 @@
 ---
 name: rcode-advisor-researcher
-description: Researches a single gray area decision and returns a structured comparison table with rationale. Spawned by discuss-phase advisor mode.
+description: "Researches a single gray area decision and returns a structured comparison table with rationale. Spawned by discuss-phase advisor mode."
 tools: Read, Bash, Grep, Glob, WebSearch, WebFetch
 color: cyan
 ---
 
-@.rcode/references/response-style.md
+@.rcode/references/agent-core.md
 @.rcode/references/researcher-shared.md
 
 <role>

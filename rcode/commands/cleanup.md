@@ -1,6 +1,6 @@
 ---
 name: rcode-cleanup
-description: "Archive completed milestone phase directories into .planning/milestones/. Run after /rcode-complete-milestone to keep .planning/ tidy. Shows a dry-run summary before moving anything."
+description: "Archive completed milestone phase directories into .planning/milestones/ after a dry-run summary."
 argument-hint: "[--dry-run]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---
