@@ -11,7 +11,7 @@ The installer now asks what rcode is for and installs a matching bundle (#1108).
 
 ### Fixed
 
-- The install no longer hangs at "Installing N files…" in a terminal that reports 0 columns (`docker run -t`, some ssh/CI/`script` sessions). The spinner library computed an infinite line count and looped forever when clearing; it now falls back to 80 columns. The hang is present in v4.18.0 and v4.19.0.
+- The install no longer hangs at "Installing N files…" in a terminal that reports 0 columns (`docker run -t`, some ssh/CI/`script` sessions). The spinner library computed an infinite line count and looped forever when clearing; it now falls back to 80 columns. The hang is present in v4.18.0 and on main before this change.
 
 ---
 ## v4.19.0 (2026-10-05) — the token diet: 19k to 2.1k of fixed context
