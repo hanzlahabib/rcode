@@ -3,7 +3,8 @@
  *
  * rcode/agents/*.md frontmatter `description:` is read by the agent
  * registry and shown in agent pickers. Long descriptions inflate
- * every spawn. Soft cap: 200 chars per source agent description.
+ * every spawn. Cap: 180 chars per source agent description (token-diet T1, #1102;
+ * descriptions are single-line double-quoted, so the length is real).
  *
  * Snapshot baseline 2026-04-30: 11 of 41 source agents exceed 200
  * chars (top: rcode-ahmed.md at 319). Ratchet — fail on regression
@@ -11,7 +12,7 @@
  *
  * Different from test/skill-description-budget.test.cjs:
  *   - that test scans installed `.claude/skills/*` (cap 100 chars)
- *   - this test scans source `rcode/agents/*` (cap 200 chars — agent
+ *   - this test scans source `rcode/agents/*` (cap 180 chars — agent
  *     descriptions need more room than skill descriptions because
  *     they describe a persona, not a single action)
  *
@@ -25,7 +26,7 @@ const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const AGENTS_DIR = path.join(PROJECT_ROOT, 'rcode', 'agents');
-const HARD_CAP_CHARS = 200;
+const HARD_CAP_CHARS = 180;
 const BASELINE_OFFENDERS = 0;
 
 function findOffenders() {

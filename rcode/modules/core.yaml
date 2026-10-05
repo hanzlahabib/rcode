@@ -84,6 +84,7 @@ references:
   - commit-conventions.md
   - command-redirect-format.md
   - response-style.md
+  - agent-core.md
   - output-format.md
   - output-realism.md
   - context-budget.md

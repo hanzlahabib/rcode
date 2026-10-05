@@ -1,13 +1,12 @@
 ---
 name: rcode-phase-researcher
-description: Researches how to implement a phase before planning. Produces RESEARCH.md consumed by rcode-planner. Spawned by /rcode-plan orchestrator.
+description: "Researches how to implement a phase before planning. Produces RESEARCH.md consumed by rcode-planner. Spawned by /rcode-plan orchestrator."
 tools: Read, Write, Bash, Grep, Glob, WebSearch, WebFetch
 color: cyan
 ---
 
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/brain/best-practices/no-theoretical-suggestions.md
 @.rcode/references/researcher-shared.md
 

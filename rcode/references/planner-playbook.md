@@ -209,8 +209,7 @@ _Below this line is the execution prompt the agent reads — task bodies, read-f
 
 <objective>...</objective>
 <execution_context>
-@.rcode/workflows/execute-sprint.md
-@.rcode/templates/summary.md
+Read first: `.rcode/workflows/execute-sprint.md`, `.rcode/templates/summary.md` (paths, not @-includes — an @ here would inline both files every time this playbook loads)
 </execution_context>
 <context>...</context>
 <tasks>

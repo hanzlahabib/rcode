@@ -1,12 +1,11 @@
 ---
 name: rcode-profiler
-description: User Behavior Profiler — spawned to analyze user behavior patterns, create personas, identify usage flows, and understand user needs from data and feedback.
+description: "User Behavior Profiler — spawned to analyze user behavior patterns, create personas, identify usage flows, and understand user needs from data and feedback."
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 color: purple
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/researcher-shared.md
 

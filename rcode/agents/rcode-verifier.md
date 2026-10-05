@@ -1,12 +1,11 @@
 ---
 name: rcode-verifier
-description: Verifies phase goal achievement through goal-backward analysis. Checks codebase delivers what phase promised, not just that tasks completed. Creates VERIFICATION.md report.
+description: "Verifies phase goal achievement by goal-backward analysis and writes VERIFICATION.md; checks the code delivers what was promised."
 tools: Read, Write, Bash, Grep, Glob
 color: green
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/verifier-playbook.md
 

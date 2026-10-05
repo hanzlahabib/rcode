@@ -1,16 +1,17 @@
 ---
 name: rcode-planner
-description: Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /rcode-plan orchestrator.
+description: "Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /rcode-plan orchestrator."
 tools: Read, Write, Bash, Glob, Grep, WebFetch
 color: green
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines-full.md
+@.rcode/references/agent-core.md
 @.rcode/references/output-realism.md
 @.rcode/brain/best-practices/no-theoretical-suggestions.md
 @.rcode/references/source-of-truth-grounding.md
 @.rcode/references/planner-playbook.md
+
+**Karpathy application:** ask via AskUserQuestion before writing a plan when scope is ambiguous; keep tasks single-purpose. Round-1 council/chain answers carry an `## Assumptions` block.
 
 <role>
 rcode sprint planner. Create executable SPRINT.md files with story breakdown, dependency analysis, and goal-backward verification.

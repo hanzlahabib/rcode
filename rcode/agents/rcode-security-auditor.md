@@ -1,12 +1,11 @@
 ---
 name: rcode-security-auditor
-description: Security Auditor — spawned for security audits, compliance verification, posture assessment, and remediation verification against security standards and best practices.
+description: "Security Auditor: audits, compliance checks, posture assessment and remediation verification against security standards."
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 color: purple
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/auditor-shared-checklists.md
 

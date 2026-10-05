@@ -1,12 +1,11 @@
 ---
 name: rcode-remediation-planner
-description: Remediation Planner — spawned to plan remediation for issues, blockers, and failures. Creates action plans to recover from deviations, resolve blockers, and get back on track.
+description: "Plans remediation for issues, blockers and failures: action plans to recover from deviations and get back on track."
 tools: Read, Grep, Glob, Bash
 color: orange
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/remediation-planner-playbook.md
 
