@@ -66,7 +66,6 @@ const { homedir } = require('./lib/homedir.cjs');
 
 // Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
 const pc = require('picocolors');
-const { createSpinner } = require('nanospinner');
 const fg = require('fast-glob');
 const { z } = require('zod');
 const semver = require('semver');
@@ -75,7 +74,7 @@ const clack = require('@clack/prompts');
 
 // Output helpers, package/source roots — cli/lib/install-shared.cjs (#1066 Phase 1).
 const {
-  ok, fail, warn, info, dim, bold, PACKAGE_ROOT, SOURCE_ROOT,
+  ok, fail, warn, info, dim, bold, createSpinner, PACKAGE_ROOT, SOURCE_ROOT,
 } = require('./lib/install-shared.cjs');
 // IDE detection/paths/layout migration — cli/lib/install-ide.cjs.
 const {

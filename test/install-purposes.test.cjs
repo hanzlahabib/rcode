@@ -392,3 +392,20 @@ test('the --help text documents --purpose', () => {
   assert.match(r.stdout, /--purpose <list>/);
   assert.match(r.stdout, /frontend, seo, strategy, audits/);
 });
+
+// A pty that reports 0 columns (docker -t, some ssh/CI sessions) made
+// nanospinner compute Infinity lines and spin forever in spinner.success(),
+// hanging the install at "Installing N files…" (pre-existing since v4.18.0).
+test('spinner finishes when the TTY reports 0 columns', () => {
+  const script = `
+    require('nanospinner/dist/consts').isTTY = true; // force the TTY render path
+    const { createSpinner } = require(${JSON.stringify(path.join(REPO, 'cli', 'lib', 'install-shared.cjs'))});
+    const out = [];
+    const s = createSpinner('x', { stream: { columns: 0, write: (c) => out.push(c) } }).start();
+    s.success({ text: 'done' });
+    console.log('finished');
+  `;
+  const r = spawnSync(process.execPath, ['-e', script], { cwd: REPO, encoding: 'utf8', timeout: 15000 });
+  assert.strictEqual(r.status, 0, r.stderr || 'timed out (spinner clear() loop)');
+  assert.match(r.stdout, /finished/);
+});
