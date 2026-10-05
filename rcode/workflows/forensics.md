@@ -23,10 +23,10 @@ STOP — do not proceed.
 
 ## Step 1 — Load state
 
-Read `.rcode/state.json`:
+Read the state digest (history included, story bodies excluded):
 
 ```bash
-cat .rcode/state.json 2>/dev/null || echo '{}'
+node .rcode/bin/rcode-tools.cjs state brief --full-history 2>/dev/null || echo '{}'
 ```
 
 Parse as JSON. If invalid or missing, print:

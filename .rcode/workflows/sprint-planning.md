@@ -80,7 +80,7 @@ Do NOT auto-run the install. Emit the message and let the user decide.
 ## Step 1 — Load context
 
 ```bash
-STATE=$(node .rcode/bin/rcode-tools.cjs state read)
+STATE=$(node .rcode/bin/rcode-tools.cjs state get current_phase current_sprint phases 2>/dev/null || echo '{}')
 VELOCITY=$(node .rcode/bin/rcode-tools.cjs state sprint velocity)
 ```
 

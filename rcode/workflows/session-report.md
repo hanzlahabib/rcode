@@ -38,7 +38,8 @@ No state found. Run /rcode-council or execute a plan to initialize state.
 ## Step 2 — Read state
 
 ```bash
-cat .rcode/state.json
+node .rcode/bin/rcode-tools.cjs state brief --full-history
+node .rcode/bin/rcode-tools.cjs state get created updated current_plan
 ```
 
 Parse the JSON. Extract:
