@@ -119,6 +119,48 @@ for (const purpose of PURPOSES) {
   });
 }
 
+// A bundle's skills recommend agents by name ("`rcode-mariam` agent"). The
+// workflow check above never sees those (a skill-only purpose such as seo has no
+// commands), so scan the skill docs themselves.
+function skillDirs() {
+  const dirs = new Map();
+  (function walk(d) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (!e.isDirectory()) continue;
+      const p = path.join(d, e.name);
+      if (fs.existsSync(path.join(p, 'SKILL.md'))) dirs.set(e.name.startsWith('rcode-') ? e.name : `rcode-${e.name}`, p);
+      else walk(p);
+    }
+  })(path.join(REPO, 'rcode', 'skills'));
+  return dirs;
+}
+
+function markdownFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) return markdownFiles(p);
+    return e.name.endsWith('.md') ? [p] : [];
+  });
+}
+
+for (const purpose of PURPOSES) {
+  test(`minimal + ${purpose}: skills only recommend agents the bundle installs`, () => {
+    const def = purposeLib.effectiveProfiles([purpose]).minimal;
+    const packageAgents = new Set(fs.readdirSync(path.join(REPO, 'rcode', 'agents')).map((f) => f.replace(/\.md$/, '')));
+    const dirs = skillDirs();
+    const missing = [];
+    for (const skill of purposeLib.loadPurposes()[purpose].skills) {
+      for (const file of markdownFiles(dirs.get(skill))) {
+        const text = fs.readFileSync(file, 'utf8');
+        for (const m of text.matchAll(/`(rcode-[a-z0-9-]+)`\s+agent\b/g)) {
+          if (packageAgents.has(m[1]) && !def.agents.has(m[1])) missing.push(`${skill} -> ${m[1]} (${path.basename(file)})`);
+        }
+      }
+    }
+    assert.deepStrictEqual(missing, []);
+  });
+}
+
 // ── flag parsing and precedence (pure) ────────────────────────────────────
 
 test('parsePurposeFlag validates, de-duplicates and lists the valid names on error', () => {
@@ -408,4 +450,13 @@ test('spinner finishes when the TTY reports 0 columns', () => {
   const r = spawnSync(process.execPath, ['-e', script], { cwd: REPO, encoding: 'utf8', timeout: 15000 });
   assert.strictEqual(r.status, 0, r.stderr || 'timed out (spinner clear() loop)');
   assert.match(r.stdout, /finished/);
+});
+
+test('--purpose=seo and --profile=minimal forms are honored, a bare --purpose is an error', () => {
+  const eq = tmp();
+  assert.strictEqual(install(eq, ['--profile=minimal', '--purpose=seo,audits']).status, 0);
+  assert.match(fs.readFileSync(path.join(eq, '.rcode', '_config', 'manifest.yaml'), 'utf8'), /^purposes: \[seo, audits\]$/m);
+  const bare = install(tmp(), ['--purpose']);
+  assert.strictEqual(bare.status, 1);
+  assert.match(bare.stderr + bare.stdout, /Empty --purpose list.*frontend, seo, strategy, audits/);
 });

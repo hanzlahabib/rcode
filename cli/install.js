@@ -221,6 +221,9 @@ function parseArgs(argv) {
     listFiles: false,
   };
   const positional = [];
+  // `--profile=x` / `--purpose=x` are split into the space form: every other
+  // `--flag=value` is unknown here and would otherwise be dropped silently.
+  argv = argv.flatMap((a) => /^--(profile|purpose)=/.test(a) ? [a.slice(0, a.indexOf('=')), a.slice(a.indexOf('=') + 1)] : [a]);
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') opts.help = true;
@@ -240,7 +243,7 @@ function parseArgs(argv) {
     }
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (arg === '--profile') opts.profile = argv[++i];
-    else if (arg === '--purpose') opts.purpose = argv[++i];
+    else if (arg === '--purpose') opts.purpose = argv[++i] ?? ''; // '' -> "Empty --purpose list" error, not a silent no-op
     else if (arg === '--commit-planning') opts.commitPlanning = true;
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
     else if (arg === '--non-destructive') opts.nonDestructive = true;
