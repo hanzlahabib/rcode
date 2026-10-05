@@ -1,6 +1,6 @@
 ---
 name: rcode-scan
-description: Rapid codebase assessment — lightweight alternative to map-codebase.
+description: "Rapid codebase assessment — lightweight alternative to map-codebase."
 argument-hint: "[--focus <area>]"
 allowed-tools:
   - Read

@@ -1,7 +1,8 @@
 ---
 name: rcode-checkpoint-preview
 internal: true
-description: "LLM-assisted human-in-the-loop review."
+description: "LLM-assisted human review of a diff. Use when: \"checkpoint\", \"walk me through this\", \"human review\"."
+disable-model-invocation: true
 triggers:
   - "checkpoint preview"
   - "preview the checkpoint"
@@ -11,8 +12,6 @@ triggers:
   - "preview changes before approval"
 user-invocable: true
 ---
-
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 
 ## Overview
 

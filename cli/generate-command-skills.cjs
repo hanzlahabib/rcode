@@ -130,7 +130,7 @@ function generateStub(cmdName, commandFm, version) {
   // re-wrapping it in another `>-` produced the doubled `>` `>-` seen in shipped
   // stubs and left the real text unreachable.
   const desc = (commandFm.description || `Slash command shortcut for /rcode-${cmdName}.`)
-    .replace(/^>-?\s*/, '').trim();
+    .replace(/^>-?\s*/, '').replace(/\\"/g, '"').trim();
   const triggers = [
     `rcode ${cmdName}`,
     `rcode-${cmdName}`,
@@ -146,7 +146,6 @@ function generateStub(cmdName, commandFm, version) {
 name: rcode-${cmdName}
 description: >
   ${desc.replace(/\n/g, ' ')}
-  Sidebar entry — invokes the same workflow as /rcode-${cmdName}.
 triggers:
 ${triggers.map((t) => `  - "${t}"`).join('\n')}
 user-invocable: true

@@ -1,6 +1,6 @@
 ---
 name: rcode-rebrand
-description: Stack-wide rebranding migration — refs, assets, copy, env vars, docs, redirects, package names.
+description: "Stack-wide rebranding migration — refs, assets, copy, env vars, docs, redirects, package names."
 triggers:
   - "rebrand"
   - "stack-wide rename"

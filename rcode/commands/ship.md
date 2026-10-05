@@ -1,6 +1,6 @@
 ---
 name: rcode-ship
-description: "After a phase is verified, create a PR: push branch, auto-generate PR body from planning artifacts (ROADMAP, VERIFICATION, SUMMARY), and optionally request review. Closes the plan→execute→verify→ship loop."
+description: "After a verified phase, push the branch and open a PR with a body generated from planning artifacts."
 argument-hint: "[<phase>] [--draft]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

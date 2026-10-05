@@ -1,19 +1,12 @@
 ---
 name: rcode-domain-research
 internal: true
-description: >
-  Conduct industry domain deep-dive research to build subject matter
-  expertise on a specific business domain. Activates when the user says
-  "research this domain", "domain deep dive", "explain this industry", "help
-  me understand X industry", or "domain research for". Do NOT use for market
-  analysis (use rcode-market-research) or technical feasibility (use
-  rcode-technical-research).
+description: "Industry domain deep-dive research. Use when: \"research this domain\", \"explain this industry\". Not for market or technical research."
 triggers:
   - "research this domain"
   - "domain deep dive"
   - "explain this industry"
-  - "help
-  me understand X industry"
+  - "help me understand X industry"
   - "domain research for"
 user-invocable: true
 ---
@@ -44,3 +37,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Narrow Domain
 **Input:** "Research quantum basket weaving"
 **Expected behavior:** Report: "Insufficient verifiable sources. Can narrow or pivot to adjacent domain?"
+
+## Boundaries
+
+Do NOT use for market analysis (use rcode-market-research) or technical feasibility (use rcode-technical-research).

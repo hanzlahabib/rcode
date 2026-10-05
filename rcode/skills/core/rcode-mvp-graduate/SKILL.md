@@ -1,6 +1,6 @@
 ---
 name: rcode-mvp-graduate
-description: Move an MVP to production-grade infrastructure incrementally.
+description: "Move an MVP to production-grade infrastructure incrementally."
 triggers:
   - "graduate this mvp"
   - "mvp to prod plan"

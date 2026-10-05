@@ -1,6 +1,6 @@
 ---
 name: rcode-add-phase
-description: "Add a new integer phase to the end of the current milestone. Auto-calculates the next phase number, creates the phase directory, and updates ROADMAP.md. Use when scope expands mid-milestone."
+description: "Add a new integer phase to the end of the current milestone and update ROADMAP.md."
 argument-hint: "<phase-name>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

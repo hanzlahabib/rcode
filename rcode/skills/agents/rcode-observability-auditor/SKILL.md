@@ -1,12 +1,6 @@
 ---
 name: rcode-observability-auditor
-description: >
-  Observability and silent-failure auditor. Detects unguarded rcode-tools
-  shell calls, Task() results that are never checked, bare 2>/dev/null
-  without fallback echo, INIT calls without .ok checks, and unstructured
-  console.log in production code. Audit-only — never adds instrumentation.
-  Activates when the user says "observability audit", "silent failures",
-  "unguarded calls", "missing error handling", "tool call guard", or similar.
+description: "Audit-only silent-failure auditor for unguarded calls and unchecked results. Use when: \"observability audit\", \"silent failures\"."
 triggers:
   # English
   - "observability audit"

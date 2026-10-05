@@ -1,14 +1,6 @@
 ---
 name: rcode-party-mode
-description: >
-  Orchestrates group discussions between all installed rcode agents, enabling
-  natural multi-agent conversations with maintained personalities. Activates
-  when the user says "party mode", "activate party mode", "start party mode",
-  "group discussion", "team discussion", "talk to everyone", "bring all agents",
-  "multi-agent chat", or "let's have a party". Do NOT use for: formal council
-  decisions (use rcode-majlis-council), single-agent questions where one
-  specialist is clearly the right owner (invoke that agent directly), or
-  sprint ceremonies (use rcode-hussain-sm).
+description: "Group discussion among all installed rcode agents with maintained personalities. Use when: \"party mode\", \"talk to everyone\". Not for formal council."
 triggers:
   - "party mode"
   - "activate party mode"
@@ -96,3 +88,7 @@ Each party mode turn follows this pattern:
 
 - **Reads:** `rcode/team.yaml`, every consulted persona's SKILL.md, `.rcode/memory/people/team.md` (so the casual chat respects active team availability)
 - **Writes:** transcript saved to `.rcode/progress/party-{date}.md` for audit; does NOT update Memory Bank decision log (use `rcode-memory-update` if the chat surfaced a real decision)
+
+## Boundaries
+
+Do NOT use for: formal council decisions (use rcode-majlis-council), single-agent questions where one specialist is clearly the right owner (invoke that agent directly), or sprint ceremonies (use rcode-hussain-sm).

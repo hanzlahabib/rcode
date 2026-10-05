@@ -1,6 +1,6 @@
 ---
 name: rcode-discuss
-description: Quick sync with one rcode agent. Lighter than /rcode-council — one agent, no cross-talk, optional save.
+description: "Quick sync with one rcode agent. Lighter than /rcode-council — one agent, no cross-talk, optional save."
 argument-hint: "[agent-name] <question>"
 allowed-tools:
   - Read

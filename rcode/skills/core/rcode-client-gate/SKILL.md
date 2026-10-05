@@ -1,6 +1,6 @@
 ---
 name: rcode-client-gate
-description: Client requirement freeze gates and async-comm patterns to stop late requirements from derailing.
+description: "Client requirement freeze gates and async-comm patterns that stop late requirements from derailing a sprint. Use when: \"scope freeze\", \"late requirements\"."
 triggers:
   - "client gate"
   - "freeze requirements"

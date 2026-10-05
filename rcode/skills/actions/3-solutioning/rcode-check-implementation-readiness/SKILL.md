@@ -1,24 +1,18 @@
 ---
 name: rcode-check-implementation-readiness
 internal: true
-description: >
-  Verify that PRD, UX designs, architecture decisions, and epics/stories are
-  all aligned and ready for implementation. Activates when the user says
-  "check implementation readiness", "is this ready for dev", "verify
-  alignment", "readiness check", "IR check", or "can we start building". Do
-  NOT use during active implementation (use rcode-correct-course instead).
+description: "Check PRD, UX, architecture and stories are aligned before build. Use when: \"readiness check\", \"can we start building\". Not during implementation."
+disable-model-invocation: true
 triggers:
   - "check implementation readiness"
   - "is this ready for dev"
-  - "verify
-  alignment"
+  - "verify alignment"
   - "readiness check"
   - "IR check"
   - "can we start building"
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 

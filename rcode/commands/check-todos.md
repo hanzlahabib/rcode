@@ -1,6 +1,6 @@
 ---
 name: rcode-check-todos
-description: List all pending todos, allow selection, load full context for the selected todo, and route to appropriate action.
+description: "List pending todos, load context for the selected one, and route to the right action."
 argument-hint: ""
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---

@@ -1,6 +1,6 @@
 ---
 name: rcode-remove-phase
-description: "Remove an unstarted future phase from ROADMAP.md, delete its directory, and renumber all subsequent phases to maintain a clean sequence. Cannot remove a phase already in progress or completed."
+description: "Remove an unstarted future phase from ROADMAP.md and renumber later phases."
 argument-hint: "<phase-number>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

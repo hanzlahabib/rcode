@@ -1,6 +1,6 @@
 ---
 name: rcode-verify-phase
-description: "Goal-backward audit — does the codebase actually deliver what the phase promised? Produces VERIFICATION.md with pass/fail. Required before /rcode-ship. Run after /rcode-execute completes."
+description: "Goal-backward audit: does the code deliver what the phase promised? Writes VERIFICATION.md; required before /rcode-ship."
 argument-hint: "<phase-number>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---

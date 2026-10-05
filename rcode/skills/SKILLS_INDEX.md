@@ -175,3 +175,11 @@ Framework and engineering best-practices skills — Next.js, React, and LLM/agen
 ## Licensing
 
 Free to use and adapt.
+
+## Command-twin skills (hidden from the model listing)
+
+These action skills have a same-named slash command (the workflow path) and set `disable-model-invocation: true`, so they cost no listing tokens and stay reachable via `/name`: document-project, prfaq, create-epics-and-stories, create-prd, create-story, edit-prd, validate-prd, check-implementation-readiness, create-architecture, checkpoint-preview, review, correct-course, dev-story, retrospective, scaffold-project, sprint-planning, sprint-status, review-edge-case-hunter. Model-activated entry points that keep a visible description: debug, help, init, lazy, memory-init, memory-update, memory-audit, memory-distill.
+
+The `minimal` install profile (`rcode/profiles.yaml`) installs only 8 of these skills; the hidden twins above exist only in `full`. The token-budget gate (`node scripts/token-budget.cjs`) skips hidden skills when it counts the listing.
+
+These same skills are not invoked by any `rcode/workflows/*.md` file (no `delegate_to_skill` cross-reference in either direction); they are reachable by phrase trigger, `/name`, or explicit `@`-inclusion.

@@ -1,6 +1,6 @@
 ---
 name: rcode-seo-growth-orchestrator
-description: Orchestrator for growing organic traffic, rankings, and revenue with Claude — condensed from a 1000+ hour SEO practitioner. Use when the user wants to "grow traffic", "rank a local business", "get backlinks", "find guest post opportunities", "audit my Google Business Profile / GBP categories", "mine Google Search Console for page-2 keywords", "build service + city landing pages", "fix NAP / citations", "build a content engine", "automate blog + social", "add MRR with SEO", or asks for "SEO prompts", "SEO workflow", or mentions Arvo/Blotato automation. Also use when the user wants the "Goals Protocol" (slash /goal) for higher-quality structured outputs. This is the orchestration layer — it calls the granular skills (on-page-seo-auditor, technical-seo-checker, seo-content-writer) and seo-os's reference modules (keyword/backlink/SERP/competitor intelligence, internal linking, local SEO) rather than replacing them.
+description: "Orchestrate organic growth: GBP, Search Console, backlinks, service+city pages. Use when: \"grow traffic\", \"rank a local business\", \"get backlinks\"."
 metadata:
   version: 1.0.0
   source: "SEO Claude Masterclass (5 trainings / 6h condensed) — 1000+ hr practitioner"

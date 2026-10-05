@@ -1,15 +1,6 @@
 ---
 name: rcode-memory-update
-description: >
-  Surgical update of specific Memory Bank files from conversation context.
-  Adds an entry to decisions.md, appends a known issue, updates the current
-  milestone, or extends the stakeholder list — without rewriting whole files.
-  Activates when the user says "remember this decision", "log this decision",
-  "add this to memory bank", "update memory bank", "/rcode-memory-update",
-  "save this to memory", "yeh memory mein add karo", or after a council
-  session that produced a clear decision. Do NOT use for: initial bootstrap
-  (use rcode-memory-init), regenerating distillates (use rcode-memory-distill),
-  or general note-taking (use the existing rcode-note workflow).
+description: "Surgically update Memory Bank files from conversation context. Use when: \"remember this decision\", \"update memory bank\", \"yeh memory mein add karo\"."
 triggers:
   # English
   - "remember this decision"
@@ -85,3 +76,7 @@ Skill: refuses ("this skill is append-only"). Suggests editing `milestones/curre
 
 - **Reads:** the target file's existing format header (to preserve structure)
 - **Writes:** exactly one append to one file per invocation
+
+## Boundaries
+
+Do NOT use for: initial bootstrap (use rcode-memory-init), regenerating distillates (use rcode-memory-distill), or general note-taking (use the existing rcode-note workflow).

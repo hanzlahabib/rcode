@@ -1,16 +1,7 @@
 ---
 name: rcode-seo-astro-implementation
 internal: true
-description: >
-  Implement SEO technical requirements inside an Astro project — SEOHead,
-  canonical/OG/Twitter tags, SchemaRenderer, breadcrumbs, page layouts
-  (Calculator/Service/Location/Article/Comparison), sitemap, hreflang, and
-  redirects — using current Astro Content Layer idioms. Activates when the
-  user says "add SEO to this Astro page", "implement SEOHead", "add schema
-  markup in Astro", "build the Astro layout for this page type", "wire up
-  the sitemap/hreflang in Astro", or "Astro SEO components". Do NOT use for
-  SEO strategy, keyword research, or opportunity scoring (use rcode-seo-os)
-  or for Next.js/WordPress/other-framework implementation.
+description: "Implement SEO technical requirements in Astro: SEOHead, schema, sitemap, hreflang. Use when: \"add SEO to this Astro page\", \"SEOHead\"."
 triggers:
   - "add SEO to this Astro page"
   - "implement SEOHead"
@@ -72,3 +63,7 @@ It activates only when the target project uses, or is being scaffolded to use, A
 ### Negative Case
 **Input:** "Should we build a dedicated cost calculator for this niche?"
 **Expected behavior:** Do NOT answer with Astro component code. This is a Layer A opportunity/utility-advantage question (`rcode-seo-os`'s `UTILITY-ADVANTAGE.md`/`OPPORTUNITY-SCORING.md`), not a framework-implementation task — route there instead.
+
+## Boundaries
+
+Do NOT use for SEO strategy, keyword research, or opportunity scoring (use rcode-seo-os) or for Next.js/WordPress/other-framework implementation.

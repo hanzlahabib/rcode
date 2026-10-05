@@ -1,6 +1,6 @@
 ---
 name: rcode-validate-phase
-description: Audit Nyquist validation gaps for a completed phase. Generate missing tests. Update VALIDATION.md.
+description: "Audit Nyquist validation gaps for a completed phase. Generate missing tests. Update VALIDATION.md."
 argument-hint: "<phase-number>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---

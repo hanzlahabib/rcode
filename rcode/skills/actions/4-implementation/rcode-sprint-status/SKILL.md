@@ -1,12 +1,8 @@
 ---
 name: rcode-sprint-status
 internal: true
-description: >
-  Generate a sprint status report showing progress, blockers, and
-  recommended next actions. Activates when the user says "sprint status",
-  "how is the sprint going", "generate status report", "sprint progress", or
-  "where are we in the sprint". Do NOT use for retrospectives (use
-  rcode-retrospective).
+description: "Sprint status report: progress, blockers, next actions. Use when: \"sprint status\", \"how is the sprint going\". Not for retrospectives."
+disable-model-invocation: true
 triggers:
   - "sprint status"
   - "how is the sprint going"
@@ -16,7 +12,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -48,3 +43,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: No Sprints Executed Yet
 **Input:** "Sprint status" (SPRINT.md files exist but no SUMMARY.md)
 **Expected behavior:** Show all sprints as `todo`, recommend `/rcode-execute <phase>`.
+
+## Boundaries
+
+Do NOT use for retrospectives (use rcode-retrospective).

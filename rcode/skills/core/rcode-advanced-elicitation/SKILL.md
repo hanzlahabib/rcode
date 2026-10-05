@@ -1,6 +1,6 @@
 ---
 name: rcode-advanced-elicitation
-description: Push the LLM to reconsider, refine, and improve its recent output through structured methods like.
+description: "Push the LLM to reconsider and refine its recent output through structured elicitation methods. Use when: \"challenge this\", \"improve this output\"."
 agent_party: '{project-root}/.rcode/team.yaml'
 triggers:
   - "advanced elicitation"

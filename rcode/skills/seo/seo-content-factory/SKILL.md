@@ -1,6 +1,6 @@
 ---
 name: rcode-seo-content-factory
-description: Autonomous SEO content-factory for LeadLyze — a 10-agent pipeline (competitor research → keyword expansion → clustering → briefs → writing → interlinking → programmatic page gen → schema → refresh → opportunity finding) that researches, clusters, writes, interlinks, and ships 2,000+ SEO pages into the Next.js marketing site. Runs in AUTO mode via herdr orchestration. Trigger when the user says "run the content factory", "build SEO pages", "content factory", "auto SEO", "generate 2000 pages", "programmatic SEO", "SEO auto mode", or invokes /seo-factory.
+description: "10-agent SEO content pipeline for LeadLyze: research, cluster, write, interlink, ship pages. Use when: \"run the content factory\"."
 metadata:
   version: 1.0.0
   target: "LeadLyze — the canonical `marketing/` site (Next.js 16 App Router, React 19, Tailwind v4). NOT marketing-v2..v5 (rejected redesigns)."

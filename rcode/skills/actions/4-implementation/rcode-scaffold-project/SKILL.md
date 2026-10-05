@@ -1,15 +1,8 @@
 ---
 name: rcode-scaffold-project
 internal: true
-description: >
-  Scaffold a new project for rcode users using the official rcode template repo,
-  or initialize rcode in an existing project (brownfield / --here mode).
-  Activates when the user says "scaffold project", "create project", "new project",
-  "initialize project", "setup new project", "scaffold from template", "create from template",
-  "rcode new project", "start a new rcode project", "scaffold here", "use here",
-  "scaffold in this project", or "initialize rcode here". Do NOT use for generating
-  project context files (use rcode-generate-project-context) or cloning websites
-  (use rcode-clone-website).
+description: "Scaffold a new project from the official rcode template, or init rcode in an existing one. Use when: \"scaffold project\", \"scaffold here\"."
+disable-model-invocation: true
 triggers:
   - "scaffold project"
   - "create project"
@@ -29,7 +22,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -177,3 +169,7 @@ Everything else — including `package.json`, `src/`, `.rcode/`, `node_modules/`
 **Input:** "scaffold my existing repo" (existing non-empty dir provided, no --here flag)
 **Expected:** Safety check triggers. Never overwrites. Offers alternatives including
 "Use `--here` mode to add rcode to this existing project instead".
+
+## Boundaries
+
+Do NOT use for generating project context files (use rcode-generate-project-context) or cloning websites (use rcode-clone-website).

@@ -1,6 +1,7 @@
 ---
 name: rcode-review-edge-case-hunter
 description: "Walk every branching path and boundary condition in content, report only unhandled edge cases."
+disable-model-invocation: true
 triggers:
   # English
   - "find edge cases"

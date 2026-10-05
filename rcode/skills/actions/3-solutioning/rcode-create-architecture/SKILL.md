@@ -1,27 +1,18 @@
 ---
 name: rcode-create-architecture
 internal: true
-description: >
-  Write an Architecture Decision Record (ADR) to lock a significant
-  technical decision. Activates when the user says "write an ADR", "create
-  architecture decision", "document this architectural choice", "write an
-  architecture record", "lock this technical decision", or "record the
-  decision to use X". Do NOT use for implementation code (use
-  rcode-dev-story) or sprint planning (use rcode-sprint-planning).
+description: "Write an Architecture Decision Record to lock a technical decision. Use when: \"write an ADR\", \"lock this technical decision\". Not for implementation."
+disable-model-invocation: true
 triggers:
   - "write an ADR"
-  - "create
-  architecture decision"
+  - "create architecture decision"
   - "document this architectural choice"
-  - "write an
-  architecture record"
+  - "write an architecture record"
   - "lock this technical decision"
-  - "record the
-  decision to use X"
+  - "record the decision to use X"
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -50,3 +41,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Insufficient Justification
 **Input:** "ADR: we're using React"
 **Expected behavior:** Refuse to write a one-liner ADR. Ask: "What did you reject (Vue, Svelte, Angular)? What trade-offs did you weigh? An ADR without alternatives is a note, not a decision record."
+
+## Boundaries
+
+Do NOT use for implementation code (use rcode-dev-story) or sprint planning (use rcode-sprint-planning).

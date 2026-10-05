@@ -1,19 +1,6 @@
 ---
 name: rcode-seo-os
-description: >
-  Operating system for SEO projects: silently classifies the project type and
-  lifecycle stage, loads only the reference modules a task actually needs,
-  then routes execution to the right existing rcode SEO skill or performs a
-  narrow fix directly. Activates when the user wants to "grow this site's
-  traffic", "research this niche/domain for SEO", validate whether an SEO
-  opportunity is "worth building", ask "what stage is this SEO project in",
-  "plan the SEO architecture", "score this SEO opportunity", figure out
-  "what's next for this SEO project", or generally "route this SEO task"
-  across any business model (local, SaaS, tool, affiliate, programmatic,
-  international, ecommerce). Do NOT use for a narrow, already-scoped
-  technical fix (a broken sitemap, one meta tag, one redirect) — do that fix
-  directly and skip the framework; do NOT use for writing Astro components —
-  hand off to rcode-seo-astro-implementation once strategy is decided.
+description: "SEO operating system: classify project and stage, load needed modules, route to the right SEO skill. Use when: \"grow this site's traffic\", \"SEO opportunity\"."
 triggers:
   - "grow this site's SEO traffic"
   - "research this niche or domain for SEO"
@@ -133,3 +120,7 @@ identify a real utility gap, and only then route to build — or report why it d
 strategy modules — this is a narrow technical fix. Delegate directly to `rcode-technical-seo-checker`,
 verify the sitemap, and update `.rcode/seo/STATE.md` with only the fix performed (per spec's agent
 output behavior rule — silently determine project/stage/task, then act on only what's relevant).
+
+## Boundaries
+
+Do NOT use for a narrow, already-scoped technical fix (a broken sitemap, one meta tag, one redirect) — do that fix directly and skip the framework; do NOT use for writing Astro components — hand off to rcode-seo-astro-implementation once strategy is decided.

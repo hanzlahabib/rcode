@@ -1,12 +1,8 @@
 ---
 name: rcode-create-epics-and-stories
 internal: true
-description: >
-  Break a PRD into epics and user stories that drive development. Activates
-  when the user says "create epics", "break this into stories", "generate
-  the epic list", "epic and story breakdown", "decompose the PRD", or
-  "create the backlog". Do NOT use to prepare a single story for dev (use
-  rcode-create-story).
+description: "Break a PRD into epics and user stories. Use when: \"create epics\", \"break this into stories\", \"decompose the PRD\". Not for one dev-ready story."
+disable-model-invocation: true
 triggers:
   # English
   - "create epics"
@@ -28,7 +24,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 > **Note (experimental, no execution consumer):** the epics/stories/dev-story pipeline this
@@ -67,3 +62,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: PRD Missing
 **Input:** "Create epics" (no PRD exists)
 **Expected behavior:** Refuse. Respond: "No PRD found. Run rcode-create-prd first. I cannot invent requirements."
+
+## Boundaries
+
+Do NOT use to prepare a single story for dev (use rcode-create-story).

@@ -1,6 +1,6 @@
 ---
 name: rcode-session-report
-description: Generate a session report with work summary, token usage estimation, commits, decisions, and open blockers
+description: "Generate a session report: work summary, token estimate, commits, decisions and open blockers."
 argument-hint: ""
 allowed-tools:
   - Read

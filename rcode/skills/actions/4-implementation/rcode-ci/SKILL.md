@@ -1,7 +1,7 @@
 ---
 name: rcode-ci
 internal: true
-description: CI/CD setup and quality gates for the rcode-default stack — GitHub Actions for Node test matrix,.
+description: "CI/CD setup and quality gates: GitHub Actions test matrix, lint, build and deploy checks. Use when: \"set up CI\", \"add quality gates\"."
 triggers:
   - "set up ci"
   - "github actions"

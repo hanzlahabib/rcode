@@ -1,6 +1,6 @@
 ---
 name: rcode-rank-and-rent-local-seo
-description: Playbook for building rank-and-rent "digital real estate" — pick a high-CPC local service niche, mine the long-tail subniches bigger companies ignore, mass-produce subniche×city pages, rank them, and monetize the calls/leads. Orchestrates the existing SEO skill set rather than re-doing it. Use when the user wants to start a local lead-gen / rank-and-rent site, find an SEO money niche, or systematically build out a local service vertical.
+description: "Rank-and-rent playbook: pick a high-CPC local niche, mine subniche x city pages, rank, monetize. Use when: \"rank and rent\", \"local lead-gen site\"."
 ---
 
 # Rank-and-Rent Local SEO

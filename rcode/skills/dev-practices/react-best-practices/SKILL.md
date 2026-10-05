@@ -1,6 +1,6 @@
 ---
 name: rcode-react-best-practices
-description: When the user is writing, reviewing, or refactoring React components and needs guidance on component architecture, folder structure, hooks discipline, state management boundaries, prop drilling, composition patterns, or accessibility. Also use when the user mentions "React best practices," "component architecture," "where should this state live," "custom hook," "prop drilling," "this component is too big," "feature folder structure," "container vs presentational," "accessible component," "React anti-pattern," or asks "is this good React code." Use this even if the user just pastes a component and asks "how's this look" or "can you review this." For Next.js-specific routing, data-fetching, Server/Client Component boundaries, or middleware, see nextjs-best-practices instead. For the two specific correctness bug classes — React state-updater purity and useEffect dependency arrays against TanStack Query structural sharing — the authoritative source is rcode/agents/rules/executor/correctness-hazard-scan.md; this skill mentions both briefly but does not duplicate that depth.
+description: "React architecture and hooks guidance. Use when: \"React best practices\", \"where should this state live\", \"custom hook\", \"prop drilling\"."
 metadata:
   version: 1.0.0
 ---

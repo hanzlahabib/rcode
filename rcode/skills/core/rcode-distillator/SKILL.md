@@ -1,6 +1,6 @@
 ---
 name: rcode-distillator
-description: Lossless LLM-optimized compression of source documents.
+description: "Lossless LLM-optimized compression of source documents."
 argument-hint: "<source-paths> [--validate <distillate-path>] [--token-budget <N>] [--consumer <name>]"
 triggers:
   - "distillator"

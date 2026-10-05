@@ -1,6 +1,6 @@
 ---
 name: rcode-install
-description: Install a rcode module into the current project. Adds agents, workflows, commands, and references for the specified capability bundle.
+description: "Install an rcode module (agents, workflows, commands, references) into the current project."
 argument-hint: "<module-name> [--force]"
 allowed-tools: Read, Bash
 ---

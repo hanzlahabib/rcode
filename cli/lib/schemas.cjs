@@ -133,21 +133,26 @@ function parseFrontmatter(text) {
 /**
  * Count distinct activation/trigger phrases for a skill.
  *
- * The 5–12 standard applies to the curated activation phrases quoted in the
- * `description` body, so that is the canonical source. Real SKILL.md files
- * also carry a much larger multilingual `triggers` array (English + Arabic,
- * often 20+ entries) — that list is NOT subject to the 5–12 cap. Only when a
- * skill has no quoted phrases in its description do we fall back to counting
- * the `triggers` field.
+ * Two places carry them: the quoted phrases in the `description` (what Claude
+ * Code lists every turn, so kept short on purpose, see the token budget) and
+ * the `triggers:` array (the full multilingual set, English + Arabic +
+ * Hinglish, free of listing cost). The 5-phrase minimum is met when either
+ * source reaches it, so the larger count is returned; the advisory 12-phrase
+ * cap applies only to the curated set (see curatedTriggerCount).
  *
  * @param {object} fm parsed frontmatter
  * @returns {number}
  */
 function countTriggerPhrases(fm) {
-  const desc = typeof fm.description === 'string' ? fm.description : '';
-  const quoted = desc.match(/"[^"]+"/g) || [];
-  if (quoted.length > 0) return quoted.length;
+  return Math.max(quotedPhraseCount(fm), listedTriggerCount(fm));
+}
 
+function quotedPhraseCount(fm) {
+  const desc = typeof fm.description === 'string' ? fm.description : '';
+  return (desc.match(/"[^"]+"/g) || []).length;
+}
+
+function listedTriggerCount(fm) {
   if (Array.isArray(fm.triggers)) {
     return fm.triggers.filter((t) => typeof t === 'string' && t.trim()).length;
   }
@@ -156,6 +161,12 @@ function countTriggerPhrases(fm) {
     return fm.triggers.split(',').map((s) => s.trim()).filter(Boolean).length;
   }
   return 0;
+}
+
+/** The set the 5-12 cap applies to: the description's curated phrases, else the triggers list. */
+function curatedTriggerCount(fm) {
+  const quoted = quotedPhraseCount(fm);
+  return quoted > 0 ? quoted : listedTriggerCount(fm);
 }
 
 // ---------- SKILL.md frontmatter ----------
@@ -204,8 +215,8 @@ function validateSkillFrontmatter(obj, body = '') {
     const count = countTriggerPhrases(obj);
     if (count < 5) {
       errors.push(`too few trigger phrases: found ${count}, need at least 5`);
-    } else if (count > 12) {
-      warnings.push(`many trigger phrases: found ${count}, recommended max is 12`);
+    } else if (curatedTriggerCount(obj) > 12) {
+      warnings.push(`many trigger phrases: found ${curatedTriggerCount(obj)}, recommended max is 12`);
     }
 
     const desc = typeof obj.description === 'string' ? obj.description : '';

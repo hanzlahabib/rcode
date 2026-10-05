@@ -1,6 +1,6 @@
 ---
 name: rcode-sprint-planning
-description: Plan the next sprint — compute capacity, prioritize stories, create SPRINT.md, register in state.
+description: "Plan the next sprint — compute capacity, prioritize stories, create SPRINT.md, register in state."
 argument-hint: "[--phase <NN>] [--velocity <points>] [--goal 'Sprint goal']"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

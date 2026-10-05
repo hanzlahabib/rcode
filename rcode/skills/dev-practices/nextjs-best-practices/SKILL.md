@@ -1,6 +1,6 @@
 ---
 name: rcode-nextjs-best-practices
-description: When the user is writing, reviewing, or debugging Next.js App Router code. Also use when the user mentions "Next.js," "App Router," "server components," "client components," "'use client'," "route handlers," "Next.js middleware," "Next.js caching," "revalidatePath," "revalidateTag," "Suspense boundary," "loading.js," "hydration error," "Next.js is slow," "bundle size Next.js," "waterfall requests," or pastes a `page.tsx` / `layout.tsx` / `route.ts` file and asks for a review or a fix. Use this even if the user just says something vague like "review my Next.js code" or "is this the right way to fetch data in Next.js" — start with the App Router conventions and work outward. For React component patterns that aren't Next.js-specific (hooks discipline, state boundaries, prop drilling), see react-best-practices. For LLM/agent/prompt engineering inside a Next.js API route, see llm-engineering-best-practices. Do NOT use for Pages Router-only codebases with no `app/` directory, or for non-Next.js React work (plain Vite/CRA apps) — those belong to react-best-practices.
+description: "Next.js App Router guidance. Use when: \"Next.js\", \"server components\", \"revalidatePath\", \"hydration error\", \"Next.js is slow\"."
 metadata:
   version: 1.0.0
 ---
@@ -172,3 +172,6 @@ Don't just say "convert ThemeProvider to server" — it can't be, it uses `creat
 
 This is a Pages Router codebase, not an App Router one. Don't apply Server/Client Component boundary rules, `'use client'` guidance, or `app/`-only file conventions (`loading.tsx`, route groups) — none of them exist in the Pages Router model. Say so explicitly: this skill's App Router guidance doesn't map onto `getServerSideProps`/`getStaticProps` data fetching or `_app.tsx`/`_document.tsx` conventions. Either scope the review to what's generically applicable (bundle size via `next/dynamic`, `next/image`, `next/font` — those work in both routers) and flag that a Pages→App Router migration is a separate, larger conversation, or redirect to react-best-practices for router-agnostic React component concerns.
 
+## Boundaries
+
+Do NOT use for Pages Router-only codebases with no `app/` directory, or for non-Next.js React work (plain Vite/CRA apps) — those belong to react-best-practices.

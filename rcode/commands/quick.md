@@ -1,6 +1,6 @@
 ---
 name: rcode-quick
-description: Execute small ad-hoc tasks with guarantees — planning, execution, optional verification
+description: "Execute small ad-hoc tasks with guarantees — planning, execution, optional verification"
 argument-hint: "[description] [--full] [--discuss] [--research]"
 allowed-tools:
   - Read

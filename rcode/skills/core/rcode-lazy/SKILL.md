@@ -1,18 +1,6 @@
 ---
 name: rcode-lazy
-description: >
-  Always-on "lazy senior dev" lens that forces the simplest solution that
-  actually works — shortest, most minimal — before any code is written.
-  Question whether the task needs to exist (YAGNI), reach for stdlib before
-  custom code, native platform features before dependencies, one line before
-  fifty. Supports intensity levels: lite, full (default), ultra. Activates when
-  the user says "lazy mode", "be lazy", "simplest solution", "minimal
-  solution", "yagni", "do less", "shortest path", "kam code likho", or
-  complains about over-engineering, bloat, boilerplate, or unnecessary
-  dependencies. Do NOT use for: simplifying code that already exists (use
-  rcode-trim), shipping in small atomic steps (use rcode-incremental).
-  rcode-lazy is the generative reflex that prevents bloat; rcode-trim removes
-  it after the fact.
+description: "Always-on lazy senior dev lens: simplest solution that works, YAGNI, stdlib first. Use when: \"lazy mode\", \"keep it simple\", \"do less\"."
 argument-hint: "[lite|full|ultra]"
 triggers:
   - "lazy mode"
@@ -147,3 +135,7 @@ Pattern:
 
 - **Reads:** the active request; current intensity level if set this session.
 - **Writes:** nothing — it is a generative lens, not a document producer.
+
+## Boundaries
+
+Do NOT use for: simplifying code that already exists (use rcode-trim), shipping in small atomic steps (use rcode-incremental). rcode-lazy is the generative reflex that prevents bloat; rcode-trim removes it after the fact.

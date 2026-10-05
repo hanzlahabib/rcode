@@ -1,6 +1,6 @@
 ---
 name: rcode-new-project-roadmap
-description: Roadmap subcommand for new-project. Generates PROJECT.md requirements, ROADMAP.md, and the Done signoff after setup and optional research.
+description: "Roadmap subcommand of new-project: writes PROJECT.md requirements, ROADMAP.md and the Done signoff."
 argument-hint: "[--from-research]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

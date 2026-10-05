@@ -1,12 +1,8 @@
 ---
 name: rcode-create-story
 internal: true
-description: >
-  Prepare a dev-ready user story with full implementation context. Activates
-  when the user says "create the next story", "prepare a story", "create
-  story {id}", "write the story for", "get next story ready for dev", or
-  "assemble story context". Do NOT use to execute a story (use
-  rcode-dev-story).
+description: "Prepare a dev-ready user story with full implementation context. Use when: \"create the next story\", \"prepare a story\". Not for executing it."
+disable-model-invocation: true
 triggers:
   # English
   - "create the next story"
@@ -28,7 +24,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 > **Note (experimental, no execution consumer):** the epics/stories/dev-story pipeline this
@@ -68,3 +63,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Story Dependencies Missing
 **Input:** Next story depends on story-003, which isn't done
 **Expected behavior:** Report: "story-{id} depends on story-003 (not yet done). Options: (1) work on story-003 first, (2) skip to next independent story. Which?"
+
+## Boundaries
+
+Do NOT use to execute a story (use rcode-dev-story).

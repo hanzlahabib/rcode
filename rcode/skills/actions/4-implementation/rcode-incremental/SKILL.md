@@ -1,7 +1,7 @@
 ---
 name: rcode-incremental
 internal: true
-description: Ship code in small, atomic, verifiable steps.
+description: "Ship code in small, atomic, verifiable steps."
 triggers:
   - "ship incrementally"
   - "atomic commits"

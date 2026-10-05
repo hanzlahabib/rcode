@@ -1,24 +1,18 @@
 ---
 name: rcode-dev-story
 internal: true
-description: >
-  Execute an approved story file by writing tests and code that fulfill
-  every acceptance criterion. Activates when the user says "dev this story",
-  "implement story {id}", "execute the story", "code the next story", "run
-  dev-story on", or "implement .rcode/phases/{phase}/stories/{file}". Do NOT
-  use without a prepared story file (use rcode-create-story first).
+description: "Execute an approved story file with tests and code for every acceptance criterion. Use when: \"dev this story\", \"implement story {id}\". Needs a story file."
+disable-model-invocation: true
 triggers:
   - "dev this story"
   - "implement story {id}"
   - "execute the story"
   - "code the next story"
-  - "run
-  dev-story on"
+  - "run dev-story on"
   - "implement .rcode/phases/{phase}/stories/{file}"
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -80,3 +74,7 @@ When running as a subagent implementer, report one of:
 ### Edge Case: Spec Compliance Fails Review
 **Input:** Implementation complete but reviewer finds missing AC
 **Expected behavior:** Fix the gap, re-run tests, re-dispatch spec compliance reviewer. Do not proceed to code quality review until spec compliance passes.
+
+## Boundaries
+
+Do NOT use without a prepared story file (use rcode-create-story first).

@@ -1,21 +1,6 @@
 ---
 name: rcode-clone-website
-description: >
-  Reverse-engineer and clone any website pixel-perfectly — extracts assets,
-  exact CSS via getComputedStyle, content section-by-section, and dispatches
-  parallel builder agents in worktrees. Activates when the user says "clone
-  this website", "clone this site", "rebuild this page", "replicate this
-  UI", "pixel-perfect clone", "make exact UI like this", "copy this site",
-  "reverse engineer this site", "build me a clone of", "aisi website banao",
-  "yeh site clone karo", or "exact same UI chahiye like [URL]". Provide the
-  target URL as input. Do NOT use for: creating original designs from scratch
-  (use rcode-create-ux-design with Layla), writing new components from a
-  brief (use rcode-dev-story with Hanzla), inspiration-only references
-  without rebuild intent, or when the user provides a static image/screenshot/
-  mockup with NO live URL (use rcode-ui-phase's image-driven spec extraction
-  instead — it drafts UI-SPEC.md from the image without the overhead of this
-  skill's live-DOM extraction and parallel worktree build pipeline, which
-  requires an actual URL to introspect).
+description: "Reverse-engineer and pixel-clone a website with parallel builder agents. Use when: \"clone this website\", \"pixel-perfect clone\", \"yeh site clone karo\"."
 triggers:
   # English
   - "clone this website"
@@ -89,3 +74,7 @@ Do NOT include: vague status like "mostly done", builders dispatched without spe
 ## Detailed reference
 
 See [`references.md`](references.md) for: the 9 guiding principles, the asset discovery script, the CSS extraction script, the component spec template, the pre-dispatch checklist, and the "what NOT to do" list.
+
+## Boundaries
+
+Do NOT use for: creating original designs from scratch (use rcode-create-ux-design with Layla), writing new components from a brief (use rcode-dev-story with Hanzla), inspiration-only references without rebuild intent, or when the user provides a static image/screenshot/ mockup with NO live URL (use rcode-ui-phase's image-driven spec extraction instead — it drafts UI-SPEC.md from the image without the overhead of this skill's live-DOM extraction and parallel worktree build pipeline, which requires an actual URL to introspect).

@@ -1,6 +1,6 @@
 ---
 name: rcode-editorial-review-structure
-description: Structural editor that proposes cuts, reorganization, and consolidation while preserving.
+description: "Structural editor that proposes cuts, reorganization and consolidation while preserving content. Use when: \"restructure this doc\", \"tighten the structure\"."
 triggers:
   - "editorial review structure"
   - "structural review"

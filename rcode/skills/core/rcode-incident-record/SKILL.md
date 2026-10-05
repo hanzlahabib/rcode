@@ -1,6 +1,6 @@
 ---
 name: rcode-incident-record
-description: Generate a change record + post-mortem in one flow.
+description: "Generate a change record + post-mortem in one flow."
 triggers:
   - "incident record"
   - "post mortem"

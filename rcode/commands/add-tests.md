@@ -1,6 +1,6 @@
 ---
 name: rcode-add-tests
-description: Generate unit and E2E tests for a completed phase based on its SUMMARY.md, CONTEXT.md, and implementation. Classifies ea
+description: "Generate unit and E2E tests for a completed phase from its SUMMARY, CONTEXT and implementation."
 argument-hint: ""
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---

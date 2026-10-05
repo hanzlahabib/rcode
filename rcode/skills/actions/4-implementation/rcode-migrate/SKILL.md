@@ -1,7 +1,7 @@
 ---
 name: rcode-migrate
 internal: true
-description: Plan and execute the move from MVP to production-grade infrastructure without rewriting from.
+description: "Plan and execute the move from MVP to production-grade infrastructure without a rewrite. Use when graduating an MVP to production."
 triggers:
   - "graduate the mvp"
   - "production grade infra"

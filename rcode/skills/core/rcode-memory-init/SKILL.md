@@ -1,15 +1,6 @@
 ---
 name: rcode-memory-init
-description: >
-  Bootstrap the rcode Memory Bank for a project. Copies templates from
-  `rcode/templates/memory/` into `.rcode/memory/`, then asks 5 questions to
-  populate the most-used files (stack, current milestone, primary stakeholder).
-  Activates when the user says "init memory bank", "bootstrap memory",
-  "set up memory bank", "/rcode-memory-init", "create memory bank",
-  "memory bank initialise", "memory bank kaise banayen". Do NOT use for:
-  updating an existing Memory Bank (use rcode-memory-update), regenerating
-  distillates (use rcode-memory-distill), or finding stale entries (use
-  rcode-memory-audit).
+description: "Bootstrap the Memory Bank from templates with 5 questions. Use when: \"init memory bank\", \"create memory bank\", \"memory bank kaise banayen\"."
 triggers:
   # English
   - "init memory bank"
@@ -89,3 +80,7 @@ User wants to "update the stakeholder list". Do not use this skill. Use `rcode-m
 
 - **Reads:** `package.json` (for project name), existing `.rcode/state.json`
 - **Writes:** every file under `.rcode/memory/` (from templates), `.rcode/state.json` (`memory_bank.initialised_at`)
+
+## Boundaries
+
+Do NOT use for: updating an existing Memory Bank (use rcode-memory-update), regenerating distillates (use rcode-memory-distill), or finding stale entries (use rcode-memory-audit).

@@ -1,6 +1,6 @@
 ---
 name: rcode-workstream
-description: Manage parallel workstreams (milestone tracks). Create, switch, list, or complete workstreams in state.json.
+description: "Manage parallel workstreams in state.json: create, switch, list or complete."
 argument-hint: "<subcommand> [--name <name>]"
 allowed-tools:
   - Read

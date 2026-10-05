@@ -1,6 +1,6 @@
 ---
 name: rcode-llm-engineering-best-practices
-description: When the user is designing, reviewing, or debugging anything that calls an LLM — prompt design, system vs. user prompt structure, few-shot vs. zero-shot decisions, tool/function-calling schemas, RAG or retrieval pipelines, context-window budgeting, chunking strategy, or agent orchestration. Also use when the user mentions "prompt engineering," "system prompt," "few-shot examples," "function calling," "tool schema," "RAG pipeline," "context window," "chunking strategy," "the model is hallucinating," "prompt injection," "the LLM ignored my instructions," "output isn't structured right," "agent keeps looping," or "how do I eval this prompt." Use this even for a vague ask like "is this prompt any good?" or "review my agent's tool definitions" — start with the relevant section below. Do NOT use for: rcode's own skill-authoring eval methodology (control-vs-treatment testing of a skill's effect on a subagent) — that lives in `rcode/workflows/scaffold-skill.md` Step 3.5, follow it instead of inventing a new eval process. Do NOT use for async-library-specific correctness bugs (e.g. TanStack Query callback-dropping, stale closures, race conditions in JS/Python async code) — that is `rcode/agents/rules/executor/correctness-hazard-scan.md` Hazard 3's territory, not an LLM-design problem.
+description: "LLM engineering: prompts, tool schemas, RAG, context budgeting, agents. Use when: \"prompt engineering\", \"function calling\", \"how do I eval this prompt\"."
 metadata:
   version: 1.0.0
 ---
@@ -151,3 +151,7 @@ Close with a short **Evals** note: what pressure scenario would prove the fix wo
 **Prompt:** "Our agent's `mutate()` calls to update a record are dropping some `onSuccess` callbacks when the user clicks save twice quickly. Is this an LLM prompt issue?"
 
 **Expected behavior:** Recognize this is NOT an LLM-design problem — it's the async-library footgun already documented as Hazard 3 in [`rcode/agents/rules/executor/correctness-hazard-scan.md`](../../../agents/rules/executor/correctness-hazard-scan.md) (TanStack Query's `mutate()` dropping per-call callbacks under rapid concurrent calls). Point there instead of proposing prompt changes, and don't re-explain the hazard's mechanics here — this skill's scope is LLM prompt/context/tool design, not async JS/Python correctness bugs.
+
+## Boundaries
+
+Do NOT use for: rcode's own skill-authoring eval methodology (control-vs-treatment testing of a skill's effect on a subagent) — that lives in `rcode/workflows/scaffold-skill.md` Step 3.5, follow it instead of inventing a new eval process. Do NOT use for async-library-specific correctness bugs (e.g. TanStack Query callback-dropping, stale closures, race conditions in JS/Python async code) — that is `rcode/agents/rules/executor/correctness-hazard-scan.md` Hazard 3's territory, not an LLM-design problem.

@@ -1,16 +1,7 @@
 ---
 name: rcode-review
 internal: true
-description: >
-  Review code changes from eight parallel angles — three that gather evidence
-  (cold scan, what was removed, call-path trace) and five that judge (reuse,
-  simplification, efficiency, altitude, concurrency) — then verify every finding
-  adversarially before reporting, so false positives never reach the user. Activates when the user says "review this PR", "review
-  this code", "run code review", "do a PR review", "review the diff", "review
-  this branch", "critique this implementation", or "CR" — including when a
-  GitHub PR URL or a PR number is given with no other wording ("review
-  https://github.com/org/repo/pull/792", "review #792"). Do NOT use for
-  documentation review (use rcode-validate-prd or editorial skills).
+description: "Review code changes from eight parallel angles and adversarially verify findings. Use when: \"review this PR\", \"review #792\", a GitHub PR URL. Not for docs."
 triggers:
   # English
   - "review this code"
@@ -37,7 +28,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -66,3 +56,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Diff Too Large
 **Input:** (diff is 2000+ lines)
 **Expected behavior:** Report: "Diff is too large for a single review (2000+ lines). Split into smaller PRs, or pick 3-4 focus areas to review first."
+
+## Boundaries
+
+Do NOT use for documentation review (use rcode-validate-prd or editorial skills).

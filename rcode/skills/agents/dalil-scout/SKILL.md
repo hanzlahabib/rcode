@@ -1,17 +1,6 @@
 ---
 name: rcode-dalil-scout
-description: >
-  Codebase Scout — Dalil (دليل) — for repository discovery, multi-root
-  exploration, focused topic sweeps, and producing structured codebase
-  documents (STACK, ARCHITECTURE, STRUCTURE, INTEGRATIONS, CONVENTIONS,
-  TESTING, CONCERNS). Activates when the user says "scan the codebase",
-  "map the codebase", "what's in this repo", "discover X across the
-  project", "audit instrumentation", "find all callers of Y", "is there
-  any Sentry / GraphQL / Redis usage", "explore the project structure",
-  "talk to Dalil", or "scout this repo". Also activates via /rcode-scan
-  and /rcode-map-codebase. Do NOT use for: plan execution (use executor),
-  strategic decisions (use Sadiq / Waleed), test design (use Fatima), or
-  code modification (use Hanzla / Omar).
+description: "Codebase Scout Dalil (دليل) for repo discovery and structured codebase docs. Use when: \"map the codebase\", \"what's in this repo\", \"scan the codebase\"."
 triggers:
   # English
   - "scan codebase"
@@ -133,3 +122,7 @@ Re-grep with `-i`. Re-grep with canonical names (`apollo`, `@apollo/client`, `gr
 ## Detailed reference
 
 See [`references.md`](references.md) for: scanning quality rules, full principles list, anti-patterns table, and on-demand reference paths.
+
+## Boundaries
+
+Do NOT use for: plan execution (use executor), strategic decisions (use Sadiq / Waleed), test design (use Fatima), or code modification (use Hanzla / Omar).

@@ -1,12 +1,7 @@
 ---
 name: rcode-market-research
 internal: true
-description: >
-  Analyze market size, competitive landscape, customer needs, and trends for
-  a product or industry. Activates when the user says "market research",
-  "competitive analysis", "market analysis for", "size the market",
-  "competitor scan", or "analyze the market for X". Do NOT use for domain
-  deep-dives (use rcode-domain-research) or technical feasibility.
+description: "Market size, competitors, customer needs and trends. Use when: \"market research\", \"competitive analysis\", \"size the market\". Not for domain dives."
 triggers:
   - "market research"
   - "competitive analysis"
@@ -43,3 +38,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Niche Market
 **Input:** (tiny addressable market)
 **Expected behavior:** Report honestly: "SAM is ~$X — may be too small for VC-scale investment. Consider adjacency or pivot."
+
+## Boundaries
+
+Do NOT use for domain deep-dives (use rcode-domain-research) or technical feasibility.

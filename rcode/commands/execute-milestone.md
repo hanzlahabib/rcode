@@ -1,6 +1,6 @@
 ---
 name: rcode-execute-milestone
-description: Execute all phases in the current milestone in dependency order, with verify gates between phases. Closes #738.
+description: "Execute every phase of the current milestone in dependency order with verify gates between phases."
 argument-hint: "[--milestone <name>] [--dry-run] [--skip-verify] [--wave N] [--phase N]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent, TaskCreate, TaskUpdate
 ---

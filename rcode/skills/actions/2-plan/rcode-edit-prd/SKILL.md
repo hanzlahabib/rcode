@@ -1,15 +1,10 @@
 ---
 name: rcode-edit-prd
 internal: true
-description: >
-  Update an existing Product Requirements Document with new sections,
-  revisions, or clarifications. Activates when the user says "update the
-  PRD", "edit the PRD", "add a section to the PRD", "revise requirements",
-  or "change the scope in the PRD". Do NOT use to create a new PRD (use
-  rcode-create-prd) or to validate quality (use rcode-validate-prd).
+description: "Update an existing PRD with new sections or revisions. Use when: \"update the PRD\", \"revise requirements\". Not for new or validation."
+disable-model-invocation: true
 triggers:
-  - "update the
-  PRD"
+  - "update the PRD"
   - "edit the PRD"
   - "add a section to the PRD"
   - "revise requirements"
@@ -17,7 +12,6 @@ triggers:
 user-invocable: true
 ---
 
-<!-- Bridge status: not currently invoked by any rcode/workflows/*.md file (no delegate_to_skill cross-reference exists in either direction). Reachable only via direct phrase-trigger match or explicit @-inclusion. See AUDIT-redundant-work.md finding 3. -->
 @.rcode/references/karpathy-guidelines.md
 
 
@@ -45,3 +39,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Conflicting Updates
 **Input:** "Remove analytics" — but another section still references it
 **Expected behavior:** Scan for references first. Report: "Analytics is also referenced in Section 4.2 and Metrics. Should I remove those too, or keep as related context?" Do NOT silently leave dangling references.
+
+## Boundaries
+
+Do NOT use to create a new PRD (use rcode-create-prd) or to validate quality (use rcode-validate-prd).

@@ -1,14 +1,6 @@
 ---
 name: rcode-deviation-analyzer
-description: >
-  Deviation analyzer for plan deviations, root cause analysis, scope creep,
-  timeline slips, and requirement changes. Generates deviation reports and
-  remediation recommendations. Activates when the user says "analyze deviation",
-  "what deviated", "scope creep", "timeline slip", "why did this phase take longer",
-  "root cause of the delay", "compare planned vs actual", "deviation report",
-  "what changed in this phase", or "talk to the deviation analyzer". Do NOT use
-  for: strategic priority re-evaluation (use Sadiq), scope decisions (use
-  Hussain-PM), or executing remediation (use rcode-remediation-planner).
+description: "Analyze plan deviations and root causes. Use when: \"what deviated\", \"scope creep\", \"planned vs actual\", \"deviation report\"."
 triggers:
   - "analyze deviation"
   - "what deviated"
@@ -77,3 +69,7 @@ Plan quality specialist. You compare planned work (SPRINT.md) against actual exe
 
 **Negative test** — User asks for a go/no-go decision
 → Redirects: "Go/no-go decisions are Sadiq's call. Here's the data: [summary]. Run `/rcode-discuss sadiq` with this analysis."
+
+## Boundaries
+
+Do NOT use for: strategic priority re-evaluation (use Sadiq), scope decisions (use Hussain-PM), or executing remediation (use rcode-remediation-planner).

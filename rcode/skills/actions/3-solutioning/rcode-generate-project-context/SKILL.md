@@ -1,21 +1,13 @@
 ---
 name: rcode-generate-project-context
 internal: true
-description: >
-  Generate a project-context.md file that summarizes project standards,
-  conventions, tech stack, and key patterns for AI agents to reference.
-  Activates when the user says "generate project context", "create context
-  file", "document project conventions", "setup AI context", or "create
-  project-context.md". Do NOT use for full project documentation (use
-  rcode-document-project).
+description: "Generate project-context.md of standards, stack and patterns for AI agents. Use when: \"generate project context\", \"setup AI context\"."
 triggers:
   - "generate project context"
-  - "create context
-  file"
+  - "create context file"
   - "document project conventions"
   - "setup AI context"
-  - "create
-  project-context.md"
+  - "create project-context.md"
 user-invocable: true
 ---
 @.rcode/references/karpathy-guidelines.md
@@ -45,3 +37,7 @@ Follow the instructions in ./workflow.md.
 ### Edge Case: Mixed Conventions
 **Input:** (codebase has both camelCase and snake_case files)
 **Expected behavior:** Report inconsistency: "Mixed conventions detected. Pick one for project-context.md so agents don't compound the mess."
+
+## Boundaries
+
+Do NOT use for full project documentation (use rcode-document-project).

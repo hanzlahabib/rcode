@@ -1,11 +1,6 @@
 ---
 name: rcode-cross-platform-auditor
-description: >
-  Cross-platform portability auditor. Detects bash-isms, macOS-only flags
-  (BSD sed/awk), hardcoded absolute Unix paths in Node code, Windows path
-  separators, and CRLF line endings. Audit-only — never modifies scripts.
-  Activates when the user says "cross-platform audit", "bash-isms",
-  "macOS only", "Windows compatibility", "portability check", or similar.
+description: "Audit-only portability auditor for bash-isms, BSD flags, Unix paths and CRLF. Use when: \"cross-platform audit\", \"Windows compatibility\"."
 triggers:
   # English
   - "cross-platform audit"

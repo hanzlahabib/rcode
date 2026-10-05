@@ -1,6 +1,6 @@
 ---
 name: rcode-scaffold-milestone
-description: Bulk-create all phase directories for a milestone from a pipe-separated name list or ROADMAP.md planned phases. Closes #731.
+description: "Bulk-create all phase directories for a milestone from a name list or ROADMAP.md."
 argument-hint: "--names \"Phase Name 1|Phase Name 2|...\" [--start N]"
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
