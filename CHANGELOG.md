@@ -3,6 +3,13 @@
 All notable changes to rcode are documented here.
 
 ---
+## Unreleased
+
+### Install purposes
+
+The installer now asks what rcode is for and installs a matching bundle (#1108). Four purposes sit on top of the `minimal` core loop: `frontend`, `seo`, `strategy` and `audits`, declared under `purposes:` in `rcode/profiles.yaml`. Pick them in the interactive prompt or with `--purpose seo,frontend`. `--yes`, CI and non-TTY installs are unchanged (`minimal`). The choice is saved as `purposes:` in `.rcode/_config/manifest.yaml` and `update` re-applies it; dropping a purpose lists the removals and needs `--force` (backup first). `--profile full` wins over `--purpose`. Each bundle is measured by `scripts/token-budget.cjs` (about 2.7k to 3.8k tokens of fixed listing with the core loop, against 8.0k for `full`).
+
+---
 ## v4.19.0 (2026-10-05) — the token diet: 19k to 2.1k of fixed context
 
 Every installed command, skill and agent description is listed on every Claude Code turn, and every command inlines its workflow when it runs. rcode paid about 19k tokens before the first user message, and 10-16k more for `/rcode-plan` or `/rcode-execute`. Measured with `scripts/token-budget.cjs` (chars / 4):
