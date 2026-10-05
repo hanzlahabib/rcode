@@ -30,9 +30,9 @@ After the command completes, your project has:
 | Path | What's inside |
 |------|---------------|
 | `.rcode/` | Config, workflows, references, binary CLI (`rcode-tools.cjs`) |
-| `.claude/agents/` | 45 first-class subagents (Sadiq, Waleed, Layla, Fatima, etc.) |
-| `.claude/commands/rcode/` | 117 slash commands (`/rcode-create-prd`, `/rcode-council`, ...) |
-| `.claude/skills/` | 96 phrase-activated skills |
+| `.claude/agents/` | Subagents: 16 in the `minimal` profile, 46 in `full` (Sadiq, Waleed, Layla, Fatima, etc.) |
+| `.claude/commands/` | Slash commands: 39 in `minimal`, 117 in `full` (`/rcode-plan`, `/rcode-council`, ...) |
+| `.claude/skills/` | Phrase-activated skills: 8 in `minimal`, 101 in `full` (some are hidden twins of a command and cost no listing tokens) |
 | `.planning/` | Your project's artifacts land here (councils, plans, sprints, summaries) |
 | `rcode/brain/` | rcode standards pulled from upstream — populated via `rcode-tools brain pull` |
 
@@ -147,16 +147,38 @@ Then **reload your Codex session** and type a command, e.g. `/rcode-add-phase`.
 
 ## Pick your install flavor
 
-### Default — full install, guided mode
+### Default — minimal profile, guided mode
 ```bash
 pnpm dlx @hanzlaa/rcode install
 ```
 
-- All 45 agents, 117 commands, 96 skills
+- Profile: `minimal` (new project installs): 19 agents, 40 commands, 8 skills, about 2.1k tokens of fixed context per turn
 - Mode: `guided` (skills halt at menus for user input)
 - Language: English
 - Model profile: `balanced`
 - IDE: `claude` (Claude Code native)
+
+### Install profiles — `minimal` or `full`
+
+Claude Code lists every installed command, skill and agent description on every turn, so the installer only writes the listed surfaces your core loop needs by default. Workflows, references, the CLI and templates always install, so nothing dangles.
+
+| Profile | Agents | Commands | Skills | Fixed listing cost |
+|---------|--------|----------|--------|--------------------|
+| `minimal` (default) | 19 | 40 | 8 | about 2.1k tokens |
+| `full` | 46 | 117 | 101 | about 8.0k tokens |
+
+`minimal` covers init, new-project, plan, execute, verify-phase, discuss-phase, research-phase, status, next, quick, review, ship, debug, the memory commands, and the agents those workflows spawn. `full` adds the council and persona agents, the SEO and frontend skills, and the rest of the command set. The exact lists live in `rcode/profiles.yaml`.
+
+```bash
+pnpm dlx @hanzlaa/rcode install --profile full      # new install, everything
+pnpm dlx @hanzlaa/rcode install --profile full      # on an existing minimal install: adds the missing files
+pnpm dlx @hanzlaa/rcode install --profile minimal --force   # on an existing full install: lists the files to remove, backs up, then removes them
+```
+
+- The chosen profile is saved as `profile:` in `.rcode/_config/manifest.yaml` and reused by `update`.
+- Installs made before profiles existed have no `profile:` line and are treated as `full`: `update` removes nothing and prints how to switch.
+- `--global` installs default to `full`.
+- Switching down never happens silently: without `--force` it only prints the removal list.
 
 ### Different IDE
 ```bash

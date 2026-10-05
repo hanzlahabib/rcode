@@ -78,6 +78,10 @@ function installSkills(packageRoot, target, options = {}) {
     ? new Set(fs.readdirSync(globalSkillsDir).filter(n => n.startsWith('rcode-')))
     : new Set();
 
+  // Profile allow-list (rcode/profiles.yaml). Only user-facing skills are
+  // restricted: internal skills never reach the listing, so they always install.
+  const allowedSkills = options.allowedSkills || null;
+
   let count = 0;
   let skippedGlobal = 0;
 
@@ -127,6 +131,7 @@ function installSkills(packageRoot, target, options = {}) {
           ? entry.name
           : `rcode-${entry.name}`;
         const internal = isInternalSkill(src);
+        if (!internal && allowedSkills && !allowedSkills.has(destName)) continue;
         const dest = internal
           ? path.join(internalDest, destName)   // internal → .rcode/skills/
           : path.join(skillsDest, destName);     // user-facing → .claude/skills/
