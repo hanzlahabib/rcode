@@ -1,11 +1,12 @@
 {
   "artifact": "rcode/skills/agents/orchestrator/SKILL.md",
   "negativeBoundaries": [
-    "or running the dashboard\n   use Diwan",
-    "single-owner\n  questions where the specialist is obvious",
-    "strategic\n  decisions that need full council discussion  use Majlis"
+    "or running the dashboard  use Diwan",
+    "single-owner questions where the specialist is obvious",
+    "strategic decisions that need full council discussion  use Majlis"
   ],
   "routingKeywords": [
+    "Boundaries",
     "Capabilities",
     "Detailed reference",
     "Examples",

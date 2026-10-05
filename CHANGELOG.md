@@ -3,6 +3,52 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.19.0 (2026-10-05) — the token diet: 19k to 2.1k of fixed context
+
+Every installed command, skill and agent description is listed on every Claude Code turn, and every command inlines its workflow when it runs. rcode paid about 19k tokens before the first user message, and 10-16k more for `/rcode-plan` or `/rcode-execute`. Measured with `scripts/token-budget.cjs` (chars / 4):
+
+| Surface | Before | After |
+|---|---|---|
+| Fixed listing, default install | 19.0k (full) | 2.1k (minimal) |
+| Fixed listing, `--profile full` | 19.0k | 8.0k |
+| `/rcode-plan` | 15.3k | 0.9k |
+| `/rcode-execute` | 13.3k | 0.8k |
+| `/rcode-discuss-phase` | 10.9k | 0.8k |
+| `/rcode-new-project` | 9.4k | 0.7k |
+| `/rcode-autonomous` | 9.8k | 1.1k |
+| `/rcode-do` | 10.4k | 2.7k |
+
+The per-command rows are the cost at invocation (the command plus the workflow file it inlines). The five split workflows now read their step files one at a time as each step is reached, so a run that goes through every step still reads most of the same text, but only when it gets there and never for steps a branch skips.
+
+### Install profiles
+
+New project installs default to `minimal` (40 commands, 8 skills, 19 agents). `--profile full` installs everything and also works as the upgrade path on an existing minimal install. Membership lives in `rcode/profiles.yaml`; the choice is persisted as `profile:` in `.rcode/_config/manifest.yaml`. Installs without a `profile:` line (every earlier version) are treated as `full`, so `update` never removes anything; `--profile minimal` on a full install lists the removals and needs `--force`. `--global` defaults to `full`.
+
+### Shorter descriptions
+
+Skill, command and agent descriptions are single-line quoted scalars of about 160 characters with the highest-signal triggers kept (including Arabic and Hinglish phrases); long Do NOT lists moved to a `## Boundaries` body section. This also fixes 15 skills whose wrapped trigger strings and the unquoted `rcode-debug` description were rejected by Claude Code's frontmatter parser. Skills that duplicate a same-named command set `disable-model-invocation: true` and no longer appear in the listing (see `rcode/skills/SKILLS_INDEX.md`).
+
+### Step-file workflows
+
+`plan`, `execute`, `new-project`, `autonomous` and `discuss-phase` are now short orchestrators with their phases in `rcode/workflows/<name>/steps/`, read only when reached. Content moved verbatim; no behavior change.
+
+### State projections
+
+`rcode-tools state brief | get | field | phase-status` return only the fields a workflow needs instead of the full `state.json` (about 18k tokens); workflows were converted from `state read | python3` pipes. `state read` is unchanged. `state archive-phases` moves completed phases out of the live state file.
+
+### Shared agent core
+
+`rcode/references/agent-core.md` replaces the separate response-style and Karpathy includes in 39 agents, saving about 1.2k tokens per spawn (about 2.5k for planner and executor). `agent-shared-rules.md` was split into a short core and an on-demand extended file. The CLAUDE.md/AGENTS.md block is shorter and points at the core loop directly instead of routing everything through `/rcode-do`.
+
+### SessionStart memory cap
+
+Memory injected at session start is capped at 3200 characters with a pointer to `/rcode-memory-*` for the rest (`SESSION_START_MEMORY_MAX_CHARS`).
+
+### CI token gate
+
+`test/token-budget.test.cjs` and `scripts/token-budget.cjs` fail the build when a profile's fixed listing (minimal 2.45k, full 9.25k) or the direct cost of the top commands exceeds its threshold, and cross-check the source computation against a real install of each profile. The agent-behavior eval normalizer now decodes quoted descriptions before extracting triggers.
+
+---
 ## v4.18.0 (2026-09-28) — an SEO operating system, not another one-shot SEO skill
 
 rcode's SEO suite was eight skills that each ran once and produced a report.
