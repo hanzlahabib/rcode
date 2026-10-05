@@ -62,6 +62,7 @@ const _memSelect = requireLib('memory-select.cjs') || {};
 const selectMemoryChunks  = _memSelect.selectMemoryChunks  || (() => []);
 const formatMemoryContext = _memSelect.formatMemoryContext || (() => '');
 const hasMemory           = _memSelect.hasMemory           || (() => false);
+const capMemoryContext    = _memSelect.capMemoryContext    || ((text) => text);
 
 // lib/memory-drift.cjs is optional at the module-load level: some hook-copy
 // test fixtures deliberately stage a minimal bin/lib/ (only state-reader.cjs)
@@ -1225,7 +1226,8 @@ function sessionStart() {
     if (hasMemory(cwd)) {
       try {
         const selection = selectMemoryChunks(cwd);
-        const additionalContext = formatMemoryContext(selection);
+        // Session start pays this on every session: cap it (SESSION_START_MEMORY_MAX_CHARS).
+        const additionalContext = capMemoryContext(formatMemoryContext(selection));
         if (additionalContext) {
           payload.hookSpecificOutput = {
             hookEventName: 'SessionStart',

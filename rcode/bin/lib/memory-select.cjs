@@ -17,6 +17,14 @@ const { resolveActivePhase } = require('./state-reader.cjs');
 const DEFAULT_BUDGET_TOKENS = 1500;
 const CHARS_PER_TOKEN = 4; // rough chars/4 estimate, consistent with rest of the codebase
 const TRUNCATION_MARKER = '\n…(truncated)';
+/**
+ * Hard cap on memory injected at SessionStart: 3200 chars ≈ 0.8k tokens. The block is
+ * paid on every session (and again after compaction resumes), so it must stay a pointer
+ * to the memory bank rather than a copy of it; anything larger is read on demand.
+ */
+const SESSION_START_MEMORY_MAX_CHARS = 3200;
+const SESSION_START_TRUNCATION_NOTE =
+  '\n…(truncated — memory capped at session start; read .rcode/memory/ for the rest, or run /rcode-memory-audit)';
 const STALE_DISTILLATE_DAYS = 30;
 const STOPWORDS = new Set([
   'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 'were',
@@ -279,7 +287,30 @@ function formatMemoryContext(selection) {
   return lines.join('\n').trim();
 }
 
+/**
+ * Cap an injected memory block to maxChars (note included), cutting at a line
+ * boundary when one exists in the back half so a sentence is not sliced mid-word.
+ */
+// Reserved up front so closing a cut-open code fence never pushes the block over the cap.
+const FENCE_CLOSE = '\n```';
+
+function capMemoryContext(text, maxChars = SESSION_START_MEMORY_MAX_CHARS) {
+  if (!text || text.length <= maxChars) return text;
+  const room = Math.max(0, maxChars - SESSION_START_TRUNCATION_NOTE.length - FENCE_CLOSE.length);
+  let cut = text.slice(0, room);
+  const nl = cut.lastIndexOf('\n');
+  if (nl > room / 2) cut = cut.slice(0, nl);
+  // A cut can land between the halves of an astral character (emoji).
+  if (/[\uD800-\uDBFF]$/.test(cut)) cut = cut.slice(0, -1);
+  cut = cut.trimEnd();
+  // An odd fence count means the cut opened a code block that would swallow the note.
+  if ((cut.match(/^\s*```/gm) || []).length % 2 === 1) cut += FENCE_CLOSE;
+  return cut + SESSION_START_TRUNCATION_NOTE;
+}
+
 module.exports = {
+  SESSION_START_MEMORY_MAX_CHARS,
+  capMemoryContext,
   DEFAULT_BUDGET_TOKENS,
   STALE_DISTILLATE_DAYS,
   distillateStaleWarning,

@@ -182,3 +182,31 @@ test('runs fast — well under 200ms for a realistically sized memory bank', () 
   const elapsed = Date.now() - start;
   assert.ok(elapsed < 200, `selectMemoryChunks took ${elapsed}ms, expected <200ms`);
 });
+
+test('capMemoryContext: leaves small blocks alone, caps big ones at SESSION_START_MEMORY_MAX_CHARS with a pointer', () => {
+  const { capMemoryContext, SESSION_START_MEMORY_MAX_CHARS } = require('../rcode/bin/lib/memory-select.cjs');
+  assert.strictEqual(SESSION_START_MEMORY_MAX_CHARS, 3200);
+  assert.strictEqual(capMemoryContext('short'), 'short');
+  assert.strictEqual(capMemoryContext(null), null);
+  const big = Array.from({ length: 400 }, (_, i) => `line ${i} of the distillate`).join('\n');
+  const capped = capMemoryContext(big);
+  assert.ok(capped.length <= SESSION_START_MEMORY_MAX_CHARS, `got ${capped.length}`);
+  assert.match(capped, /truncated — memory capped at session start; read \.rcode\/memory\//);
+  assert.ok(capped.startsWith('line 0 of the distillate'));
+});
+
+test('session-start hook injects at most SESSION_START_MEMORY_MAX_CHARS of memory', () => {
+  const { SESSION_START_MEMORY_MAX_CHARS } = require('../rcode/bin/lib/memory-select.cjs');
+  const dir = makeTempProject();
+  for (let i = 0; i < 6; i++) {
+    writeMemoryFile(dir, `project/big-${i}.md`, `Memory paragraph ${i} about the stack.\n`.repeat(200));
+  }
+  writeState(dir, { version: '1', project: 'p', current_phase: '1', phases: [{ number: '1', name: 'P1', status: 'in_progress' }] });
+  commit(dir, 'seed big memory');
+  const out = execSync(`node ${JSON.stringify(path.resolve(__dirname, '..', 'rcode', 'bin', 'rcode-hooks.cjs'))} session-start`, {
+    cwd: dir, encoding: 'utf8', input: '{}',
+  });
+  const ctx = JSON.parse(out.trim().split('\n').pop()).hookSpecificOutput.additionalContext;
+  assert.ok(ctx.length <= SESSION_START_MEMORY_MAX_CHARS, `injected ${ctx.length} chars`);
+  assert.match(ctx, /truncated/);
+});
