@@ -39,7 +39,7 @@ const SIDEBAR_STUB_COMMANDS = ['do'];
 const LISTING_THRESHOLDS = { minimal: 2450, full: 9250 };
 // Each purpose bundle is measured as minimal + that purpose alone (what
 // `--purpose <name>` installs). Same rule: measured value plus ~15% headroom.
-const PURPOSE_THRESHOLDS = { frontend: 3100, seo: 3220, strategy: 4330, audits: 3820 };
+const PURPOSE_THRESHOLDS = { frontend: 3100, seo: 3300, strategy: 4330, audits: 3820 };
 const DIRECT_THRESHOLDS = {
   plan: 1070,
   execute: 870,

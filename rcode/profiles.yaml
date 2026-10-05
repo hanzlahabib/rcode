@@ -31,7 +31,7 @@ purposes:
     description: SEO and content (SEO OS, audits, content factory, programmatic and local SEO)
     commands: []
     skills: [rcode-seo-os, rcode-seo-audit, rcode-seo-astro-implementation, rcode-seo-aeo-geo, rcode-seo-content-factory, rcode-seo-content-writer, rcode-seo-growth-orchestrator, rcode-seo-site-builder, rcode-on-page-seo-auditor, rcode-technical-seo-checker, rcode-rank-and-rent-local-seo, rcode-domain-research, rcode-market-research]
-    agents: [rcode-hanzla, rcode-haitham, rcode-noor, rcode-layla]
+    agents: [rcode-hanzla, rcode-haitham, rcode-noor, rcode-layla, rcode-mariam, rcode-zahra]
   strategy:
     description: Product and strategy (council, PRD, architecture, epics and stories, sprint planning)
     commands: [council, discuss, brainstorm, prfaq, create-prd, edit-prd, validate-prd, create-architecture, create-epics-and-stories, create-story, sprint-planning, sprint-status, check-implementation-readiness, correct-course, dev-story, retrospective]

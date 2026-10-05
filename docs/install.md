@@ -188,7 +188,7 @@ pnpm dlx @hanzlaa/rcode install --profile minimal --force   # on an existing ful
 |---------|------|-------------------------------|
 | core (always) | the `minimal` set | about 2.1k tokens |
 | `frontend` | `ui-review`; frontend-design, UX design, browser-verify, theme-system, React/Next.js practices; Haitham, Layla, Zahra, UI auditor | about 2.7k |
-| `seo` | SEO OS, audits, content factory/writer, growth orchestrator, site builder, local SEO, domain and market research; Hanzla, Haitham, Noor, Layla | about 2.8k |
+| `seo` | SEO OS, audits, content factory/writer, growth orchestrator, site builder, local SEO, domain and market research; Hanzla, Haitham, Noor, Layla, Mariam, Zahra | about 2.9k |
 | `strategy` | council, discuss, brainstorm, PRD/architecture/epics/stories, sprint planning, correct-course, retrospective; the persona agents | about 3.8k |
 | `audits` | audit, lens-audit, secure-phase, karpathy-audit, dependency/i18n/cross-platform/observability auditors, QA skills; the security and audit agents | about 3.3k |
 | `full` | everything | about 8.0k |
