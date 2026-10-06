@@ -3,18 +3,7 @@
 All notable changes to rcode are documented here.
 
 ---
-## Unreleased
-
-### Install purposes
-
-The installer now asks what rcode is for and installs a matching bundle (#1108). Four purposes sit on top of the `minimal` core loop: `frontend`, `seo`, `strategy` and `audits`, declared under `purposes:` in `rcode/profiles.yaml`. Pick them in the interactive prompt or with `--purpose seo,frontend`. `--yes`, CI and non-TTY installs are unchanged (`minimal`). The choice is saved as `purposes:` in `.rcode/_config/manifest.yaml` and `update` re-applies it; dropping a purpose lists the removals and needs `--force` (backup first). `--profile full` wins over `--purpose`. Each bundle is measured by `scripts/token-budget.cjs` (about 2.7k to 3.8k tokens of fixed listing with the core loop, against 8.0k for `full`). `--purpose=seo` and `--profile=minimal` are accepted, and a bare `--purpose` is an error instead of a silent no-op.
-
-### Fixed
-
-- The install no longer hangs at "Installing N files…" in a terminal that reports 0 columns (`docker run -t`, some ssh/CI/`script` sessions). The spinner library computed an infinite line count and looped forever when clearing; it now falls back to 80 columns. The hang is present in v4.18.0 and on main before this change.
-
----
-## v4.19.0 (2026-10-05) — the token diet: 19k to 2.1k of fixed context
+## v4.19.0 (2026-10-06) — the token diet: 19k to 2.1k of fixed context, and an installer that asks what you need
 
 Every installed command, skill and agent description is listed on every Claude Code turn, and every command inlines its workflow when it runs. rcode paid about 19k tokens before the first user message, and 10-16k more for `/rcode-plan` or `/rcode-execute`. Measured with `scripts/token-budget.cjs` (chars / 4):
 
@@ -58,6 +47,27 @@ Memory injected at session start is capped at 3200 characters with a pointer to 
 ### CI token gate
 
 `test/token-budget.test.cjs` and `scripts/token-budget.cjs` fail the build when a profile's fixed listing (minimal 2.45k, full 9.25k) or the direct cost of the top commands exceeds its threshold, and cross-check the source computation against a real install of each profile. The agent-behavior eval normalizer now decodes quoted descriptions before extracting triggers.
+
+### Install purposes
+
+The installer now asks what rcode is for and installs a matching bundle (#1108). Four purposes sit on top of the `minimal` core loop: `frontend`, `seo`, `strategy` and `audits`, declared under `purposes:` in `rcode/profiles.yaml`. Pick them in the interactive prompt or with `--purpose seo,frontend`. `--yes`, CI and non-TTY installs are unchanged (`minimal`). The choice is saved as `purposes:` in `.rcode/_config/manifest.yaml` and `update` re-applies it; dropping a purpose lists the removals and needs `--force` (backup first). `--profile full` wins over `--purpose`. Each bundle is measured by `scripts/token-budget.cjs` (about 2.7k to 3.8k tokens of fixed listing with the core loop, against 8.0k for `full`). `--purpose=seo` and `--profile=minimal` are accepted, and a bare `--purpose` is an error instead of a silent no-op.
+
+### Installer fixes
+
+- The install no longer hangs at "Installing N files…" in a terminal that reports 0 columns (`docker run -t`, some ssh/CI/`script` sessions). The spinner library computed an infinite line count and looped forever when clearing; it now falls back to 80 columns. The hang is present in v4.18.0 and earlier.
+- `--purpose=seo` and `--profile=minimal` (the `=` forms) are now honored; previously they were ignored.
+- The published bundle (`dist/rcode.js`) resolved its package root one directory too high, so `rcode install` from an npm install failed to find `rcode/profiles.yaml` (and reported version 0.0.0). The root is now found by walking up to `package.json`, which works from source and from the bundle; a test bundles the module to guard it.
+- `rcode doctor` and `rcode update` no longer report "Agent manifest drift" on a `minimal` install: the expected agents and skills are now the installed profile's (plus purposes), not the whole package.
+
+### Pre-release hygiene
+
+Dangling slash-command hints and `@`-includes were fixed (#1110). The `rcode-fixer` and `rcode-reviewer` agent names now match their files, module manifests were corrected, `rcode doctor` exits 0 on a clean tree, and the cursor mirror was regenerated.
+
+### Upgrading
+
+- Existing installs keep everything on `rcode update`: a manifest with no `profile:` line is treated as `full`, so nothing is removed. Agents renamed in this release (`code-fixer`, `code-reviewer`) stay behind as orphans until you run `rcode install --force` once, which sweeps them.
+- New project installs default to `minimal`. For the old behavior run `rcode install --profile full`, or pick bundles with `--purpose seo,frontend`.
+- To switch an existing install, re-run `rcode install` with `--profile` or `--purpose`; moving to a smaller set lists the removals and needs `--force`.
 
 ---
 ## v4.18.0 (2026-09-28) — an SEO operating system, not another one-shot SEO skill
