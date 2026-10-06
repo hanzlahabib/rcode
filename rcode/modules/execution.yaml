@@ -44,8 +44,7 @@ commands:
   - check-implementation-readiness.md
   - correct-course.md
   - code-review.md
-  - code-review-fix.md
-  - review-adversarial.md
+  - review-fix.md
   - review-edge-case-hunter.md
   - chain.md
   - export-to-github.md

@@ -183,13 +183,15 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
 
 /**
  * Parse a module YAML manifest (rcode/modules/{name}.yaml).
- * Returns { name, requires[], agents[], workflows[], commands[], references[] }.
+ * Returns { name, requires[], agents[], workflows[], commands[], skills[], references[] }.
+ * `skills` names skills (rcode-<dir>); install-skills does not filter by module yet, so
+ * the list documents the module's skills and is validated by test/module-manifests.
  */
 function readModuleManifest(moduleName) {
   const modPath = path.join(SOURCE_ROOT, 'modules', `${moduleName}.yaml`);
   if (!fs.existsSync(modPath)) return null;
   const text = fs.readFileSync(modPath, 'utf8');
-  const mod = { name: moduleName, requires: [], agents: [], workflows: [], commands: [], references: [] };
+  const mod = { name: moduleName, requires: [], agents: [], workflows: [], commands: [], skills: [], references: [] };
   let currentKey = null;
   for (const raw of text.split('\n')) {
     const line = raw.replace(/#.*$/, '').trimEnd();
@@ -199,7 +201,7 @@ function readModuleManifest(moduleName) {
     if (keyMatch && !line.startsWith('  ') && !line.startsWith('-')) {
       const key = keyMatch[1];
       const val = line.slice(line.indexOf(':') + 1).trim();
-      if (['agents', 'workflows', 'commands', 'references', 'requires'].includes(key)) {
+      if (['agents', 'workflows', 'commands', 'skills', 'references', 'requires'].includes(key)) {
         currentKey = key;
         if (val && val !== '[]') {
           // inline single value

@@ -5,8 +5,9 @@ requires:
   - core
 agents: []
 workflows: []
-commands:
-  - nextjs-best-practices
-  - react-best-practices
-  - llm-engineering-best-practices
+commands: []
+skills:
+  - rcode-nextjs-best-practices
+  - rcode-react-best-practices
+  - rcode-llm-engineering-best-practices
 references: []
