@@ -112,9 +112,8 @@ test('every workflow subagent_type= reference resolves to an agent file', () => 
     }
   }
   // subagent_type is resolved at runtime by an agent's declared `name:`
-  // frontmatter field, not its filename (e.g. rcode-code-reviewer.md
-  // declares `name: rcode-reviewer`) — so a valid reference can match
-  // either the filename stem or the file's own declared name.
+  // frontmatter field, not its filename; a valid reference can match either
+  // (the two are pinned equal by test/agent-name-parity.test.cjs).
   function namesInDir(dir) {
     const names = new Set();
     if (!fs.existsSync(dir)) return names;

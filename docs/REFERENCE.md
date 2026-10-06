@@ -237,8 +237,8 @@ Spawned by specific workflows for targeted analysis.
 |-------|-------------|------------|
 | `rcode-codebase-mapper` | Explores codebase, writes structured analysis documents. Focus areas: tech, arch, quality, concerns | `/rcode-map-codebase` |
 | `rcode-debugger` | Investigates bugs using scientific method, manages debug sessions, handles checkpoints | `/rcode-debug` |
-| `rcode-code-reviewer` | Code quality assessment, bug detection, security issues, standards validation | `/rcode-review` |
-| `rcode-code-fixer` | Applies code review findings, implements style fixes, refactors for maintainability | `/rcode-review-fix`, `/rcode-audit-fix` |
+| `rcode-reviewer` | Code quality assessment, bug detection, security issues, standards validation | `/rcode-review` |
+| `rcode-fixer` | Applies code review findings, implements style fixes, refactors for maintainability | `/rcode-review-fix`, `/rcode-audit-fix` |
 | `rcode-integration-checker` | Verifies cross-phase integration and E2E flows | `/rcode-audit-milestone` |
 | `rcode-nyquist-auditor` | Fills validation gaps, generates missing tests, verifies coverage | `/rcode-validate-phase` |
 | `rcode-security-auditor` | Comprehensive security audit, compliance verification, posture assessment | `/rcode-secure-phase` |

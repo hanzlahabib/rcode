@@ -348,16 +348,16 @@ tactical_agents:
     authority_level: analysis
     description: Analyzes phase assumptions with evidence from codebase
 
-  - id: rcode-code-fixer
+  - id: rcode-fixer
     name: Code Fixer
-    file_path: rcode/agents/rcode-code-fixer.md
+    file_path: rcode/agents/rcode-fixer.md
     role: Code Fix Specialist
     authority_level: implementation
     description: Applies code review findings, implements style fixes, and resolves code quality issues identified by reviewers
 
-  - id: rcode-code-reviewer
+  - id: rcode-reviewer
     name: Code Reviewer
-    file_path: rcode/agents/rcode-code-reviewer.md
+    file_path: rcode/agents/rcode-reviewer.md
     role: Code Review Specialist
     authority_level: quality
     description: Architectural review, code quality assessment, test coverage analysis, and best-practices validation

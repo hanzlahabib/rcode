@@ -106,10 +106,8 @@ function workflowFiles(wf) {
 
 test('every agent a minimal command spawns unconditionally is in the minimal profile', () => {
   const { minimal } = loadProfiles();
-  // Agents register under their frontmatter `name`, which differs from the file
-  // name for rcode-code-reviewer.md (name: rcode-reviewer).
-  // rcode-code-fixer is also spawned by its file name (pre-existing mismatch with
-  // `name: rcode-fixer`), so both spellings count as installed.
+  // Agents register under their frontmatter `name`; test/agent-name-parity
+  // pins that to the file name, so either spelling counts as installed.
   const installedNames = new Set(
     [...minimal.agents].map((a) => fs.readFileSync(path.join(REPO, 'rcode', 'agents', `${a}.md`), 'utf8').match(/^name:\s*(\S+)/m)[1]),
   );
