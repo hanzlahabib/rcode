@@ -14,6 +14,22 @@
 
 const fs = require('fs');
 const path = require('path');
+const { readPersistedProfile } = require('./install-profile.cjs');
+const { effectiveProfiles, readPersistedPurposes } = require('./install-purpose.cjs');
+
+/**
+ * A `minimal` install (plus any purposes) deliberately omits most agents and
+ * skills, so the expected set for `cwd` is the profile's allow-list, not the
+ * whole package. Full and legacy (no `profile:` line) installs expect everything.
+ */
+function restrictToInstalledProfile(manifest, cwd, sourceRoot) {
+  if (readPersistedProfile(cwd) !== 'minimal') return manifest;
+  const def = effectiveProfiles(readPersistedPurposes(cwd), sourceRoot).minimal;
+  return {
+    agents: new Set([...manifest.agents].filter((n) => def.agents.has(`rcode-${n}`))),
+    actions: new Set([...manifest.actions].filter((n) => def.skills.has(n))),
+  };
+}
 
 /**
  * Read the expected skill set from the package source.
@@ -27,7 +43,7 @@ const path = require('path');
  *   nested rcode/skills/actions/research/ children (flattened — matches how
  *   installSkills() copies them).
  */
-function readPackageManifest(packageRoot) {
+function readPackageManifest(packageRoot, cwd = null) {
   const skillsRoot = path.join(packageRoot, 'rcode/skills');
   const manifest = { agents: new Set(), actions: new Set() };
 
@@ -79,7 +95,7 @@ function readPackageManifest(packageRoot) {
   }
   walkActions(path.join(skillsRoot, 'actions'));
 
-  return manifest;
+  return cwd ? restrictToInstalledProfile(manifest, cwd, path.join(packageRoot, 'rcode')) : manifest;
 }
 
 /**
@@ -137,7 +153,7 @@ function verifyClaudeInstall(cwd, packageRoot, options = {}) {
   // real ~/.claude/. Tests can pass { globalFallback: false } to disable it.
   // Default remains true to preserve the runtime behavior introduced in #664.
   const globalFallback = options.globalFallback !== false;
-  const pkg = readPackageManifest(packageRoot);
+  const pkg = readPackageManifest(packageRoot, cwd);
   const agentsDir = path.join(cwd, '.claude/agents');
   const skillsDir = path.join(cwd, '.claude/skills');
 
@@ -207,7 +223,7 @@ function verifyClaudeInstall(cwd, packageRoot, options = {}) {
  * agent set the Claude install uses.
  */
 function verifyRulesInstall(editor, cwd, packageRoot) {
-  const pkg = readPackageManifest(packageRoot);
+  const pkg = readPackageManifest(packageRoot, cwd);
   const base = editor === 'cursor' ? '.cursor/rules' : '.windsurf/rules';
   const agentsDir = path.join(cwd, base, 'rcode', 'agents');
 
@@ -229,7 +245,7 @@ function verifyRulesInstall(editor, cwd, packageRoot) {
  * .antigravity/agents/. Compare against the package agent set.
  */
 function verifyAntigravityInstall(cwd, packageRoot) {
-  const pkg = readPackageManifest(packageRoot);
+  const pkg = readPackageManifest(packageRoot, cwd);
   const agentsDir = path.join(cwd, '.antigravity/rcode/agents');
   const installed = new Set();
   if (fs.existsSync(agentsDir)) {

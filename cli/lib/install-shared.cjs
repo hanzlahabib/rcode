@@ -7,6 +7,7 @@
  * ok/fail/warn/info/dim/bold formatting used throughout the installer.
  */
 
+const fs = require('fs');
 const path = require('path');
 const pc = require('picocolors');
 const { createSpinner: createNanoSpinner } = require('nanospinner');
@@ -34,8 +35,19 @@ function createSpinner(text, opts = {}) {
   return createNanoSpinner(text, { ...opts, stream });
 }
 
-// __dirname here is <package>/cli/lib — go up two levels to reach package root.
-const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+// Walk up to the nearest package.json instead of a fixed number of `..`: this
+// module lives at <package>/cli/lib from source but is inlined into
+// <package>/dist/rcode.js in the published bundle, where a fixed hop lands
+// outside the package and every rcode/ asset lookup fails.
+function findPackageRoot(dir) {
+  const { root } = path.parse(dir);
+  while (dir !== root) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) return dir;
+    dir = path.dirname(dir);
+  }
+  throw new Error('rcode: could not locate package root from ' + __dirname);
+}
+const PACKAGE_ROOT = findPackageRoot(__dirname);
 const SOURCE_ROOT = path.join(PACKAGE_ROOT, 'rcode');
 
 module.exports = {

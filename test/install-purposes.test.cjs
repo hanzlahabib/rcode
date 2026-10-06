@@ -460,3 +460,39 @@ test('--purpose=seo and --profile=minimal forms are honored, a bare --purpose is
   assert.strictEqual(bare.status, 1);
   assert.match(bare.stderr + bare.stdout, /Empty --purpose list.*frontend, seo, strategy, audits/);
 });
+
+// doctor/update compare the install to the package; a minimal (+purposes)
+// install must be measured against its own allow-list, not the whole package.
+test('manifest verification expects only the installed profile, so a minimal install shows no drift', () => {
+  const { verifyInstall } = require(path.join(REPO, 'cli', 'lib', 'manifest.cjs'));
+  for (const args of [[], ['--purpose', 'seo,frontend']]) {
+    const dir = tmp();
+    assert.strictEqual(install(dir, [...args, '--local-only']).status, 0);
+    const home = path.join(dir, '_home');
+    const prev = process.env.HOME;
+    process.env.HOME = home; // keep the global fallback out of the comparison
+    try {
+      const { hasDrift, reports } = verifyInstall(dir, REPO, ['claude']);
+      assert.strictEqual(hasDrift, false, JSON.stringify(reports.map((r) => [r.kind, r.missing, r.extra])));
+    } finally {
+      process.env.HOME = prev;
+    }
+  }
+});
+
+// dist/rcode.js inlines cli/lib/*, so __dirname there is <package>/dist, not
+// <package>/cli/lib; a fixed `..` hop resolved PACKAGE_ROOT outside the package
+// and every installer asset lookup failed in the published build.
+test('install-shared resolves the package root from inside a bundle', () => {
+  const { buildSync } = require('esbuild');
+  const pkg = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'rcode-bundle-')));
+  fs.writeFileSync(path.join(pkg, 'package.json'), '{"name":"x"}');
+  const out = path.join(pkg, 'dist', 'b.js');
+  buildSync({
+    stdin: { contents: `console.log(require('./cli/lib/install-shared.cjs').PACKAGE_ROOT)`, resolveDir: REPO },
+    bundle: true, platform: 'node', outfile: out, logLevel: 'silent',
+    external: ['node:*', 'fs', 'path', 'os', 'readline', 'tty', 'util', 'child_process', 'crypto', 'events', 'stream', 'url', 'process'],
+  });
+  const r = spawnSync(process.execPath, [out], { encoding: 'utf8' });
+  assert.strictEqual(r.stdout.trim(), pkg, r.stderr);
+});
