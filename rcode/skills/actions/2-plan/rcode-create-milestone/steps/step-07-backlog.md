@@ -4,7 +4,7 @@
 
 ## STEP GOAL
 
-Capture everything that is **not** in M1..Mn but was considered. Use rcode's `999.x` parking-lot convention so items can be promoted later via `/rcode-plant-seed` or `/rcode-review-backlog`.
+Capture everything that is **not** in M1..Mn but was considered. Use rcode's `999.x` parking-lot convention so items can be promoted later via `/rcode-plant-seed` (full profile).
 
 ## MANDATORY RULES
 
@@ -24,7 +24,7 @@ Sources:
 ### 2. Number using 999.x convention
 
 ```
-Backlog (999.x — promotable with /rcode-plant-seed):
+Backlog (999.x — promotable via plant-seed):
 
   999.1  Cross-post to LinkedIn          — deferred: requires LinkedIn OAuth (M2+)
   999.2  Auto-DM feature                 — deferred: abuse risk, needs rate-limit design

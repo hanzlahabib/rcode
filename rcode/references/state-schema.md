@@ -305,7 +305,7 @@ Documents every top-level field in `state.json`, used by rcode workflows for ses
 ### `model_profile`
 **Type:** string  
 **Example:** `"balanced"` (options: `quality`, `balanced`, `budget`, `inherit`)  
-**Written by:** `/rcode-set-profile`  
+**Written by:** `rcode set-profile` (CLI)  
 **Purpose:** Model selection for council agents. Affects token spend and quality.
 
 ---

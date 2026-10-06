@@ -371,7 +371,7 @@ Load config from `{project-root}/.rcode/config.json` and resolve:
     1. Review the comprehensive story in {{story_file}}
     2. Run dev agents `dev-story` for optimized implementation
     3. Run `code-review` when complete (auto-marks done)
-    4. Optional: If Test Architect module installed, run `/rcode-tea:automate` after `dev-story` to generate guardrail tests
+    4. Optional: run `/rcode-add-tests` (audits purpose or full profile) after `dev-story` to generate guardrail tests
 
     **The developer now has everything needed for flawless implementation!**
   </output>

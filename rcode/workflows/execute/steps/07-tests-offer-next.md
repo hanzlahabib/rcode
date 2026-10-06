@@ -82,7 +82,7 @@ Read and follow `.rcode/workflows/transition.md`, passing through the `--auto` f
 
 **STOP. Do not auto-advance. Do not execute transition. Do not plan next phase. Present options to the user and wait.**
 
-**IMPORTANT: There is NO `/rcode-transition` command. Never suggest it. The transition workflow is internal only.**
+**IMPORTANT: There is NO transition command. Never suggest it. The transition workflow is internal only.**
 
 ```
 ## ✓ Phase {X}: {Name} Complete
@@ -95,7 +95,7 @@ Read and follow `.rcode/workflows/transition.md`, passing through the `--auto` f
 ```
 
 **Next step — paste this to verify:**
-> /rcode-verify {X}
+> /rcode-verify-phase {X}
 
 Only suggest the commands listed above. Do not invent or hallucinate command names.
 </step>

@@ -308,8 +308,8 @@ Always at end of major completions.
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/rcode-alternative-1` — description
-- `/rcode-alternative-2` — description
+- `/rcode-<command>` — description
+- `/rcode-<other-command>` — description
 
 ───────────────────────────────────────────────────────────────
 ```

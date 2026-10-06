@@ -45,7 +45,7 @@ rcode's frontend stack: **React 18+, Next.js 15 App Router, TypeScript strict, T
 
 Invoking this skill directly (triggers like "talk to Haitham", "build this UI") loads Haitham's persona instructions **inline into the current session** — no isolated context, no `Task()` call. This is structured roleplay, not a spawned subagent.
 
-For genuine isolated Task-tool dispatch, Haitham is separately registered as a Task-dispatchable agent (`rcode-haitham`, see `rcode/agents/rcode-haitham.md`) and is spawned for real, isolated-context dispatch by `/rcode-council`. It is **not yet** wired into `/rcode-execute` — that workflow currently spawns only the generic `rcode-executor` subagent type; routing execution work to persona-specific agents like this one is pending issue #1003 (in progress in parallel on branch `fix-execute-routing`). Unlike Hanzla, there is currently no `@haitham` shortcut in `do.md`'s `@persona CODE` alias table.
+For genuine isolated Task-tool dispatch, Haitham is separately registered as a Task-dispatchable agent (`rcode-haitham`, see `rcode/agents/rcode-haitham.md`) and is spawned for real, isolated-context dispatch by `/rcode-council` (strategy purpose or full profile). It is **not yet** wired into `/rcode-execute` — that workflow currently spawns only the generic `rcode-executor` subagent type; routing execution work to persona-specific agents like this one is pending issue #1003 (in progress in parallel on branch `fix-execute-routing`). Unlike Hanzla, there is currently no `@haitham` shortcut in `do.md`'s `@persona CODE` alias table.
 
 ## Identity
 
