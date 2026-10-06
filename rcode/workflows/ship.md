@@ -246,7 +246,7 @@ Omit this section entirely when VERIFICATION.md status is a clean `passed` with 
 </step>
 
 <step name="create_pr">
-**Before creating the PR, apply `@rcode/references/github-comment-style.md` to `${PR_BODY}`** —
+**Before creating the PR, apply `@.rcode/references/github-comment-style.md` to `${PR_BODY}`** —
 no em-dashes, no gates/CI block, no git-process talk, no AI attribution. Run the
 self-check greps in that reference; they must print nothing.
 

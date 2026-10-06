@@ -148,8 +148,8 @@ IS_GAP_CLOSURE_PHASE=$([[ "$PHASE_NUMBER" == *.* ]] && echo true || echo false)
 ${IS_GAP_CLOSURE_PHASE === 'true' ? '@.rcode/references/execute-close-parent-artifacts.md' : ''}
 </step>
 
-@rcode/workflows/execute-regression-gates.md
+@.rcode/workflows/execute-regression-gates.md
 
-@rcode/workflows/execute-verify-phase-goal.md
+@.rcode/workflows/execute-verify-phase-goal.md
 
 Next: Read `.rcode/workflows/execute/steps/06-uat-roadmap.md` before starting it (skip it if its Read-when condition is false).

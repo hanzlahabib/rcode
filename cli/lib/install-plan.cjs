@@ -13,6 +13,9 @@ const fg = require('fast-glob');
 const { SOURCE_ROOT } = require('./install-shared.cjs');
 const { getPathsForIde } = require('./install-ide.cjs');
 
+// `@.rcode/skills/agents/<dir>/SKILL.md` as written in an agent definition.
+const PERSONA_INCLUDE_RE = /^@\.rcode\/skills\/agents\/([\w-]+)\/SKILL\.md\s*$/gm;
+
 /**
  * Walk a directory and return absolute file paths. Uses fast-glob so
  * symlink cycles are never followed and patterns can be excluded via
@@ -149,6 +152,23 @@ function buildInstallPlan(ide = 'claude', target = process.cwd()) {
       ? `rcode-${baseName}${ext}`
       : baseName + ext;
     plan.push({ src: f, rel: path.join(relCommands, path.dirname(rel), outName), ide, cursor: ide === 'cursor' });
+  }
+
+  // Persona skills an agent @-includes. The skill itself installs as
+  // .claude/skills/rcode-<name>/, which a global install can skip and a profile
+  // can omit, so the agent's include points at a copy that always travels with
+  // the agent: .rcode/skills/agents/<dir>/SKILL.md. `personaOf` ties the entry
+  // to its agent so a profile that drops the agent drops the persona too.
+  for (const f of walkFiles(path.join(SOURCE_ROOT, 'agents'))) {
+    if (!f.endsWith('.md') || f.startsWith(path.join(SOURCE_ROOT, 'agents', 'rules') + path.sep)) continue;
+    const text = fs.readFileSync(f, 'utf8');
+    for (const m of text.matchAll(PERSONA_INCLUDE_RE)) {
+      plan.push({
+        src: path.join(SOURCE_ROOT, 'skills', 'agents', m[1], 'SKILL.md'),
+        rel: path.join('.rcode', 'skills', 'agents', m[1], 'SKILL.md'),
+        personaOf: f,
+      });
+    }
   }
 
   // Agent rules (on-demand reference files) — copied to .rcode/agents-rules/

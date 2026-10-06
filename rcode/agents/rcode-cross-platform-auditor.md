@@ -6,7 +6,7 @@ color: yellow
 ---
 
 @.rcode/references/agent-core.md
-@rcode/skills/agents/rcode-cross-platform-auditor/SKILL.md
+@.rcode/skills/agents/rcode-cross-platform-auditor/SKILL.md
 
 ## Boundaries
 

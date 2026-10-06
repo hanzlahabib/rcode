@@ -7,8 +7,8 @@ This step file was split verbatim out of `workflows/autonomous.md`. Any `@path` 
 @.rcode/references/output-format.md
 @.rcode/references/workstream-flag.md
 @.rcode/references/output-realism.md
-@rcode/brain/best-practices/no-autonomous-bypass.md
-@rcode/brain/best-practices/state-sync-rule.md
+@.rcode/brain/best-practices/no-autonomous-bypass.md
+@.rcode/brain/best-practices/state-sync-rule.md
 @.rcode/references/karpathy-guidelines.md
 
 Read all files referenced by the invoking prompt's execution_context before starting.

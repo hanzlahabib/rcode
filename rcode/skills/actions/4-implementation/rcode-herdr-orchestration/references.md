@@ -64,7 +64,7 @@ existing pending P1/P2 items ──┘                    ▲
      `gh pr merge`, `gh issue create`, `gh issue comment`, or `gh api` with a non-GET method."
      Forbidding pushes alone is not enough — an agent can post a comment or open a PR without
      ever pushing, and that reaches other humans instantly. The orchestrator posts to GitHub,
-     after the user approves the text (see `@rcode/references/github-comment-style.md`).
+     after the user approves the text (see `@.rcode/references/github-comment-style.md`).
    - "Keep scratch notes (REPLY.md, STATUS.md, NOTES.md) in the scratchpad dir, never committed
      to the branch — they end up in the PR diff."
 5. **End the turn with ScheduleWakeup. Always.**

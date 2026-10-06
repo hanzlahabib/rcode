@@ -7,7 +7,7 @@ The agent stub holds the role definition, critical rules, constraints, and
 @-include list.
 
 **Calibration:** follow the Calibration discipline section of
-`@rcode/references/agent-shared-rules.md`. Reporting a gap the evidence does not
+`@.rcode/references/agent-shared-rules.md`. Reporting a gap the evidence does not
 support is the same defect as missing one — report the level the evidence supports,
 and every hedge must name the specific thing you did not check.
 

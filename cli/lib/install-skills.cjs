@@ -34,9 +34,16 @@ function installBrainScaffold(packageRoot, target) {
   // Also pre-seed the best-practices subfolder from the package's
   // rcode/skills/_shared/ so a fresh install has working brain content
   // immediately, even before brain pull runs against real upstream URLs.
-  const sharedSrc = path.join(packageRoot, 'rcode', 'skills', '_shared');
-  if (fs.existsSync(sharedSrc)) {
-    const bpDest = path.join(destDir, 'best-practices');
+  // Both sources feed .rcode/brain/best-practices/: _shared holds the rules the
+  // skills cite, brain/best-practices holds in-tree standards the agents
+  // @-include (no-theoretical-suggestions.md has no _shared twin). First copy
+  // wins, so _shared keeps precedence for names present in both.
+  const bpDest = path.join(destDir, 'best-practices');
+  for (const sharedSrc of [
+    path.join(packageRoot, 'rcode', 'skills', '_shared'),
+    path.join(packageRoot, 'rcode', 'brain', 'best-practices'),
+  ]) {
+    if (!fs.existsSync(sharedSrc)) continue;
     fs.mkdirSync(bpDest, { recursive: true });
     for (const entry of fs.readdirSync(sharedSrc, { withFileTypes: true })) {
       if (entry.isFile() && entry.name.endsWith('.md')) {

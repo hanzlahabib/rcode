@@ -17,7 +17,7 @@ State the central question this RESEARCH.md answers. Keep it tight — one or tw
 
 ## Sources
 
-Only cite material you actually fetched in this session. WebSearch snippets are not sufficient evidence. See [`@rcode/skills/_shared/research-citation-rule.md`](../skills/_shared/research-citation-rule.md).
+Only cite material you actually fetched in this session. WebSearch snippets are not sufficient evidence. See [`@.rcode/brain/best-practices/research-citation-rule.md`](../skills/_shared/research-citation-rule.md).
 
 | # | Source | Why it matters |
 |---|--------|----------------|
