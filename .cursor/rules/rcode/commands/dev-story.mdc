@@ -1,6 +1,6 @@
 ---
 name: rcode-dev-story
-description: Wrap a STORY.md file for AI-coder execution. Produces explicit file paths, context, and checklist. Gated by checklist-story-draft.md entry.
+description: "Wrap a STORY.md for AI-coder execution with explicit file paths, context and checklist."
 argument-hint: "<STORY.md>"
 allowed-tools: Read, Write, Bash, Glob
 ---

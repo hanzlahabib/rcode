@@ -1,6 +1,6 @@
 ---
 name: rcode-review-fix
-description: Auto-fix issues found by code review.
+description: "Auto-fix issues found by code review."
 argument-hint: "<phase> [--all] [--auto]"
 allowed-tools:
   - Read

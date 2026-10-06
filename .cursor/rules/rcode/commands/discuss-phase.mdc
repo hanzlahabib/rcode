@@ -1,6 +1,6 @@
 ---
 name: rcode-discuss-phase
-description: Gather context through adaptive questioning before sprint planning. Creates CONTEXT.md with decisions, discretion areas, deferred ideas.
+description: "Gather phase context through adaptive questioning and write CONTEXT.md before planning."
 argument-hint: "<phase-number> [--auto] [--chain]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

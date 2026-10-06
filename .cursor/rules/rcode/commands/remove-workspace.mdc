@@ -1,6 +1,6 @@
 ---
 name: rcode-remove-workspace
-description: Remove a workspace and clean up its artifacts — no recovery
+description: "Remove a workspace and clean up its artifacts — no recovery"
 argument-hint: "<workspace-name> [--archive] [--force]"
 allowed-tools:
   - Read

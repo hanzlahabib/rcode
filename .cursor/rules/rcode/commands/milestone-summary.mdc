@@ -1,6 +1,6 @@
 ---
 name: rcode-milestone-summary
-description: Generate human-readable summary of all milestone phases, decisions, and outcomes
+description: "Generate human-readable summary of all milestone phases, decisions, and outcomes"
 argument-hint: "[--format=markdown|pdf] [--include-decisions]"
 allowed-tools:
   - Read

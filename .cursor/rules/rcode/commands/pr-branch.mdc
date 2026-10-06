@@ -1,6 +1,6 @@
 ---
 name: rcode-pr-branch
-description: "Create a clean PR branch that strips all rcode planning artifacts (.planning/, SPRINT.md, SUMMARY.md, STATE.md). Reviewers see only code changes. Use before /rcode-ship when you want a clean git history in the PR."
+description: "Create a clean PR branch without rcode planning artifacts so reviewers see only code. Use before /rcode-ship."
 argument-hint: "[<base-branch>]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

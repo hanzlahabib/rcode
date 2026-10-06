@@ -1,12 +1,11 @@
 ---
 name: rcode-assumptions-analyzer
-description: Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode.
+description: "Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode."
 tools: Read, Bash, Grep, Glob
 color: cyan
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/assumptions-analyzer-playbook.md
 
 <role>

@@ -1,6 +1,6 @@
 ---
 name: rcode-sprint-status
-description: Show current sprint progress — stories, points, velocity, burndown. Quick view of where the sprint stands.
+description: "Show sprint progress: stories, points, velocity and burndown."
 argument-hint: "[--sprint <NN.S>]"
 allowed-tools:
   - Bash

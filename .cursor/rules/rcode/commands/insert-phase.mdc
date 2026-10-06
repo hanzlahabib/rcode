@@ -1,6 +1,6 @@
 ---
 name: rcode-insert-phase
-description: Insert a decimal phase between integer phases without renumbering subsequent phases. Useful for urgent work discovered mid-milestone.
+description: "Insert a decimal phase between integer phases without renumbering later ones."
 argument-hint: "<N.M> <name>"
 allowed-tools:
   - Read

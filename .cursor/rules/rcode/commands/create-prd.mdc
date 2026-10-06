@@ -1,6 +1,6 @@
 ---
 name: rcode-create-prd
-description: "Create a Product Requirements Document from scratch through guided facilitation. Use when starting a new project or feature that needs a PRD before architecture or phases."
+description: "Create a Product Requirements Document from scratch through guided facilitation."
 argument-hint: "[topic]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

@@ -1,6 +1,6 @@
 ---
 name: rcode-scaffold-skill
-description: "Scaffold a new compliant SKILL.md file for a rcode role. Eliminates the friction of finding the right folder, copying an existing skill, and chasing 5-component compliance. Use when adding a new role-specific skill."
+description: "Scaffold a new compliant SKILL.md for an rcode role in the right folder."
 argument-hint: "--role <role> --name <skill-name>"
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---

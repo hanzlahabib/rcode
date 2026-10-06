@@ -86,6 +86,14 @@ For each task in sequence:
      This enables resume-work to see progress if executor crashes
    - Continue to next
 
+### Step 4.5: Correctness Hazard Self-Audit
+If this plan's diff touched async code, shared/mutable state, or a
+third-party library's async API, read
+`.rcode/agents-rules/executor/correctness-hazard-scan.md` and run the scan
+BEFORE Summary Creation — not after, and not left for PR review. Fix any
+hazard found under Deviation Rule 1 and note it in SUMMARY.md deviations.
+Skip this step entirely for plans that never touched those surfaces.
+
 ### Step 5: Summary Creation (Pattern A only)
 After all auto tasks complete:
 1. Create SUMMARY.md at `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`

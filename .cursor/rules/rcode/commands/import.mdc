@@ -1,6 +1,6 @@
 ---
 name: rcode-import
-description: Ingest external plans with conflict detection against project decisions
+description: "Ingest external plans with conflict detection against project decisions"
 argument-hint: "--from <path>"
 allowed-tools:
   - Read

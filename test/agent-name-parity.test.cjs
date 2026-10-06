@@ -58,3 +58,12 @@ test('every subagent_type spawned by shipped workflows/commands/skills is a regi
   for (const d of ['workflows', 'commands', 'skills', 'references', 'agents']) walk(path.join(REPO, 'rcode', d));
   assert.deepEqual(unknown, []);
 });
+
+test('the tracked .cursor dogfood mirror carries exactly the agents in rcode/agents (doctor drift)', () => {
+  // `rcode doctor` run in this repo compares .cursor/rules/rcode/agents with rcode/agents; a mirror
+  // refreshed before an agent was added reports "missing: <agent>" although the installer is fine.
+  const mirror = path.join(REPO, '.cursor', 'rules', 'rcode', 'agents');
+  const have = fs.readdirSync(mirror).filter((f) => /^rcode-.*\.mdc$/.test(f)).map((f) => f.replace(/\.mdc$/, ''));
+  const want = agentFiles.map((f) => f.replace(/\.md$/, ''));
+  assert.deepStrictEqual(have.sort(), want.sort());
+});

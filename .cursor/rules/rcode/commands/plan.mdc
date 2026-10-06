@@ -1,6 +1,6 @@
 ---
 name: rcode-plan
-description: Convert council follow-ups or task descriptions into executable SPRINT.md files. Spawns rcode-planner to produce structured plans that /rcode-execute can run.
+description: "Turn council follow-ups or a task description into executable SPRINT.md files via rcode-planner."
 argument-hint: "<list | show <id> | <description>> [--phase <name>] [--output <dir>]"
 allowed-tools: Read, Write, Glob, Grep, Bash, Agent
 ---

@@ -1,6 +1,6 @@
 ---
 name: rcode-forensics
-description: Diagnose incomplete executions and stuck states — show timeline of what broke and how to resume
+description: "Diagnose incomplete executions and stuck states — show timeline of what broke and how to resume"
 argument-hint: ""
 allowed-tools:
   - Read

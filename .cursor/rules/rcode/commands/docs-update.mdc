@@ -1,6 +1,6 @@
 ---
 name: rcode-docs-update
-description: Generate and update project documentation verified against codebase.
+description: "Generate and update project documentation verified against codebase."
 argument-hint: "[--force] [--fix]"
 allowed-tools:
   - Read

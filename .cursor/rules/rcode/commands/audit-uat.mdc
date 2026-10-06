@@ -1,6 +1,6 @@
 ---
 name: rcode-audit-uat
-description: Cross-phase audit of all UAT and verification files. Finds every outstanding item (pending, skipped, blocked, human_need
+description: "Cross-phase audit of UAT and verification files: lists every outstanding item and a human test plan."
 argument-hint: ""
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent
 ---

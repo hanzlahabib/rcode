@@ -1,12 +1,11 @@
 ---
 name: rcode-deviation-analyzer
-description: Deviation Analyzer — spawned to analyze plan deviations, identify root causes of scope creep, timeline slips, and requirement changes. Generates deviation reports and remediation recommendations.
+description: "Analyzes plan deviations: root causes of scope creep, timeline slips and requirement changes; writes deviation and remediation reports."
 tools: Read, Grep, Glob, Bash, WebFetch
 color: red
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/skills/agents/rcode-deviation-analyzer/SKILL.md
 

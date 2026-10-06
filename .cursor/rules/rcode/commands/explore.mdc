@@ -1,6 +1,6 @@
 ---
 name: rcode-explore
-description: Socratic ideation workflow — think through ideas before committing.
+description: "Socratic ideation workflow — think through ideas before committing."
 argument-hint: "[topic]"
 allowed-tools:
   - Read

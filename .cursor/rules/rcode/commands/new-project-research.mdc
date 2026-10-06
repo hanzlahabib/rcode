@@ -1,6 +1,6 @@
 ---
 name: rcode-new-project-research
-description: Research subcommand for new-project. Deep research phase producing artifacts that feed into requirements and roadmap generation.
+description: "Research subcommand of new-project: deep research that feeds requirements and roadmap generation."
 argument-hint: "[--deep] [--domain <domain>]"
 allowed-tools: Read, Write, Bash, Glob, Grep, WebSearch, WebFetch
 ---

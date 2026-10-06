@@ -47,6 +47,24 @@ issue:
 - Missing `<done>` — no acceptance criteria
 - Vague `<action>` — "implement auth" instead of specific steps
 - Empty `<files>` — what gets created?
+- `<verify>` present but not semantically capable of proving the task's claim — see check below
+
+**Check — Verify Semantically Matches Claim (links to Dimension 6):**
+Presence of `<verify>` is not enough. Cross-check it against the must_haves truth the task claims to satisfy (Dimension 6):
+- If the task's `<action>` implements user-observable behavior (login, checkout, search, any flow a user drives), a `<verify>` consisting only of build/lint/typecheck commands (`npm run build`, `tsc --noEmit`, `eslint`, `echo done`) does **not** satisfy this dimension — it proves the code compiles, not that the behavior works.
+- Require instead an assertion against actual output/behavior: a curl/HTTP call checking status/body, a test that exercises the route or flow, or an explicit manual-verification checkpoint (`checkpoint:*` task type).
+- Flag as blocker: "Task N's <verify> only compiles/lints but action implements user-facing behavior X — no assertion on actual behavior."
+
+**Check — Required States for Dynamic-Data Components:**
+If a task's `<action>` creates or modifies a component that fetches or
+displays dynamic data (a list, dashboard, detail page — check for
+fetch/query/API-call language in the action), its `<action>` and `<done>`
+must each name all four states: loading, empty, error, populated. A task
+whose `<done>` only describes the populated case ("shows the list of items")
+is incomplete — flag as blocker, not warning, since a missing empty/error
+state is a real UX gap a user will hit, not a style nitpick.
+- Flag as blocker: "Task N's component fetches/displays dynamic data but `<action>`/`<done>` only cover the populated case — no loading/empty/error state defined."
+- Exception: if WIREFRAMES.md exists (`/rcode-ui-phase` output) and already defines the four states for this screen, a task that references WIREFRAMES.md instead of re-listing them inline is fine — check WIREFRAMES.md's entry for this screen before flagging.
 
 **Example issue:**
 ```yaml
@@ -57,6 +75,17 @@ issue:
   plan: "16-01"
   task: 2
   fix_hint: "Add verification command for build output"
+```
+
+**Example issue — verify doesn't prove the claim:**
+```yaml
+issue:
+  dimension: task_completeness
+  severity: blocker
+  description: "Task 3 implements login flow but <verify> only runs `npm run build`"
+  plan: "16-01"
+  task: 3
+  fix_hint: "Replace with a curl against /api/login checking 200 + session cookie, or a test exercising the login route"
 ```
 
 ## Dimension 3: Dependency Correctness
@@ -103,6 +132,7 @@ issue:
 - API route created but component doesn't call it
 - Database model created but API doesn't query it
 - Form created but submit handler is missing or stub
+- New page/component has no task adding it to the router, nav, or an existing page's imports — unreachable by any user
 
 **What to check:**
 ```
@@ -110,7 +140,26 @@ Component -> API: Does action mention fetch/axios call?
 API -> Database: Does action mention Prisma/query?
 Form -> Handler: Does action mention onSubmit implementation?
 State -> Render: Does action mention displaying state?
+Nav -> Route: For any new page/route/component in must_haves.artifacts, does a task action mention adding it to the router config, nav/sidebar, or an existing page's import?
 ```
+
+A top-level UI artifact (page/route/component) with no Nav -> Route reference anywhere in the sprint's tasks is a blocker — internal wiring can be perfect while the feature stays unreachable by any user.
+
+**Check — Role Access Defined (multi-role/SSO/compliance projects only):**
+`roadmapper-playbook.md`'s "Enterprise Projects Need Auth Strategy and Role
+Mapping Decided Up Front" rule requires every later phase adding a
+user-facing route to include "role access defined for this route" as a
+success criterion — explicitly NOT covered by `rcode-verifier`'s Level-5
+Reachability check (which only confirms a page is linked from nav, not that
+it's linked/gated correctly per role). If PROJECT.md/REQUIREMENTS.md show
+more than one user role, cross-reference each new route in
+`must_haves.artifacts` against the roadmap's role-to-screen mapping (IA.md or
+ROADMAP.md's IA section — see roadmapper-playbook.md step 3b): does a task
+state which roles can/cannot reach this route, or is role access left
+undefined? A new route with no role-access statement anywhere in the sprint's
+tasks is a blocker for multi-role projects — the same orphan-feature failure
+as unreachable nav, just for authorization instead of discoverability.
+- Flag as blocker: "Route {path} added with no role-access statement — roadmap's role mapping shows N roles but no task defines who can/cannot reach this route."
 
 **Example issue:**
 ```yaml
@@ -145,6 +194,31 @@ issue:
 - Single task with 10+ files
 - Complex work (auth, payments) crammed into one plan
 
+### Check 5b — Vertical slice, not a layer
+
+Scope Sanity above measures plan SIZE. This measures plan SHAPE, which size
+cannot see: a perfectly sized plan that builds one horizontal layer is still
+wrong.
+
+For the phase as a whole, answer: **what can someone do after this phase that
+they could not do before?** If the honest answer is "nothing yet, later phases
+need it" → **WARNING**, and name it as layer-first phasing.
+
+Specific red flags:
+
+- Schema or migration work that creates tables no task in this phase reads or
+  writes. Tables belong to the first phase that uses them, not to a phase whose
+  purpose is tables.
+- A plan that builds a service, repository, or endpoint with no caller inside
+  the same phase and no task wiring it to one.
+- A phase goal naming a layer or artifact type ("the API", "the data model")
+  rather than a capability.
+
+Warning, not blocker: a genuine foundation phase (auth, migration framework) is
+sometimes correct. But it must name what it unblocks, and be no bigger than that
+— an unbounded foundation is the failure this check exists for. See
+`universal-anti-patterns.md` → Layer-first phasing.
+
 **Example issue:**
 ```yaml
 issue:
@@ -167,12 +241,26 @@ issue:
 2. Verify truths are user-observable (not implementation details)
 3. Verify artifacts support the truths
 4. Verify key_links connect artifacts to functionality
+5. Cross-reference each truth to a falsifiable `<verify>` command: for each `must_haves.truths` entry, search every task's `<verify>` block (across all plans in the sprint) for a command that could actually falsify that truth — a curl/HTTP assertion, a UI interaction test (playwright/cypress selector + assertion), or an explicit manual checkpoint script tied to the same feature. Wording alone (the truth "sounds" user-facing) does not count as a check.
+6. If no task's `<verify>` traces to a truth, flag it as unverifiable — do not accept the phrasing as proof the behavior is tested.
+
+**Check — Truth-to-Verify Traceability (do not rely on wording alone):**
+Judging "user-observable" from phrasing is not a check — a planner can trivially write `"The auth system is secure"` without any task exercising login. Treat this the same way Dimension 12 cross-references evidence claims to grep hit counts:
+1. For each `must_haves.truths` entry, extract the subject/action it claims (e.g., "user can log in", "search returns results").
+2. Scan every task's `<verify>` block across the sprint's plans for a command whose target matches that subject — a route/endpoint the truth implies (`/api/login`, `/search`), a selector the truth implies (login form, search box), or a checkpoint script named for the same feature.
+3. A match requires the `<verify>` command to actually exercise real input against the feature and assert on real output (status code, response body, rendered DOM state) — not just that the words in the truth and the `<verify>` block resemble each other.
+4. No match found → the truth is **unverifiable**, regardless of how user-facing its wording sounds. Flag it; do not accept the phrasing as proof.
 
 **Red flags:**
 - Missing `must_haves` entirely
 - Truths are implementation-focused ("bcrypt installed") not user-observable ("passwords are secure")
 - Artifacts don't map to truths
 - Key links missing for critical wiring
+- Truth uses user-facing wording but no task's `<verify>` exercises the corresponding user path (e.g., "The auth system is secure" with no login/reject-bad-credentials check anywhere in the sprint) — unfalsifiable marketing language, not a verified outcome
+
+**Severity rules:**
+- **blocker:** a `must_haves.truths` entry has zero traceable `<verify>` command in any task across the sprint's plans
+- **warning:** the traced `<verify>` command exists but only checks an implementation detail (e.g., process exits 0) rather than the user-observable behavior the truth claims
 
 **Example issue:**
 ```yaml
@@ -185,6 +273,17 @@ issue:
     - "JWT library installed"
     - "Prisma schema updated"
   fix_hint: "Reframe as user-observable: 'User can log in', 'Session persists'"
+```
+
+**Example issue — untraceable truth:**
+```yaml
+issue:
+  dimension: verification_derivation
+  severity: blocker
+  description: "Truth 'The auth system is secure' has no task <verify> that exercises login or rejects bad credentials"
+  plan: "02"
+  truth: "The auth system is secure"
+  fix_hint: "Add a <verify> with a curl/HTTP assertion (e.g. POST /login with wrong password returns 401) or a UI test that logs in and confirms session state, then reference it from this truth"
 ```
 
 ## Dimension 7: Context Compliance (if CONTEXT.md exists)
@@ -255,6 +354,44 @@ For each `<task>` in each plan:
 - `<verify>` must contain `<automated>` command, OR a Wave 0 dependency that creates the test first
 - If `<automated>` is absent with no Wave 0 dependency → **BLOCKING FAIL**
 - If `<automated>` says "MISSING", a Wave 0 task must reference the same test file path → **BLOCKING FAIL** if link broken
+
+### Check 8a2 — Always-Green Assertions
+
+Scan every `<automated>` block for commands that can never fail:
+
+```bash
+grep -nE 'grep +-[a-zA-Z]*v[a-zA-Z]* ' "${PHASE_DIR}"/*-SPRINT.md
+```
+
+- Any `grep -qv` / `grep -vq` used as an "X must not appear" check → **BLOCKING FAIL**.
+  `-v` inverts per-line matching, so it exits 0 whenever ANY line fails to match — it
+  passes on almost every file, including one that DOES contain the forbidden pattern.
+  Required form: `! grep -q PATTERN FILE`.
+- `test ! -f` is fine; `! test -f` is fine; a bare `test -f` used to assert absence → **BLOCKING FAIL**.
+
+### Check 8a3 — Red-First Evidence for Guard Tests
+
+A **guard test** is any test whose purpose is to make a class of mistake
+impossible: meta-tests, schema invariant tests, forbidden-pattern scans,
+coverage/manifest tests, lint-rule tests. Identify guard-test tasks by their
+`<files>` (a `meta-*`, `*-guard*`, `*-invariant*`, or `tests/unit/*-scan*` path)
+or by an `<action>` that describes asserting a rule across a file set.
+
+For each guard-test task:
+
+- The `<action>` must state the red step — run the new test against the current
+  unfixed tree and record that it FAILS, before applying the fix. If it does not
+  → **BLOCKING FAIL**.
+- If the task both adds the guard and fixes the violation, the red step must come
+  first in the action text, not after.
+
+**Why this is blocking, not a warning:** a guard test that was never observed red
+proves nothing. It may glob the wrong path, match nothing, or assert a condition
+that is already true. It then reports green forever and the invariant it was
+written to protect rots silently underneath it. Confirmed live: a scope-coverage
+meta-test globbed only `src/app/api/**/route.ts`, so every Server Action was
+invisible to it and an authorization chokepoint went unenforced across nine
+phases with a fully green CI.
 
 ### Check 8b — Feedback Latency Assessment
 
@@ -407,6 +544,81 @@ issue:
     - "imaginary_function"
   verified_ratio: 0.2
   fix_hint: "Plan was built on hallucinated findings. Re-run /rcode-debug to verify actual code state before replanning."
+```
+
+## Dimension 13: Plan Quality (judgment)
+
+Dimensions 1-12 are mechanical and binary: existence, matching, exit codes,
+acyclicity. **A plan can pass all twelve and still be bad** — a backlog with a
+heading, tasks that are furniture, truths nobody can verify. Nothing in rcode
+could say so until this dimension.
+
+Load `@.rcode/agents-rules/sprint-checker/plan-quality-rubric.md` and run its
+five dimensions: substance over furniture, done-ness clarity, coherence, scope
+honesty, shape fit. Verdicts are strong / adequate / thin / broken, each backed
+by a plan and task id and a quoted phrase — abstract criticism is a failure of
+nerve and gives the planner nothing to act on.
+
+**Blocking:** a `broken` verdict on *Done-ness clarity* or *Substance over
+furniture*. Those two decide whether execution and verification measure anything
+real. The other three are warnings.
+
+Calibrate depth to the project's recorded stakes. The substance bar applies at
+every level; the rigor bar does not.
+
+## Dimension 12: Evidence Grounding
+
+**Question:** Is every claim in the plan traceable to something real — a codebase grep, or an external source-of-truth document — rather than plausible-sounding invention?
+
+This dimension has two halves. Both exist because agents produce fluent,
+confident, wrong output when nothing forces them to cite a real source —
+codebase claims and domain-terminology claims fail the same way, just
+against different ground truths.
+
+### 12a — Codebase Evidence (issue #649)
+
+Every task body that names a file count, component, pattern, or existing
+behavior MUST include an `<evidence>` block citing real grep hit counts,
+real `path:line` ranges, or an explicit `creates:` justification (for
+genuinely new files/symbols that can't have prior evidence). A task claiming
+"13 usages of `useAuth`" with no evidence, or citing a grep that doesn't
+actually return 13, is theoretical — reject it.
+
+**Process:**
+1. For each task with a factual claim about existing code, check for an `<evidence>` block.
+2. If present, re-run a sample of the cited greps/searches yourself. If the claimed count doesn't match reality, downgrade to blocker regardless of what the task otherwise looks like.
+3. If absent for a claim that isn't a `creates:` (brand new file/symbol), flag as blocker — the claim is unfalsifiable as written.
+
+### 12b — Source-Document Evidence
+
+If PROJECT.md/REQUIREMENTS.md/CONTEXT.md reference an external source-of-truth
+document (a spreadsheet, transcript, spec, glossary — see
+`source-of-truth-grounding.md`) that defines domain terminology, enum values,
+or a data model, any task creating schema fields, enum values, or seed data
+for that domain MUST cite the source document and use its verbatim values —
+not an invented approximation that merely sounds plausible for "this kind of
+system." This is exactly how a competency-tracking app once shipped invented
+category names (`TECH`, `DELIV`, `COLLAB`) instead of the real Excel's actual
+categories (`Technical Skills`, `Delivery & Quality`, `Communication &
+Collaboration`) — plausible, well-formatted, and wrong.
+
+**Process:**
+1. Check whether PROJECT.md/REQUIREMENTS.md mention a source document for this domain.
+2. If yes, for each schema/seed-data task touching that domain, verify the task cites the source document path and that its field/enum values are traceable to it (spot-check by reading the source yourself if it's available).
+3. A schema/seed task for a domain with a known source document, with no citation and no traceable match, is a blocker — not a style nitpick. This is exactly the class of mistake that's expensive to unwind once it's in a live database.
+
+**Severity rules:**
+- **blocker:** 12a claim with no evidence and no `creates:` justification, evidence that doesn't check out on re-run, OR 12b schema/seed task for a known-source domain with no citation/traceable match
+- **warning:** evidence present but thin (e.g. cites a grep pattern too broad to actually confirm the specific claim)
+
+**Example issue:**
+```yaml
+issue:
+  dimension: evidence_grounding
+  severity: blocker
+  description: "Task 3 seeds 'competency' enum with TECH/DELIV/COLLAB/GROWTH/IMPACT — PROJECT.md references docs/Competency-Matrix.xlsx as the source of truth for these categories, but no task reads it or cites its actual values"
+  plan: "01"
+  fix_hint: "Read docs/Competency-Matrix.xlsx (or its extracted contents) and replace the enum values with what it actually defines, verbatim"
 ```
 
 </verification_dimensions>
