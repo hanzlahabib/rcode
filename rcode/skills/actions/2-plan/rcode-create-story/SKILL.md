@@ -34,7 +34,7 @@ user-invocable: true
 > checkpoint, wave, or verification machinery. Treat this pipeline as experimental /
 > unsupported for production execution until a decision is made to either wire it to
 > `/rcode-execute` or deprecate it in favor of the SPRINT.md pipeline (see
-> `AUDIT-redundant-work.md` finding 2).
+> the redundant-work audit, finding 2).
 
 ## Overview
 

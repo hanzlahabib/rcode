@@ -17,6 +17,8 @@ Before reviewing or writing code, establish:
 2. **Next.js version** — Check `package.json` for the `next` version. Next.js 13/14/15 share the same core App Router model described below. Next.js 16 renamed `middleware.ts` to `proxy.ts` and introduced the `cacheComponents` flag with `'use cache'` directives as an evolving caching model — flag version-specific divergences explicitly rather than assuming one model fits all.
 3. **Scope** — One file/PR, or a full-app audit? A single component review should stay focused on that component's boundary decisions; a full audit should walk the priority order below.
 
+For the full file-convention list, caching model by version and middleware matcher syntax, read `references/app-router-patterns.md`.
+
 ---
 
 ## Review Framework

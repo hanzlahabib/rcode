@@ -176,6 +176,14 @@ function buildKnownIdentifiers(packageRoot) {
     } catch { /* unreadable frontmatter — dir-name form still registered */ }
   }
 
+  // Slash commands are valid skill-ref targets too (`rcode-new-milestone`).
+  const commandsRoot = path.join(packageRoot, 'rcode/commands');
+  if (fs.existsSync(commandsRoot)) {
+    for (const f of fs.readdirSync(commandsRoot)) {
+      if (f.endsWith('.md')) add(path.basename(f, '.md'));
+    }
+  }
+
   const agentsRoot = path.join(packageRoot, 'rcode/agents');
   if (fs.existsSync(agentsRoot)) {
     for (const f of fs.readdirSync(agentsRoot)) {
@@ -200,7 +208,7 @@ function isExternalOrInPage(ref) {
 
 /** A template placeholder or glob — describes a dynamically-named future file, not a concrete path. */
 function isPlaceholderOrGlob(ref) {
-  return /[<>[\]*]/.test(ref);
+  return /[<>[\]*{}]/.test(ref);
 }
 
 // The only directory names this package's own skills use for genuine
@@ -266,7 +274,11 @@ function extractLocalFileRefs(content) {
  * @returns {string|null} the resolved absolute path, or null if none exist
  */
 function resolveLocalRef(refPath, sourceFile, skillDir, packageRoot) {
+  // `@.rcode/<dir>/x` is the @-include spelling of the INSTALLED layout; the
+  // same file lives at rcode/<dir>/x (agents-rules is rcode/agents/rules) in the package.
+  const installed = refPath.replace(/^@/, '').replace(/^\.rcode\/agents-rules\//, 'rcode/agents/rules/').replace(/^\.rcode\//, 'rcode/');
   const candidates = [
+    path.resolve(packageRoot, installed),
     path.resolve(path.dirname(sourceFile), refPath),
     path.resolve(skillDir, 'references', refPath),
     path.resolve(skillDir, 'rules', refPath),

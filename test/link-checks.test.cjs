@@ -293,3 +293,31 @@ test('runLinkChecks: a fully clean enforced bucket returns no findings', (t) => 
   const { enforced } = runLinkChecks(root, { enforce: ['seo'], reportOnly: [] });
   assert.deepStrictEqual(enforced, []);
 });
+
+// ---------- installed-layout includes, command names, brace placeholders ----------
+
+test('resolveLocalRef: an @.rcode/<dir>/x include resolves to rcode/<dir>/x in the package', (t) => {
+  const root = makeTempDir();
+  t.after(() => cleanup(root));
+  const skillDir = path.join(root, 'rcode/skills/agents/my-skill');
+  const skillMd = write(root, 'rcode/skills/agents/my-skill/SKILL.md', '# My Skill');
+  write(root, 'rcode/references/design-tokens.md', '# Tokens');
+  write(root, 'rcode/agents/rules/executor/scan.md', '# Scan');
+
+  assert.ok(resolveLocalRef('@.rcode/references/design-tokens.md', skillMd, skillDir, root));
+  assert.ok(resolveLocalRef('@.rcode/agents-rules/executor/scan.md', skillMd, skillDir, root));
+  assert.strictEqual(resolveLocalRef('@.rcode/references/missing.md', skillMd, skillDir, root), null);
+});
+
+test('buildKnownIdentifiers: slash command names are valid skill-ref targets', (t) => {
+  const root = makeTempDir();
+  t.after(() => cleanup(root));
+  write(root, 'rcode/commands/new-milestone.md', '---\nname: rcode-new-milestone\n---\n');
+  const known = buildKnownIdentifiers(root);
+  assert.ok(known.has('rcode-new-milestone'));
+});
+
+test('extractLocalFileRefs: brace placeholders like {base-name}-distillate.md are not concrete paths', () => {
+  const refs = extractLocalFileRefs('Writes `{base-name}-distillate.md` and `architecture-{{ui_part_id}}.md`.');
+  assert.strictEqual(refs.length, 0);
+});
