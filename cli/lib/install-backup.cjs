@@ -177,7 +177,7 @@ function runInstallHealthCheck(target, counts) {
   // install against that, not against the whole package.
   if (counts.profile) {
     try {
-      const def = require('./install-profile.cjs').loadProfiles()[counts.profile];
+      const def = require('./install-purpose.cjs').effectiveProfiles(counts.purposes || [])[counts.profile];
       if (def && !def.all) {
         const tolerate = (n) => Math.max(1, Math.floor(n * 0.9));
         expected = {

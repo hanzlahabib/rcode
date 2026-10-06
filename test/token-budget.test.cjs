@@ -30,6 +30,17 @@ test('token budget: fixed listing per profile is under its threshold', () => {
   }
 });
 
+test('token budget: every purpose bundle is measured, bounded, and larger than minimal', () => {
+  const names = Object.keys(result.purposes);
+  assert.deepStrictEqual(names.sort(), Object.keys(gate.PURPOSE_THRESHOLDS).sort(), 'every purpose needs a threshold');
+  for (const name of names) {
+    const total = result.purposes[name].total;
+    assert.ok(total <= gate.PURPOSE_THRESHOLDS[name], `minimal+${name} lists ${total} tokens > ${gate.PURPOSE_THRESHOLDS[name]}`);
+    assert.ok(total > result.listing.minimal.total, `${name} must add something to minimal`);
+    assert.ok(total < result.listing.full.total, `${name} must stay below full`);
+  }
+});
+
 test('token budget: top commands stay under their direct-cost threshold', () => {
   for (const [id, limit] of Object.entries(gate.DIRECT_THRESHOLDS)) {
     assert.notStrictEqual(result.direct[id], null, `rcode/commands/${id}.md is missing`);
@@ -79,6 +90,27 @@ for (const profile of Object.keys(gate.LISTING_THRESHOLDS)) {
       const drift = Math.abs(real - source) / real;
       assert.ok(drift <= DRIFT_TOLERANCE,
         `${profile}: source computes ${source} tokens, a real install lists ${real} (${(drift * 100).toFixed(1)}% drift)`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+}
+
+for (const purpose of Object.keys(gate.PURPOSE_THRESHOLDS)) {
+  test(`token budget: source computation matches a real --purpose ${purpose} install`, () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), `rcode-tokens-${purpose}-`));
+    try {
+      spawnSync('git', ['init', '-q'], { cwd: dir });
+      const home = path.join(dir, '_home');
+      const r = spawnSync('node', [CLI, dir, '--yes', '--ide', 'claude', '--no-update-check', '--purpose', purpose], {
+        encoding: 'utf8', env: { ...process.env, HOME: home, USERPROFILE: home },
+      });
+      assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+      const real = installedListingTokens(dir);
+      const source = result.purposes[purpose].total;
+      const drift = Math.abs(real - source) / real;
+      assert.ok(drift <= DRIFT_TOLERANCE,
+        `${purpose}: source computes ${source} tokens, a real install lists ${real} (${(drift * 100).toFixed(1)}% drift)`);
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }

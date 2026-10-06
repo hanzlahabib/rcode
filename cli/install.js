@@ -66,7 +66,6 @@ const { homedir } = require('./lib/homedir.cjs');
 
 // Bundled packages — devDeps inlined by esbuild, loaded from node_modules in dev.
 const pc = require('picocolors');
-const { createSpinner } = require('nanospinner');
 const fg = require('fast-glob');
 const { z } = require('zod');
 const semver = require('semver');
@@ -75,7 +74,7 @@ const clack = require('@clack/prompts');
 
 // Output helpers, package/source roots — cli/lib/install-shared.cjs (#1066 Phase 1).
 const {
-  ok, fail, warn, info, dim, bold, PACKAGE_ROOT, SOURCE_ROOT,
+  ok, fail, warn, info, dim, bold, createSpinner, PACKAGE_ROOT, SOURCE_ROOT,
 } = require('./lib/install-shared.cjs');
 // IDE detection/paths/layout migration — cli/lib/install-ide.cjs.
 const {
@@ -88,12 +87,15 @@ const {
 // Manifest generation + orphan sweep — cli/lib/install-manifest.cjs.
 const {
   sha256, readPackageVersion, generateAgentManifest, generateFilesManifest,
-  sweepStaleInstalledFiles, listStaleInstalledFiles, generateInstallManifest,
+  sweepStaleInstalledFiles, generateInstallManifest,
 } = require('./lib/install-manifest.cjs');
-// minimal|full install profiles — cli/lib/install-profile.cjs.
+// minimal|full install profiles + purpose bundles — cli/lib/install-profile.cjs,
+// cli/lib/install-purpose.cjs.
+const { filterPlanByProfile, skillAllowList } = require('./lib/install-profile.cjs');
 const {
-  resolveProfile, filterPlanByProfile, skillAllowList, removalsForSwitch,
-} = require('./lib/install-profile.cjs');
+  resolveSelection, resolvePurposeChoice, reportSelection, printSelectionSummary,
+  enforceShrinkGate, effectiveProfiles,
+} = require('./lib/install-purpose.cjs');
 // Skills installer + brain scaffold — cli/lib/install-skills.cjs.
 const {
   installBrainScaffold, installSkills,
@@ -181,6 +183,8 @@ function parseArgs(argv) {
     // --profile minimal|full. null = keep the persisted profile, else the default
     // (minimal for new project installs, full for --global). See install-profile.cjs.
     profile: null,
+    // --purpose a,b: purpose bundles added to minimal (see install-purpose.cjs).
+    purpose: null,
     // #189 — planning commit policy. null = ask interactively (or default true under --yes).
     // Set true by --commit-planning, false by --no-commit-planning or --ignore-planning.
     commitPlanning: null,
@@ -217,6 +221,9 @@ function parseArgs(argv) {
     listFiles: false,
   };
   const positional = [];
+  // `--profile=x` / `--purpose=x` are split into the space form: every other
+  // `--flag=value` is unknown here and would otherwise be dropped silently.
+  argv = argv.flatMap((a) => /^--(profile|purpose)=/.test(a) ? [a.slice(0, a.indexOf('=')), a.slice(a.indexOf('=') + 1)] : [a]);
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') opts.help = true;
@@ -236,6 +243,7 @@ function parseArgs(argv) {
     }
     else if (arg === '--module') opts.modules.push(argv[++i]);
     else if (arg === '--profile') opts.profile = argv[++i];
+    else if (arg === '--purpose') opts.purpose = argv[++i] ?? ''; // '' -> "Empty --purpose list" error, not a silent no-op
     else if (arg === '--commit-planning') opts.commitPlanning = true;
     else if (arg === '--no-commit-planning' || arg === '--ignore-planning') opts.commitPlanning = false;
     else if (arg === '--non-destructive') opts.nonDestructive = true;
@@ -335,6 +343,10 @@ Options:
   --profile <name>   minimal (default for new installs: core loop, 40 commands) or full
                      (everything). Switching minimal -> full adds files; full -> minimal
                      lists what is removed and needs --force (a backup is taken first).
+  --purpose <list>   add purpose bundles to minimal: frontend, seo, strategy, audits
+                     (comma list, e.g. --purpose seo,frontend; "full" = --profile full).
+                     Additive; with --profile minimal the list replaces the current one.
+                     Dropping a purpose lists the removals and needs --force (backup first).
   --reset            with --force, also delete config.yaml and state.json to re-init
   --yes              non-interactive, accept defaults
   --user <name>      set user_name in config.yaml (default: $USER)
@@ -609,7 +621,7 @@ function resolveInstallPlan(opts) {
     : opts.ides;
 
   const fullPlan = buildInstallPlan(planIdes, opts.target);
-  const plan = filterPlanByProfile(filterPlanByModules(fullPlan, opts.modules), opts.profile);
+  const plan = filterPlanByProfile(filterPlanByModules(fullPlan, opts.modules), opts.profile, opts.profiles);
   if (plan.length === 0) {
     if (Array.isArray(opts.ides) && opts.ides.includes('antigravity') && !opts.global) {
       console.error('✖ Nothing to install — Antigravity was the only target IDE, and its files need a GLOBAL install.');
@@ -1173,7 +1185,8 @@ function printInstallSummary(opts, report) {
   }
 
   // Health check — smoke test that the install actually works (#193).
-  const healthPass = runInstallHealthCheck(opts.target, { agentCount, commandCount, skillsInstalled, profile: opts.profile });
+  printSelectionSummary(opts, opts.profiles);
+  const healthPass = runInstallHealthCheck(opts.target, { agentCount, commandCount, skillsInstalled, profile: opts.profile, purposes: opts.purposes });
   return healthPass ? 0 : 1;
 }
 
@@ -1414,26 +1427,6 @@ async function resolveInstallConflicts(conflictedFiles, opts) {
   return { updated };
 }
 
-// How many removals to print when a full -> minimal switch is refused.
-const PROFILE_REMOVAL_PREVIEW = 15;
-
-/** One-line profile status, including the documented switch path. */
-function reportProfile({ profile, persisted, requested }) {
-  const other = profile === 'minimal' ? 'full' : 'minimal';
-  if (persisted === null) {
-    const hint = profile === 'minimal'
-      ? 'core loop only; add everything with: rcode install --profile full'
-      : 'every command, skill and agent';
-    console.log('  ' + info(`Profile: ${profile} (${hint})`));
-  } else if (persisted === profile) {
-    console.log('  ' + info(`Profile: ${profile} (unchanged). Switch with --profile ${other}`));
-  } else if (requested === 'full') {
-    console.log('  ' + info(`Profile: ${persisted} → full (adding missing files, nothing is overwritten)`));
-  } else {
-    console.log('  ' + info(`Profile: ${persisted} → ${profile}`));
-  }
-}
-
 async function installInner(opts) {
   const pkgVersion = readPackageVersion();
 
@@ -1474,17 +1467,21 @@ async function installInner(opts) {
     return 1;
   }
 
-  // Profile (minimal|full): --profile > persisted in manifest.yaml > default.
-  // Resolved BEFORE anything is written because manifest.yaml is rewritten below.
-  let profileState;
+  // Profile (minimal|full) + purposes: flags > persisted in manifest.yaml >
+  // default (see install-purpose.cjs for the precedence). Resolved BEFORE
+  // anything is written because manifest.yaml is rewritten below.
+  let selection;
   try {
-    profileState = resolveProfile(opts);
+    await resolvePurposeChoice(opts, opts.purposeIO);
+    selection = resolveSelection(opts);
+    opts.profiles = effectiveProfiles(selection.purposes);
   } catch (err) {
     console.error(`✖ ${err.message}`);
     return 1;
   }
-  opts.profile = profileState.profile;
-  reportProfile(profileState);
+  opts.profile = selection.profile;
+  opts.purposes = selection.purposes;
+  reportSelection(selection);
 
   // IDE validation + per-IDE messaging — #1066 Phase 2 extraction.
   const idesExitCode = validateAndAnnotateIdes(opts);
@@ -1495,30 +1492,10 @@ async function installInner(opts) {
   const { exitCode: planExitCode, plan } = resolveInstallPlan(opts);
   if (planExitCode !== null) return planExitCode;
 
-  // Switching an existing full install DOWN to minimal deletes files, so it is
-  // never silent: list them, require --force, and back them up first.
-  if (profileState.isSwitch && profileState.persisted === 'full' && opts.profile === 'minimal') {
-    const removals = removalsForSwitch(listStaleInstalledFiles(opts.target, plan), 'minimal');
-    if (!opts.force) {
-      console.error('');
-      console.error(`✖ --profile minimal would remove ${removals.length} installed file${removals.length === 1 ? '' : 's'} from this full install:`);
-      for (const rel of removals.slice(0, PROFILE_REMOVAL_PREVIEW)) console.error(`    - ${rel}`);
-      if (removals.length > PROFILE_REMOVAL_PREVIEW) console.error(`    … and ${removals.length - PROFILE_REMOVAL_PREVIEW} more`);
-      console.error('  Re-run with --force to apply (a backup tarball is created first).');
-      console.error('');
-      return 1;
-    }
-    if (!opts.noBackup) {
-      const backup = createInstallBackup(opts.target, plan, removals);
-      if (backup.ok) {
-        console.log('  ' + info(`profile switch backup: ${pc.cyan(backup.path)} ${pc.dim('(restore with: tar -xzf ' + backup.path + ')')}`));
-      } else if (backup.fileCount > 0) {
-        console.error(`✖ Could not create backup: ${backup.warning}`);
-        console.error('  Refusing to remove files without a backup. Pass --no-backup to override.');
-        return 1;
-      }
-    }
-  }
+  // Switching down (full -> minimal, or dropping a recorded purpose) deletes
+  // files, so it is never silent: list them, require --force, back them up.
+  const gateCode = enforceShrinkGate(opts, selection, plan, opts.profiles);
+  if (gateCode !== null) return gateCode;
 
   // Force-overwrite backup — closes #381. Without this, customized
   // .claude/agents/rcode-*.md and similar package-managed files were silently
@@ -1608,7 +1585,7 @@ async function installInner(opts) {
     // Install skills + sidebar stubs globally — never dedup against globals,
     // because in --global mode the target IS the global dir.
     const skillsResult = installSkills(PACKAGE_ROOT, opts.target, {
-      allowedSkills: skillAllowList(opts.profile),
+      allowedSkills: skillAllowList(opts.profile, opts.profiles),
     });
     let skillsInstalled = skillsResult.count;
     try {
@@ -1657,7 +1634,7 @@ async function installInner(opts) {
   // Reuse the isProjectInstall flag declared earlier in this scope.
   const skillsResult = installSkills(PACKAGE_ROOT, opts.target, {
     skipGlobalDuplicates: isProjectInstall,
-    allowedSkills: skillAllowList(opts.profile),
+    allowedSkills: skillAllowList(opts.profile, opts.profiles),
   });
   let skillsInstalled = skillsResult.count;
   if (skillsResult.skippedGlobal > 0) {

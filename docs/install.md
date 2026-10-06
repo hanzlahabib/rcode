@@ -180,6 +180,35 @@ pnpm dlx @hanzlaa/rcode install --profile minimal --force   # on an existing ful
 - `--global` installs default to `full`.
 - Switching down never happens silently: without `--force` it only prints the removal list.
 
+### Install purposes — pick what rcode is for
+
+`minimal` is the core plan/build/verify loop. A purpose adds one themed bundle of commands, skills and agents on top of it, so you can install rcode for SEO work without paying for the council, or for UI work without the audit commands. In an interactive terminal the installer asks "What will you use rcode for?" (multi-select, nothing selected = core loop only). With `--yes`, in CI or without a TTY there is no prompt and the default stays `minimal`.
+
+| Purpose | Adds | Fixed listing cost (with core) |
+|---------|------|-------------------------------|
+| core (always) | the `minimal` set | about 2.1k tokens |
+| `frontend` | `ui-review`; frontend-design, UX design, browser-verify, theme-system, React/Next.js practices; Haitham, Layla, Zahra, UI auditor | about 2.7k |
+| `seo` | SEO OS, audits, content factory/writer, growth orchestrator, site builder, local SEO, domain and market research; Hanzla, Haitham, Noor, Layla, Mariam, Zahra | about 2.9k |
+| `strategy` | council, discuss, brainstorm, PRD/architecture/epics/stories, sprint planning, correct-course, retrospective; the persona agents | about 3.8k |
+| `audits` | audit, lens-audit, secure-phase, karpathy-audit, dependency/i18n/cross-platform/observability auditors, QA skills; the security and audit agents | about 3.3k |
+| `full` | everything | about 8.0k |
+
+Exact lists live under `purposes:` in `rcode/profiles.yaml`; `node scripts/token-budget.cjs` measures every bundle and CI fails if one grows past its limit.
+
+```bash
+pnpm dlx @hanzlaa/rcode install --purpose seo                 # core + SEO
+pnpm dlx @hanzlaa/rcode install --purpose seo,frontend        # several at once
+pnpm dlx @hanzlaa/rcode install --purpose audits              # later: adds audits, keeps what you have
+pnpm dlx @hanzlaa/rcode install --profile minimal --purpose seo --force   # replace the set; lists removals, backs up first
+```
+
+Rules:
+
+- `--purpose a,b` is additive: it unions with the purposes already recorded. `--purpose full` is the same as `--profile full`.
+- `--profile full` wins over any `--purpose`. `--profile minimal --purpose a,b` means exactly `a,b`; anything it drops needs `--force` (a backup tarball is created first), the same gate as `full` to `minimal`.
+- Purposes are saved as `purposes: [seo, frontend]` next to `profile: minimal` in `.rcode/_config/manifest.yaml`; `update` re-applies them and never drops one.
+- Existing installs change only when you pass `--purpose` or `--profile`. A pre-profile (full) install stays full. `--global` stays `full` unless you pass a flag.
+
 ### Different IDE
 ```bash
 pnpm dlx @hanzlaa/rcode install --ide claude       # default

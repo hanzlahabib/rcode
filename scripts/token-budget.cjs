@@ -21,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadProfiles } = require('../cli/lib/install-profile.cjs');
+const { loadPurposes, effectiveProfiles } = require('../cli/lib/install-purpose.cjs');
 
 const REPO = path.resolve(__dirname, '..');
 const SOURCE = path.join(REPO, 'rcode');
@@ -36,6 +37,9 @@ const SIDEBAR_STUB_COMMANDS = ['do'];
 // plus ~15% headroom, so ordinary edits pass and a regression to verbose
 // descriptions or fat orchestrators fails. Raise them only with a reason.
 const LISTING_THRESHOLDS = { minimal: 2450, full: 9250 };
+// Each purpose bundle is measured as minimal + that purpose alone (what
+// `--purpose <name>` installs). Same rule: measured value plus ~15% headroom.
+const PURPOSE_THRESHOLDS = { frontend: 3100, seo: 3300, strategy: 4330, audits: 3820 };
 const DIRECT_THRESHOLDS = {
   plan: 1070,
   execute: 870,
@@ -170,9 +174,13 @@ function measure() {
   const all = { skills: collectSkills(), commands: collectCommands(), agents: collectAgents() };
   const listing = {};
   for (const name of Object.keys(LISTING_THRESHOLDS)) listing[name] = listingForProfile(name, profiles, all);
+  const purposes = {};
+  for (const name of Object.keys(loadPurposes(SOURCE))) {
+    purposes[name] = listingForProfile('minimal', effectiveProfiles([name], SOURCE), all);
+  }
   const direct = {};
   for (const id of Object.keys(DIRECT_THRESHOLDS)) direct[id] = directTokens(id);
-  return { listing, direct };
+  return { listing, purposes, direct };
 }
 
 function evaluate(result) {
@@ -180,6 +188,11 @@ function evaluate(result) {
   for (const [name, limit] of Object.entries(LISTING_THRESHOLDS)) {
     const got = result.listing[name].total;
     if (got > limit) failures.push(`listing[${name}] ${got} > ${limit}`);
+  }
+  for (const name of Object.keys(result.purposes)) {
+    const limit = PURPOSE_THRESHOLDS[name];
+    if (limit === undefined) failures.push(`purpose[${name}] has no threshold in PURPOSE_THRESHOLDS`);
+    else if (result.purposes[name].total > limit) failures.push(`purpose[${name}] ${result.purposes[name].total} > ${limit}`);
   }
   for (const [id, limit] of Object.entries(DIRECT_THRESHOLDS)) {
     const got = result.direct[id];
@@ -196,6 +209,10 @@ function formatTable(result) {
     rows.push([name, `${l.skills.tokens} (${l.skills.count})`, `${l.commands.tokens} (${l.commands.count})`,
       `${l.agents.tokens} (${l.agents.count})`, l.total, LISTING_THRESHOLDS[name]]);
   }
+  for (const [name, l] of Object.entries(result.purposes)) {
+    rows.push([`minimal+${name}`, `${l.skills.tokens} (${l.skills.count})`, `${l.commands.tokens} (${l.commands.count})`,
+      `${l.agents.tokens} (${l.agents.count})`, l.total, PURPOSE_THRESHOLDS[name]]);
+  }
   const out = rows.map((r) => `${pad(r[0], 24)}${r.slice(1).map((c) => pad(c, 14)).join('')}`);
   out.push('', `${pad('direct command cost', 24)}${pad('tokens', 14)}limit`);
   for (const [id, limit] of Object.entries(DIRECT_THRESHOLDS)) {
@@ -205,7 +222,7 @@ function formatTable(result) {
 }
 
 module.exports = {
-  CHARS_PER_TOKEN, LISTING_THRESHOLDS, DIRECT_THRESHOLDS,
+  CHARS_PER_TOKEN, LISTING_THRESHOLDS, PURPOSE_THRESHOLDS, DIRECT_THRESHOLDS,
   measure, evaluate, formatTable, readFrontmatter, tokens, lineChars,
 };
 
