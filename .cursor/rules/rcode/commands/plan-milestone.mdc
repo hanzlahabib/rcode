@@ -1,6 +1,6 @@
 ---
 name: rcode-plan-milestone
-description: Plan all phases in a milestone in parallel dependency waves. Reads ROADMAP.md, groups phases into dependency waves, spawns rcode-planner agents in parallel per wave. Closes #732.
+description: "Plan all phases of a milestone in parallel dependency waves with rcode-planner agents."
 argument-hint: "[--milestone <name>] [--dry-run] [--skip-research] [--wave N]"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, Agent, TaskCreate, TaskUpdate
 ---

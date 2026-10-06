@@ -1,12 +1,12 @@
 ---
 name: rcode-sprint-checker
-description: Verifies sprints will achieve phase goal before execution. Goal-backward analysis of sprint quality. Spawned by /rcode-plan orchestrator.
+description: "Verifies sprints will achieve phase goal before execution. Goal-backward analysis of sprint quality. Spawned by /rcode-plan orchestrator."
 tools: Read, Bash, Glob, Grep
 color: green
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines-full.md
+@.rcode/references/agent-core.md
+@.rcode/references/source-of-truth-grounding.md
 @.rcode/references/sprint-checker-playbook.md
 
 <role>

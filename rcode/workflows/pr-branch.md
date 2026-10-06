@@ -114,7 +114,7 @@ Next steps:
   git push origin {PR_BRANCH}
   gh pr create --base {TARGET} --head {PR_BRANCH}
 
-  (PR title/body must follow @rcode/references/github-comment-style.md)
+  (PR title/body must follow @.rcode/references/github-comment-style.md)
 
 Or use /rcode-ship to create the PR automatically.
 ```

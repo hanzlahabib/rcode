@@ -69,7 +69,7 @@ git merge-base --is-ancestor campaign-<area> HEAD || echo "NOT merged — stop"
 git worktree remove --force ../sm-worktrees/camp-<area>
 git tag merged/campaign-<area> campaign-<area>
 ```
-`git tag` is a git write, so it falls under `@rcode/references/no-unauthorized-git-ops.md`:
+`git tag` is a git write, so it falls under `@.rcode/references/no-unauthorized-git-ops.md`:
 ask ONCE at cleanup time ("tag the N merged campaign branches?") and then tag them all.
 It is additive and reversible, so one ask covers the batch.
 

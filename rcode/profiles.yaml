@@ -10,7 +10,7 @@
 minimal:
   commands: [init, new-project, new-milestone, complete-milestone, discuss-phase, research-phase, plan, execute, verify-phase, verify-work, status, next, quick, do, review, code-review, review-fix, ship, help, progress, resume-work, pause-work, phase, add-phase, add-todo, note, health, update, install, settings, enable-hooks, undo, scan, map-codebase, ui-phase, debug, memory-init, memory-update, memory-audit, memory-distill]
   skills: [rcode-do, rcode-help, rcode-init, rcode-debug, rcode-code-review, rcode-memory-init, rcode-memory-update, rcode-memory-audit, rcode-memory-distill]
-  agents: [rcode-planner, rcode-executor, rcode-verifier, rcode-sprint-checker, rcode-phase-researcher, rcode-project-researcher, rcode-research-synthesizer, rcode-roadmapper, rcode-codebase-mapper, rcode-debugger, rcode-integration-checker, rcode-code-reviewer, rcode-code-fixer, rcode-advisor-researcher, rcode-assumptions-analyzer, rcode-nyquist-auditor, rcode-waleed, rcode-fatima, rcode-ux-designer]
+  agents: [rcode-planner, rcode-executor, rcode-verifier, rcode-sprint-checker, rcode-phase-researcher, rcode-project-researcher, rcode-research-synthesizer, rcode-roadmapper, rcode-codebase-mapper, rcode-debugger, rcode-integration-checker, rcode-reviewer, rcode-fixer, rcode-advisor-researcher, rcode-assumptions-analyzer, rcode-nyquist-auditor, rcode-waleed, rcode-fatima, rcode-ux-designer]
 full:
   extends: minimal
 

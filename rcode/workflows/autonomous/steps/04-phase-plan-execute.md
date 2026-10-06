@@ -215,6 +215,6 @@ Display the review result summary (score from UI-REVIEW.md if produced). Continu
 
 </step>
 
-@rcode/workflows/autonomous-smart-discuss.md
+@.rcode/workflows/autonomous-smart-discuss.md
 
 Next: Read `.rcode/workflows/autonomous/steps/05-iterate.md` before starting it (skip it if its Read-when condition is false).

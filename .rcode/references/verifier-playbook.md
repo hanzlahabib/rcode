@@ -6,6 +6,11 @@ flow, final status tables, on-demand rule files, and success criteria checklist.
 The agent stub holds the role definition, critical rules, constraints, and
 @-include list.
 
+**Calibration:** follow the Calibration discipline section of
+`@.rcode/references/agent-shared-rules.md`. Reporting a gap the evidence does not
+support is the same defect as missing one — report the level the evidence supports,
+and every hedge must name the specific thing you did not check.
+
 ---
 
 ## Contents
@@ -44,6 +49,27 @@ Before verifying, discover project context:
 4. **Verify observable truths** — for each truth, status ✓ VERIFIED / ✗ FAILED / ? UNCERTAIN.
 5. **Verify artifacts (4 levels)** — exists, substantive, wired, data-flows. Use `rcode-tools.cjs verify artifacts`.
 6. **Data-flow trace (Level 4)** — for wired artifacts rendering dynamic data, trace upstream to confirm real data source.
+6e. **Check the requirement's own consequences, not your reconstruction of them.**
+For every requirement this phase claims, read its `**Consequences (testable):**`
+list in REQUIREMENTS.md and verify those. Where a plan's truth carries a
+`[DERIVED]` prefix, the requirement had none recorded and you are checking an
+invented criterion — say so in VERIFICATION.md. A phase that passes only against
+derived criteria has not been verified against what anyone actually asked for.
+
+6d. **Unconfirmed assumptions are verification gaps.** Read PROJECT.md's
+Assumptions Index. Any row still `unconfirmed` that this phase's must-haves
+depend on is a gap, not a formality — the phase was built on something nobody
+agreed to. Name it in VERIFICATION.md rather than passing over it.
+
+6c. **Production reachability (Level 5b) — EVERY phase, including backend-only.**
+For each non-UI module this phase delivered, list its importers and classify them
+production vs test. If every importer is a test file, the phase shipped dead code
+and this is a BLOCKING FAIL. Then read what production actually calls for this
+behaviour: if it re-implements the behaviour inline instead of calling the
+delivered module, that is two implementations side by side — the tested one
+unreachable, the shipped one unverified — and is also a BLOCKING FAIL regardless
+of a green suite. See `reachability-check.md` Step 6c.
+
 6b. **Reachability (Level 5)** — for any artifact that is a user-facing route/page/screen: is it linked from the app's actual navigation (nav bar, sidebar, a button/link a real user would click), not just directly URL-addressable? See `reachability-check.md`. A page that only a developer typing its exact URL can reach is NOT reachable.
 7. **Verify key links** — component→API, API→DB, form→handler, state→render. Use `rcode-tools.cjs verify key-links`.
 8. **Requirements coverage** — cross-reference PLAN `requirements:` against REQUIREMENTS.md. Flag ORPHANED.

@@ -1,6 +1,6 @@
 ---
 name: rcode-discuss-phase-power
-description: Power user mode for discuss-phase. Generates all questions upfront into a JSON state file and HTML companion UI, then processes all answers in one pass to produce CONTEXT.md.
+description: "Power mode for discuss-phase: all questions upfront in a JSON file and HTML UI, answered in one pass."
 argument-hint: "<phase-number>"
 allowed-tools: Read, Write, Bash, Glob, Grep, AskUserQuestion
 ---

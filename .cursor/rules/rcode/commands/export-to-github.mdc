@@ -1,6 +1,6 @@
 ---
 name: rcode-export-to-github
-description: Push phases/stories/decisions to GitHub — thin wrapper over rcode github-sync, plus a decisions export mode
+description: "Push phases, stories and decisions to GitHub via rcode github-sync, with a decisions export mode."
 argument-hint: "[target] [--execute] [--repo owner/name] [--with-labels] [--decisions [--since ISO]]"
 allowed-tools:
   - Read

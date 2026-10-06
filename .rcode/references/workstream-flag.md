@@ -138,7 +138,7 @@ If you started a workspace but it should merge back into main planning:
 /rcode-list-workspaces
 
 # When bug is fixed
-/rcode-complete-workspace Critical
+/rcode-remove-workspace Critical --archive
 # Resume main work
 /rcode-execute <Q2 phase>
 ```

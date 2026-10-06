@@ -1,6 +1,6 @@
 ---
 name: rcode-do
-description: "[ROUTER] Interactive picker — describe what you want and rcode picks the command"
+description: "[ROUTER] Picker: asks which rcode command fits, never acts on its own. Use when: \"rcode kar do\", \"let rcode handle this\", \"raise a PR\", \"plan this phase\". Not for: plain coding."
 argument-hint: "[optional question or task description]"
 allowed-tools:
   - Read
@@ -9,7 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Analyze freeform natural language input and dispatch to the most appropriate rcode command. Acts as a smart dispatcher — never does the work itself. Matches intent to the best /rcode-* command, confirms the match, then hands off.
+Route freeform input to the best /rcode-* command. A dispatcher: it never does the work itself.
 </objective>
 
 <execution_context>

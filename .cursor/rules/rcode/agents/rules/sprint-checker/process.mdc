@@ -84,6 +84,18 @@ Session persists     | 01    | 3     | COVERED
 
 For each requirement: find covering task(s), verify action is specific, flag gaps.
 
+**Sub-behavior check (concrete, not eyeballed):** A task ID in the `Tasks` column is not proof of coverage by itself. For each requirement:
+1. Split the requirement's acceptance-criteria text (from ROADMAP.md/PRD, or the `must_haves.truths` derived from it) into discrete sub-behaviors — each verb phrase is one sub-behavior (e.g. "user can reset password" -> ["request reset email", "receive token", "verify token", "set new password"]).
+2. For each sub-behavior, check the covering task's `<action>` and `<verify>` text contains a concrete reference to it (a matching noun/verb, file, or endpoint) — not just the requirement's headline phrase.
+3. If one task covers a multi-sub-behavior requirement, list which sub-behaviors its action/verify actually address. Any sub-behavior with zero matching action/verify text is **unaddressed**.
+4. Status is `COVERED` only if every sub-behavior maps to at least one action/verify pair. If any sub-behavior is unaddressed, status is `PARTIAL` and is a **blocker**, not a note — list the specific missing sub-behavior(s), not a generic "may be incomplete" remark.
+
+```
+Requirement          | Plans | Tasks | Status  | Missing sub-behaviors
+----------------------|-------|-------|---------|----------------------
+User can reset password | 01  | 4     | PARTIAL | token verification, email send
+```
+
 **Exhaustive cross-check:** Also read PROJECT.md requirements (not just phase goal). Verify no PROJECT.md requirement relevant to this phase is silently dropped. A requirement is "relevant" if the ROADMAP.md explicitly maps it to this phase or if the phase goal directly implies it — do NOT flag requirements that belong to other phases or future work. Any unmapped relevant requirement is an automatic blocker — list it explicitly in issues.
 
 ## Step 5: Validate Task Structure

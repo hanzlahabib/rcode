@@ -92,7 +92,7 @@ function workflowFiles(wf) {
 for (const purpose of PURPOSES) {
   test(`minimal + ${purpose}: no command workflow spawns an agent the bundle does not install`, () => {
     const def = purposeLib.effectiveProfiles([purpose]).minimal;
-    // Agents register under their frontmatter `name` (rcode-code-reviewer.md is `rcode-reviewer`).
+    // Agents register under their frontmatter `name` (pinned equal to the file name by agent-name-parity).
     const installed = new Set(def.agents);
     for (const a of def.agents) {
       const fm = fs.readFileSync(path.join(REPO, 'rcode', 'agents', `${a}.md`), 'utf8').match(/^name:\s*(\S+)/m);

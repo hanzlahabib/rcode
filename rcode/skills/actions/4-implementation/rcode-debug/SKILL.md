@@ -124,7 +124,7 @@ When this pattern appears:
 1. Stop attempting fixes
 2. Ask: is this pattern fundamentally sound, or are we continuing through inertia?
 3. Discuss with the user before attempting more fixes
-4. Consider `/rcode-council` for a cross-functional review
+4. Consider `/rcode-council` (strategy purpose or full profile) for a cross-functional review
 
 ## Sentry / Observability Integration
 
@@ -190,7 +190,7 @@ Do NOT include: "tried X and it seems to work" · speculative "maybe it's cachin
 
 **Negative — shotgun fix** — "I added a try/catch around the whole function and now it doesn't crash." Refuse. The exception is silently swallowed; the bug still exists. Restore the throw and form a real hypothesis.
 
-**Architectural escalation** — Three separate fixes attempted (missing await, wrong env var, stale cache) — each fix exposed a new problem elsewhere. Stop. The async data-flow design is wrong. Escalate to `/rcode-council` before attempting Fix #4.
+**Architectural escalation** — Three separate fixes attempted (missing await, wrong env var, stale cache) — each fix exposed a new problem elsewhere. Stop. The async data-flow design is wrong. Escalate to `/rcode-council` (strategy purpose or full profile) before attempting Fix #4.
 
 ## Memory Bank Hooks
 

@@ -1,6 +1,6 @@
 # Phase Argument Parsing
 
-Workflows that take a phase argument (`/rcode-plan 04`, `/rcode-execute-phase 999.5`, `/rcode-research-phase 12`) all use the same parsing rules.
+Workflows that take a phase argument (`/rcode-plan 04`, `/rcode-execute 999.5`, `/rcode-research-phase 12`) all use the same parsing rules.
 
 ## Accepted forms
 

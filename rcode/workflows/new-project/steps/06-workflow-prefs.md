@@ -188,14 +188,14 @@ Use AskUserQuestion:
 Use models resolved in Step 1: `RESEARCHER_MODEL`, `SYNTHESIZER_MODEL`, `ROADMAPPER_MODEL`.
 
 
-@rcode/workflows/new-project-research-decision.md
+@.rcode/workflows/new-project-research-decision.md
 
 
 
-@rcode/workflows/new-project-define-requirements.md
+@.rcode/workflows/new-project-define-requirements.md
 
 
 
-@rcode/workflows/new-project-create-roadmap.md
+@.rcode/workflows/new-project-create-roadmap.md
 
 Next: Read `.rcode/workflows/new-project/steps/07-done.md` before starting it (skip it if its Read-when condition is false).

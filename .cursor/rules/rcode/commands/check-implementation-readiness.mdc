@@ -1,6 +1,6 @@
 ---
 name: rcode-check-implementation-readiness
-description: "Verify a feature is fully ready to implement — PRD approved, architecture approved, dependencies identified — before writing code."
+description: "Verify a feature is ready to implement (PRD, architecture, dependencies) before writing code."
 argument-hint: "[--phase <n>]"
 allowed-tools: Read, Write, Bash, Glob, Grep, Agent
 ---

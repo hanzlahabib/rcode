@@ -5,19 +5,21 @@ requires:
   - core
 agents: []
 workflows: []
-commands:
-  - seo-content-factory
-  - seo-growth-orchestrator
-  - seo-audit
-  - on-page-seo-auditor
-  - technical-seo-checker
-  - seo-content-writer
-  - seo-site-builder
-  - rank-and-rent-local-seo
-  - seo-aeo-geo
-references:
+commands: []
+skills:
+  - rcode-seo-content-factory
+  - rcode-seo-growth-orchestrator
+  - rcode-seo-audit
+  - rcode-on-page-seo-auditor
+  - rcode-technical-seo-checker
+  - rcode-seo-content-writer
+  - rcode-seo-site-builder
+  - rcode-rank-and-rent-local-seo
+  - rcode-seo-aeo-geo
+  - rcode-seo-os
+  - rcode-seo-astro-implementation
   # claude-seo plugin agents — NOT bundled. Install separately: npx @hanzlaa/claude-seo install
   # Routing rules in do.md reference: seo-cluster, seo-programmatic, seo-schema, seo-geo,
   # seo-local, seo-sxo, seo-technical, seo-content, seo-backlinks, seo-ecommerce,
   # seo-maps, seo-page, seo-performance, seo-sitemap, seo-drift, seo-dataforseo
-  - claude-seo-plugin-agents.md
+references: []

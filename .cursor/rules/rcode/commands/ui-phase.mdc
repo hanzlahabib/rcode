@@ -1,7 +1,7 @@
 ---
 name: rcode-ui-phase
-description: Produce UI-SPEC.md with color tokens, typography, component inventory, interaction states, and accessibility guidelines. Detects frontend keywords and suggests this command early in plan.md if UI-SPEC.md is absent.
-argument-hint: "[--existing-ui <path>] [--design-system <path>]"
+description: "Produce UI-SPEC.md and WIREFRAMES.md for a phase, from code or from a screenshot or mockup."
+argument-hint: "[--existing-ui <path>] [--design-system <path>] [--image <path>]"
 allowed-tools: Agent, Read, Glob, Grep, Write
 ---
 

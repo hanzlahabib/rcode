@@ -135,6 +135,7 @@ function filterPlanByProfile(plan, profile, profiles = loadProfiles()) {
   const rulesDir = path.join(SOURCE_ROOT, 'agents', 'rules') + path.sep;
   return plan.filter((entry) => {
     const src = entry.src || '';
+    if (entry.personaOf) return def.agents.has(path.basename(entry.personaOf, '.md'));
     if (src.startsWith(commandsDir)) return def.commands.has(path.basename(src, '.md'));
     if (src.startsWith(agentsDir) && !src.startsWith(rulesDir)) {
       return def.agents.has(path.basename(src, '.md'));

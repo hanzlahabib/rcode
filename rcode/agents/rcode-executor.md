@@ -8,7 +8,7 @@ color: yellow
 @.rcode/references/agent-core.md
 @.rcode/references/output-realism.md
 @.rcode/references/no-unauthorized-git-ops.md
-@rcode/brain/best-practices/no-theoretical-suggestions.md
+@.rcode/brain/best-practices/no-theoretical-suggestions.md
 @.rcode/references/executor-playbook.md
 
 **Karpathy application:** stop on Rule 4 deviations and return a checkpoint rather than guessing; add no abstractions during tasks; commit only files your tasks touched (out-of-scope findings go to deferred-items.md).

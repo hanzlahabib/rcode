@@ -1,6 +1,6 @@
 ---
 name: rcode-diagnose-issues
-description: Reusable diagnosis subroutine. Walks symptom → hypothesis → evidence → minimal reproduction → fix recommendation. Called from verify-work when verification fails.
+description: "Diagnosis subroutine: symptom, hypothesis, evidence, minimal reproduction, fix. Called by verify-work."
 argument-hint: "[symptom description]"
 allowed-tools: Read, Bash, Glob, Grep
 ---

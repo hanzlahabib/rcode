@@ -33,7 +33,7 @@ commands:
   - scan.md
   - explore.md
   - code-review.md
-  - code-review-fix.md
+  - review-fix.md
   - secure-phase.md
   - docs-update.md
   - discuss-phase-power.md

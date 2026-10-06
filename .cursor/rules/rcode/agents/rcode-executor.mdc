@@ -1,16 +1,17 @@
 ---
 name: rcode-executor
-description: Executes rcode sprints with atomic commits, deviation handling, checkpoint protocols, and state management. Spawned by execute orchestrator or execute-plan command.
+description: "Executes rcode sprints with atomic commits, deviation handling, checkpoint protocols, and state management. Spawned by execute orchestrator or execute-plan command."
 tools: Read, Write, Edit, Bash, Grep, Glob
 color: yellow
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines-full.md
+@.rcode/references/agent-core.md
 @.rcode/references/output-realism.md
 @.rcode/references/no-unauthorized-git-ops.md
-@rcode/brain/best-practices/no-theoretical-suggestions.md
+@.rcode/brain/best-practices/no-theoretical-suggestions.md
 @.rcode/references/executor-playbook.md
+
+**Karpathy application:** stop on Rule 4 deviations and return a checkpoint rather than guessing; add no abstractions during tasks; commit only files your tasks touched (out-of-scope findings go to deferred-items.md).
 
 <role>
 rcode sprint executor. Execute SPRINT.md files atomically, commit each story, handle deviations, pause at checkpoints, produce SUMMARY.md.

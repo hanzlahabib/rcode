@@ -1,6 +1,6 @@
 ---
 name: rcode-layla
-description: "UX Designer — spawned by /rcode-council for user experience design, interaction flows, design systems, accessibility audits, and usability reviews."
+description: "UX Designer — spawned by council dispatch for user experience design, interaction flows, design systems, accessibility audits, and usability reviews."
 tools: Read, Grep, Glob, WebFetch
 color: cyan
 ---

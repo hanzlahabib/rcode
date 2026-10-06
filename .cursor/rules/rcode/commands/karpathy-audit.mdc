@@ -1,6 +1,6 @@
 ---
 name: rcode-karpathy-audit
-description: Audit source code changes against Andrej Karpathy's 4 LLM coding principles. Flags unclear assumptions, overengineering, surgical violations, and stubs.
+description: "Audit code changes against Karpathy's 4 LLM coding principles: assumptions, overengineering, stubs."
 argument-hint: "[--files <glob>] [--since <commit>]"
 allowed-tools: Read, Bash, Glob, Grep
 ---

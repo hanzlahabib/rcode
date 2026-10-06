@@ -123,7 +123,7 @@ If all validations pass:
 
 After saving `.planning/epics.md`, you MUST sync state so `.rcode/state.json` reflects the new epics. Without this, downstream workflows (`/rcode-status`, `/rcode-progress`, `/rcode-execute`) see a divergent picture.
 
-Per `@rcode/skills/_shared/state-sync-rule.md`:
+Per `@.rcode/brain/best-practices/state-sync-rule.md`:
 
 ```bash
 node .rcode/bin/rcode-tools.cjs state sync --from-disk

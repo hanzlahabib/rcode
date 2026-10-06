@@ -524,7 +524,7 @@ Load config from `{project-root}/.rcode/config.json` and resolve:
       - Verify all acceptance criteria are met
       - Ensure deployment readiness if applicable
       - Run `code-review` workflow for peer review
-      - Optional: If Test Architect module installed, run `/rcode-tea:automate` to expand guardrail tests
+      - Optional: run `/rcode-add-tests` (audits purpose or full profile) to expand guardrail tests
     </action>
 
     <output>💡 **Tip:** For best results, run `code-review` using a **different** LLM than the one that implemented this story.</output>

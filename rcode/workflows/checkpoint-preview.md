@@ -4,7 +4,7 @@
 Human-in-the-loop change review. Make sense of a diff, focus attention where it matters, and walk through testing. Delegates to the rcode-checkpoint-preview skill for the full review protocol.
 </purpose>
 
-@rcode/skills/actions/4-implementation/rcode-checkpoint-preview/SKILL.md
+Read and follow the `rcode-checkpoint-preview` skill (`.claude/skills/rcode-checkpoint-preview/SKILL.md`). It ships with the same bundle as this command, so the workflow is only reachable when the file exists.
 
 ## Next Up
 

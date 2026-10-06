@@ -1,6 +1,6 @@
 ---
 name: rcode-autonomous
-description: Execute remaining phases autonomously with minimal human intervention. Runs plan → execute → verify cycles for unfinished work, pausing at checkpoints and failures.
+description: "Run plan, execute and verify cycles for all remaining phases, pausing at checkpoints and failures."
 argument-hint: "[--from N] [--to M] [--only N] [--interactive]"
 allowed-tools: Read, Bash, Agent, AskUserQuestion
 ---

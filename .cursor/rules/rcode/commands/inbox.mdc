@@ -1,6 +1,6 @@
 ---
 name: rcode-inbox
-description: Triage incoming issues and PRs against contribution templates
+description: "Triage incoming issues and PRs against contribution templates"
 argument-hint: "[--issues] [--prs] [--label] [--close-incomplete]"
 allowed-tools:
   - Read

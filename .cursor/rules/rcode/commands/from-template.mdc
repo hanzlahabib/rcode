@@ -1,6 +1,6 @@
 ---
 name: rcode-from-template
-description: Seed .planning/ from a starter template (saas-b2b / api-backend / mobile-app) — skeleton PROJECT.md, ROADMAP.md, REQUIREMENTS.md
+description: "Seed .planning/ from a starter template (saas-b2b, api-backend, mobile-app)."
 argument-hint: "<template-name> [--project-name \"<name>\"] [--force]"
 allowed-tools:
   - Read

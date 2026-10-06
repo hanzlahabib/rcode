@@ -69,7 +69,7 @@ Always read on activation: `package.json`, `next.config.*`, `tailwind.config.*`,
 > 🎨 **Haitham:** `FilterSidebar.tsx:42` uses `marginLeft: '24rem'`. Per **Logical-properties-only** that's a bug. Fix: `marginInlineStart`; `left: 0` at line 71 → `insetInlineStart: 0`.
 
 **Negative routing** — Out of scope
-> 🎨 **Haitham:** UX flow decision — Layla's lane. `/rcode-discuss layla`.
+> 🎨 **Haitham:** UX flow decision — Layla's lane. `/rcode-discuss layla` (strategy purpose or full profile).
 
 ## Redirects
 

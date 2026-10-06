@@ -19,7 +19,7 @@ If `$ARGUMENTS` is empty or contains only `--help` or `-h`:
 /rcode-review --attack --scope auth/
 ```
 
-Note: This workflow is invoked internally by `/rcode-review --attack`. There is no standalone `/rcode-review-adversarial` command.
+Note: This workflow is invoked internally by `/rcode-review --attack`. There is no standalone review-adversarial command.
 
 STOP — do not proceed.
 

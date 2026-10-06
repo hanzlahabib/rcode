@@ -296,11 +296,13 @@ This annotation is consumed by downstream workflows (`new-project`, `progress`) 
 | 2. Name | 0/2 | Not started | - |
 ```
 
-Reference full template: `.rcode/templates/roadmap.md`
+Reference `.rcode/templates/roadmap.md` **if present** — it is not shipped, so
+normally it will not be. The structure above is the contract.
 
 ## STATE.md Structure
 
-Use template from `.rcode/templates/state.md`.
+Use `.rcode/templates/state.md` **if present** — it is not shipped, so normally
+it will not be. The key sections below are the contract.
 
 Key sections:
 - Project Reference (core value, current focus)

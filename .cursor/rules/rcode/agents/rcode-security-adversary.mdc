@@ -1,12 +1,11 @@
 ---
 name: rcode-security-adversary
-description: Security Adversary — spawned for adversarial security review, threat modeling, attack surface analysis, and identifying exploitation paths. Thinks like an attacker to find vulnerabilities.
+description: "Security Adversary: adversarial review, threat modeling and attack-surface analysis from an attacker's view to find exploitation paths."
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 color: red
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines-full.md
+@.rcode/references/agent-core.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/auditor-shared-checklists.md
 

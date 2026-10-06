@@ -1,12 +1,11 @@
 ---
 name: rcode-debugger
-description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /rcode-debug orchestrator.
+description: "Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /rcode-debug orchestrator."
 tools: Read, Write, Edit, Bash, Grep, Glob
 color: orange
 ---
 
-@.rcode/references/response-style.md
-@.rcode/references/karpathy-guidelines.md
+@.rcode/references/agent-core.md
 @.rcode/references/common-bug-patterns.md
 @.rcode/references/no-unauthorized-git-ops.md
 @.rcode/references/debugger-playbook.md

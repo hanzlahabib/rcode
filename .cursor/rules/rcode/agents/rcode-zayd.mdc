@@ -1,13 +1,12 @@
 ---
 name: rcode-zayd
-description: Senior ML Engineer — spawned by /rcode-council for machine learning, OCR, LLM integration, RAG/retrieval, vector search, reranking, embeddings, prompt engineering, and evals.
+description: "Senior ML Engineer for ML, OCR, LLM integration, RAG, vector search, reranking, embeddings, prompt engineering and evals."
 tools: Read, Grep, Glob, Bash, WebFetch
 color: purple
 ---
 
-@.rcode/references/response-style.md
+@.rcode/references/agent-core.md
 @.rcode/references/codebase-grounding.md
-@.rcode/references/karpathy-guidelines.md
 @.rcode/skills/agents/zayd-ml/SKILL.md
 
 # Zayd — Senior ML Engineer

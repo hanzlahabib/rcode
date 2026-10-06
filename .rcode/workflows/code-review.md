@@ -612,7 +612,7 @@ If `--files` validation fails unexpectedly on macOS, install coreutils or use ab
 - [ ] `rcode-reviewer` agent spawned with explicit file list, depth setting, and `review_path`
 - [ ] Empty scope (no changed files) results in a clean skip — no agent spawned
 - [ ] `REVIEW.md` written to `.planning/phases/<N>/REVIEW.md` and committed
-- [ ] Results presented inline with a next-step suggestion (e.g., `/rcode-code-review-fix`)
+- [ ] Results presented inline with a next-step suggestion (e.g., `/rcode-review-fix`)
 
 ## On Error
 

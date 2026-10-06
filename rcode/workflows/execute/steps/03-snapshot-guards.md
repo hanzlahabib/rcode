@@ -116,6 +116,6 @@ Report:
 ```
 </step>
 
-@rcode/workflows/execute-waves.md
+@.rcode/workflows/execute-waves.md
 
 Next: Read `.rcode/workflows/execute/steps/04-wave-execution.md` before starting it (skip it if its Read-when condition is false).
