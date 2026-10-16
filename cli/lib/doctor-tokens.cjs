@@ -19,8 +19,8 @@ const { readPersistedProfile } = require('./install-profile.cjs');
 // The minimal-profile gate in scripts/token-budget.cjs is 2450 for the listing
 // alone; 5.0k is the acceptance ceiling from #1114 for the whole fixed context.
 const MINIMAL_GATE_TOKENS = 5000;
-const SLIM_HINT = 'Slim it with `rcode install --global --profile minimal` '
-  + '(if your rcode version does not support --profile yet, upgrade rcode first).';
+const SLIM_HINT = 'Slim it with `rcode install --global --profile minimal --force` '
+  + '(lists removals and backs up first; older rcode versions without --profile need an upgrade).';
 
 const BLOCK_BEGIN = '<!-- ===== rcode-managed rule block';
 const BLOCK_END = '<!-- ===== end rcode-managed rule block ===== -->';

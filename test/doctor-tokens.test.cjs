@@ -87,7 +87,7 @@ test('flags totals above the 5.0k gate with a slim hint', () => {
     assert.strictEqual(json.overGate, true);
     const text = run(['--tokens']).stdout;
     assert.match(text, /Over the 5000 gate/);
-    assert.match(text, /rcode install --global --profile minimal/);
+    assert.match(text, /rcode install --global --profile minimal --force/);
   } finally {
     fs.rmSync(big);
   }
