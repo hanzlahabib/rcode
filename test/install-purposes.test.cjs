@@ -189,9 +189,9 @@ test('precedence: fresh install, --purpose adds to minimal, --profile full wins'
   assert.throws(() => purposeLib.resolveSelection({ target: dir, profile: 'minimal', purpose: 'full' }), /conflicts/);
 });
 
-test('precedence: --global stays full unless a purpose is requested', () => {
+test('precedence: --global is minimal by default; a purpose adds to it', () => {
   const dir = tmp();
-  assert.strictEqual(purposeLib.resolveSelection({ target: dir, global: true }).profile, 'full');
+  assert.strictEqual(purposeLib.resolveSelection({ target: dir, global: true }).profile, 'minimal');
   const g = purposeLib.resolveSelection({ target: dir, global: true, purpose: 'audits' });
   assert.deepStrictEqual([g.profile, g.purposes], ['minimal', ['audits']]);
 });

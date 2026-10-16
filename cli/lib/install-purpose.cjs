@@ -126,7 +126,7 @@ function resolveSelection(opts) {
   }
 
   // `--purpose` on a fresh or minimal install means "minimal plus these", even
-  // for --global whose bare default is full. A legacy/full install stays full.
+  // for --global. A legacy/full install stays full.
   const impliedProfile = profileFlag || (requested && readPersistedProfile(opts.target) !== LEGACY_PROFILE ? 'minimal' : null);
   const profileState = resolveProfile({ ...opts, profile: impliedProfile });
 

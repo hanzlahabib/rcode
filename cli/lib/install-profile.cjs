@@ -20,9 +20,11 @@ const PROFILE_NAMES = ['minimal', 'full'];
 // New project installs start small: the always-listed surfaces cost tokens on
 // every turn, and the core loop does not need the other ~75 commands.
 const DEFAULT_NEW_PROFILE = 'minimal';
-// --global is one user-level copy shared by all projects, so it keeps the
-// complete toolset.
-const DEFAULT_GLOBAL_PROFILE = 'full';
+// --global (and the npm postinstall that runs it) also starts minimal: the
+// global copy is listed in every project on every turn, so defaulting it to
+// full made the advertised token savings unreachable for default users (#1114).
+// `--profile full` / `--purpose` opt back in.
+const DEFAULT_GLOBAL_PROFILE = 'minimal';
 // Existing installs without a `profile:` key were full installs.
 const LEGACY_PROFILE = 'full';
 
@@ -106,7 +108,7 @@ function readPersistedProfile(target) {
 
 /**
  * Decide the profile for this run.
- *   explicit --profile  >  persisted profile  >  default (minimal; full for --global)
+ *   explicit --profile  >  persisted profile  >  default (minimal)
  * Returns { profile, persisted, requested, isSwitch }.
  */
 function resolveProfile(opts) {
