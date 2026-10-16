@@ -3,6 +3,17 @@
 All notable changes to rcode are documented here.
 
 ---
+## v4.19.1 (2026-10-16) — the minimal profile now holds for global installs
+
+v4.19.0 advertised ~2.1k tokens of fixed context, but the first `rcode install` on a machine ran the npm postinstall global install, which defaulted to `full` (117 commands, ~101 skills, ~47 agents, about 8.3k tokens) and removed the project-level copies. Default users therefore never saw the minimal numbers (#1114).
+
+- **`--global` and the first-run install default to `minimal`.** `--profile full` is unchanged and installs the same file set as before; `--purpose` works as before.
+- **Existing full global installs can be slimmed.** `rcode install --global --profile minimal --force` lists removals, writes a backup tarball first, and prunes only files rcode owns. Global installs now record `files-manifest.csv` (previously only project installs did, which made the shrink path a no-op globally); installs made before this release are reconstructed from the install plan and `rcode-*` skill directories. User-authored skills, commands and agents are never touched.
+- **`rcode doctor --tokens`** reports the fixed per-turn overhead from what is actually on disk, per scope (global and project), with `--json`, using the same chars/4 estimator as the CI token-budget gate (now shared in `cli/lib/token-estimate.cjs`). It flags totals above the 5.0k gate and prints the slim command.
+
+Measured with an isolated HOME: fresh global install 2113 tokens (minimal) against 8318 tokens for the same machine's previous full install.
+
+---
 ## v4.19.0 (2026-10-06) — the token diet: 19k to 2.1k of fixed context, and an installer that asks what you need
 
 Every installed command, skill and agent description is listed on every Claude Code turn, and every command inlines its workflow when it runs. rcode paid about 19k tokens before the first user message, and 10-16k more for `/rcode-plan` or `/rcode-execute`. Measured with `scripts/token-budget.cjs` (chars / 4):
