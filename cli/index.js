@@ -113,7 +113,7 @@ Usage:
 
 ⚙️  META
   tiers          Show Starter / Advanced / Ultra / Standards tier map
-  doctor         Run compliance check on skills
+  doctor         Run compliance check on skills (--tokens [--json]: fixed per-turn token cost)
   set-profile    Change model profile (quality | balanced | budget | inherit)
   set-mode       Toggle communication mode (guided | yolo)
   version        Print version
@@ -201,7 +201,8 @@ async function main() {
 
   // Show first-run banner before dispatching — npm hides postinstall output,
   // so this is the user's first visible confirmation that the install worked.
-  maybeShowFirstRunBanner();
+  // `doctor --tokens` is read-only and may emit JSON: no banner, no marker write.
+  if (!(command === 'doctor' && args.includes('--tokens'))) maybeShowFirstRunBanner();
 
   const handler = COMMANDS[command];
   if (!handler) {
