@@ -245,6 +245,40 @@ function listStaleInstalledFiles(target, newPlan) {
   });
 }
 
+/**
+ * Absolute dirs of the skills rcode owns inside `target`: every `rcode-*`
+ * directory under .claude/skills plus the internal .rcode/skills tree. Skills
+ * without the rcode- prefix are the user's and are never listed, so a manifest
+ * built from this can never make the sweep delete them (#1114).
+ */
+function rcodeOwnedSkillDirs(target) {
+  const dirs = [path.join(target, '.rcode', 'skills')];
+  const listed = path.join(target, '.claude', 'skills');
+  if (fs.existsSync(listed)) {
+    for (const e of fs.readdirSync(listed, { withFileTypes: true })) {
+      if (e.isDirectory() && e.name.startsWith('rcode-')) dirs.push(path.join(listed, e.name));
+    }
+  }
+  return dirs;
+}
+
+/**
+ * Global installs made before v4.20 never wrote files-manifest.csv, so there
+ * was no record of which ~/.claude files rcode owns and a full -> minimal
+ * switch had nothing to prune. Rebuild that record from what is on disk: only
+ * paths the unfiltered install plan would write, plus rcode-* skill dirs.
+ * Does nothing when a manifest exists or no rcode file is present.
+ */
+function seedLegacyGlobalManifest(target, fullPlan) {
+  const manifestPath = path.join(target, '.rcode', '_config', 'files-manifest.csv');
+  if (fs.existsSync(manifestPath)) return false;
+  const csv = generateFilesManifest(fullPlan, target, { extraScanDirs: rcodeOwnedSkillDirs(target) });
+  if (csv.split('\n').filter(Boolean).length <= 1) return false;
+  fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+  fs.writeFileSync(manifestPath, csv);
+  return true;
+}
+
 function sweepStaleInstalledFiles(target, newPlan) {
   const stale = listStaleInstalledFiles(target, newPlan);
   if (stale.length === 0) return 0;
@@ -333,5 +367,7 @@ module.exports = {
   generateFilesManifest,
   sweepStaleInstalledFiles,
   listStaleInstalledFiles,
+  rcodeOwnedSkillDirs,
+  seedLegacyGlobalManifest,
   generateInstallManifest,
 };

@@ -88,6 +88,7 @@ const {
 const {
   sha256, readPackageVersion, generateAgentManifest, generateFilesManifest,
   sweepStaleInstalledFiles, generateInstallManifest,
+  rcodeOwnedSkillDirs, seedLegacyGlobalManifest,
 } = require('./lib/install-manifest.cjs');
 // minimal|full install profiles + purpose bundles — cli/lib/install-profile.cjs,
 // cli/lib/install-purpose.cjs.
@@ -181,7 +182,7 @@ function parseArgs(argv) {
     help: false,
     modules: [],  // --module core --module execution or empty = all
     // --profile minimal|full. null = keep the persisted profile, else the default
-    // (minimal for new project installs, full for --global). See install-profile.cjs.
+    // (minimal for new project and --global installs). See install-profile.cjs.
     profile: null,
     // --purpose a,b: purpose bundles added to minimal (see install-purpose.cjs).
     purpose: null,
@@ -621,6 +622,9 @@ function resolveInstallPlan(opts) {
     : opts.ides;
 
   const fullPlan = buildInstallPlan(planIdes, opts.target);
+  // Pre-4.20 global installs recorded no file ownership; without it a later
+  // `--profile minimal` has nothing it may prune (#1114).
+  if (opts.global && !opts.dryRun && !opts.listFiles) seedLegacyGlobalManifest(opts.target, fullPlan);
   const plan = filterPlanByProfile(filterPlanByModules(fullPlan, opts.modules), opts.profile, opts.profiles);
   if (plan.length === 0) {
     if (Array.isArray(opts.ides) && opts.ides.includes('antigravity') && !opts.global) {
@@ -1608,6 +1612,17 @@ async function installInner(opts) {
     } catch (err) {
       process.stderr.write(pc.yellow(`WARNING: native slash-command install skipped: ${err?.message || err}`) + '\n');
     }
+
+    // Record what rcode owns here so a later `--profile minimal --force` can
+    // prune exactly these files and nothing the user added (#1114). Skills are
+    // scanned per rcode-* dir, never the whole skills/ folder.
+    fs.writeFileSync(
+      path.join(configDir, 'files-manifest.csv'),
+      generateFilesManifest(plan, opts.target, {
+        mergeExistingManifest: !opts.force,
+        extraScanDirs: rcodeOwnedSkillDirs(opts.target),
+      }),
+    );
     return 0;
   }
 
