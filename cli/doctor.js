@@ -25,6 +25,7 @@ const {
   validateAgentFrontmatter,
 } = require('./lib/schemas.cjs');
 const { runLinkChecks } = require('./lib/link-checks.cjs');
+const { measureTokens, formatTokens } = require('./lib/doctor-tokens.cjs');
 
 // ---------- Shared helpers ----------
 
@@ -702,6 +703,13 @@ function runReferenceChecks(packageRoot, { enforceBuckets = [], reportOnlyBucket
 
 module.exports = function doctor(args, { packageRoot }) {
   const cwd = process.cwd();
+
+  // Read-only token report (#1114); skips the compliance suite entirely.
+  if (args.includes('--tokens')) {
+    const result = measureTokens(cwd);
+    console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : formatTokens(result));
+    return;
+  }
 
   console.log(`\n🕌 rcode — Doctor\n`);
 
