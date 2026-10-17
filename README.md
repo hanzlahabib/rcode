@@ -23,7 +23,21 @@ pnpm dlx @hanzlaa/rcode install
 [![CI](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml/badge.svg)](https://github.com/hanzlahabib/rcode/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Status: `@hanzlaa/rcode` v4.9.0 on npm. 45 agents · 117 commands · 130 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
+Status: `@hanzlaa/rcode` v4.19.0 on npm. 45 agents · 117 commands · 130 workflows · **1 runtime dependency**. Test status tracked by CI badge above. Actively dogfooded on real projects every week.
+
+---
+
+## The token tax, measured
+
+Every command, skill and agent description an AI coding tool has installed is listed on **every turn**, before you type anything. Most setups never measure it. rcode did, and cut its own:
+
+| Surface | Before (v4.18) | Now (v4.19) |
+|---|---|---|
+| Fixed listing, default install | 19.0k tokens | **2.1k** (minimal profile) |
+| `/rcode-plan` | 15.3k | 0.9k |
+| `/rcode-execute` | 13.3k | 0.8k |
+
+Measured with `scripts/token-budget.cjs` (chars / 4) and gated in CI, so it cannot quietly grow back. `--profile full` installs everything (8.0k); minimal keeps the core loop (init, plan, execute, verify, status, next, quick, do, review, ship, help, memory).
 
 ---
 
@@ -231,7 +245,7 @@ The non-goal: building yet another agent framework. There are enough. rcode stay
 
 ## Honest state of things
 
-- **v4.9.0** is the current release — Memory Bank now ships populated by default, brain-pull is live, and 50+ bug fixes landed from the most recent 3-project dogfeed run.
+- **v4.19.0** is the current release — the token diet: minimal install profile by default, shorter descriptions, step-file workflows (see [CHANGELOG](CHANGELOG.md)).
 - **Open issues**: ~50 — half are feature requests, the rest are backlog bugs ranked by severity.
 - **Test suite**: 598 automated tests across 74 files (run `node --test`). Live pass/fail status is on the CI badge above. Coverage is structural (compliance + artifact schema + workflow behavioral), not line-coverage.
 - **Real users**: I run it on 4 projects daily. A handful of others run it on theirs. If you find a bug, file it — most P1s ship within 48 hours.
