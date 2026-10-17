@@ -23,12 +23,10 @@ const path = require('path');
 const { loadProfiles } = require('../cli/lib/install-profile.cjs');
 const { loadPurposes, effectiveProfiles } = require('../cli/lib/install-purpose.cjs');
 
+const { CHARS_PER_TOKEN, tokens, lineChars, readFrontmatter } = require('../cli/lib/token-estimate.cjs');
+
 const REPO = path.resolve(__dirname, '..');
 const SOURCE = path.join(REPO, 'rcode');
-const CHARS_PER_TOKEN = 4;
-// Per listed item the host prints roughly "- <name>: <description>" plus
-// framing; 4 chars is the same overhead the design budget used.
-const LISTING_LINE_OVERHEAD_CHARS = 4;
 const SKILL_BUCKETS = ['agents', 'actions', 'core', 'seo', 'dev-practices'];
 // Commands that get a generated sidebar skill stub (cli/generate-command-skills.cjs).
 const SIDEBAR_STUB_COMMANDS = ['do'];
@@ -51,34 +49,6 @@ const DIRECT_THRESHOLDS = {
   next: 1650,
   status: 2370,
 };
-
-const tokens = (chars) => Math.ceil(chars / CHARS_PER_TOKEN);
-
-/** Minimal frontmatter reader: scalars, double/single-quoted, `>`/`|` blocks. */
-function readFrontmatter(raw) {
-  const text = raw.replace(/\r\n/g, '\n');
-  if (!text.startsWith('---\n')) return {};
-  const end = text.indexOf('\n---', 4);
-  if (end === -1) return {};
-  const lines = text.slice(4, end).split('\n');
-  const fm = {};
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^([A-Za-z][\w-]*):\s*(.*)$/);
-    if (!m) continue;
-    let val = m[2].trim();
-    if (/^[>|][+-]?$/.test(val)) {
-      const parts = [];
-      while (i + 1 < lines.length && /^\s/.test(lines[i + 1])) parts.push(lines[++i].trim());
-      val = parts.join(' ');
-    } else if (val.startsWith('"') && val.endsWith('"') && val.length > 1) {
-      try { val = JSON.parse(val); } catch { val = val.slice(1, -1); }
-    } else if (val.startsWith("'") && val.endsWith("'") && val.length > 1) {
-      val = val.slice(1, -1).replace(/''/g, "'");
-    }
-    fm[m[1]] = val;
-  }
-  return fm;
-}
 
 // CRLF checkouts (Windows autocrlf) would otherwise fail the `---\n` fence test and read every description as empty.
 const readLf = (file) => fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
@@ -126,7 +96,6 @@ function collectAgents() {
   });
 }
 
-const lineChars = (item) => item.name.length + item.description.length + LISTING_LINE_OVERHEAD_CHARS;
 const sumChars = (items) => items.reduce((n, item) => n + lineChars(item), 0);
 
 function listingForProfile(profileName, profiles, all) {

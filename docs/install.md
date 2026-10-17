@@ -177,7 +177,7 @@ pnpm dlx @hanzlaa/rcode install --profile minimal --force   # on an existing ful
 
 - The chosen profile is saved as `profile:` in `.rcode/_config/manifest.yaml` and reused by `update`.
 - Installs made before profiles existed have no `profile:` line and are treated as `full`: `update` removes nothing and prints how to switch.
-- `--global` installs default to `full`.
+- `--global` installs (including the npm postinstall) default to `minimal`, like project installs. Pass `--profile full` for everything. To slim an existing full global install: `rcode install --global --profile minimal --force` (lists removals, backs up, removes only rcode-owned files from the manifest).
 - Switching down never happens silently: without `--force` it only prints the removal list.
 
 ### Install purposes — pick what rcode is for
@@ -207,7 +207,7 @@ Rules:
 - `--purpose a,b` is additive: it unions with the purposes already recorded. `--purpose full` is the same as `--profile full`.
 - `--profile full` wins over any `--purpose`. `--profile minimal --purpose a,b` means exactly `a,b`; anything it drops needs `--force` (a backup tarball is created first), the same gate as `full` to `minimal`.
 - Purposes are saved as `purposes: [seo, frontend]` next to `profile: minimal` in `.rcode/_config/manifest.yaml`; `update` re-applies them and never drops one.
-- Existing installs change only when you pass `--purpose` or `--profile`. A pre-profile (full) install stays full. `--global` stays `full` unless you pass a flag.
+- Existing installs change only when you pass `--purpose` or `--profile`. A pre-profile (full) install stays full. A `--global` install with no recorded profile starts `minimal`.
 
 ### Different IDE
 ```bash
